@@ -159,6 +159,7 @@
   .diff-up { background: rgba(52,196,124,.15); color: var(--green); }
   .diff-dn { background: rgba(242,107,107,.15); color: var(--red); }
   .diff-new { background: rgba(79,142,247,.15); color: var(--accent); }
+  .badge-nao { background: rgba(242,107,107,.18); color: var(--red); border: 1px solid rgba(242,107,107,.35); font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: .4px; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -218,9 +219,9 @@
           <tr><td>Rota Extra 805</td><td class="muted">VDA 80</td><td>10 KG</td><td>600</td><td>R$9,52</td><td class="green">R$5.712,00</td><td><span class="badge badge-manifesto">Manifesto</span></td><td>—</td><td>600</td></tr>
           <tr><td>Rota Extra 802</td><td class="muted">VDA 01</td><td>05 KG</td><td>600</td><td>R$8,27</td><td class="green">R$4.962,00</td><td class="muted">—</td><td>—</td><td>600</td></tr>
           <tr><td>Rota Extra 802</td><td class="muted">VDA 01</td><td>10 KG</td><td>600</td><td>R$9,52</td><td class="green">R$5.712,00</td><td class="muted">—</td><td>—</td><td>600</td></tr>
-          <tr><td>Rota Extra 804</td><td class="muted">VDA 03</td><td>05 KG</td><td>600</td><td>R$0</td><td class="muted">—</td><td class="muted">—</td><td>—</td><td>600</td></tr>
-          <tr><td>Rota Extra 804</td><td class="muted">VDA 03</td><td>10 KG</td><td>600</td><td>R$0</td><td class="muted">—</td><td class="muted">—</td><td>—</td><td>600</td></tr>
-          <tr><td>Posto Parque 10</td><td class="muted">VDA 90</td><td>40 KG</td><td>200</td><td>R$0</td><td class="muted">—</td><td class="muted">—</td><td>—</td><td>200</td></tr>
+          <tr style="opacity:.6"><td>Rota Extra 804 <span class="badge badge-nao" title="Preço não fechado — operação não realizada">NÃO SAIU</span></td><td class="muted">VDA 03</td><td>05 KG</td><td class="muted">600 (plan.)</td><td class="red">R$0</td><td class="red">—</td><td class="muted">—</td><td>—</td><td class="muted">0</td></tr>
+          <tr style="opacity:.6"><td>Rota Extra 804 <span class="badge badge-nao" title="Preço não fechado — operação não realizada">NÃO SAIU</span></td><td class="muted">VDA 03</td><td>10 KG</td><td class="muted">600 (plan.)</td><td class="red">R$0</td><td class="red">—</td><td class="muted">—</td><td>—</td><td class="muted">0</td></tr>
+          <tr style="opacity:.6"><td>Posto Parque 10 <span class="badge badge-nao" title="Sem preço definido — operação não realizada">NÃO SAIU</span></td><td class="muted">VDA 90</td><td>40 KG</td><td class="muted">200 (plan.)</td><td class="red">R$0</td><td class="red">—</td><td class="muted">—</td><td>—</td><td class="muted">0</td></tr>
           <tr><td>Ilha Batista 16418</td><td class="muted">Acello</td><td>40 KG</td><td>100</td><td>—</td><td class="muted">R$0</td><td><span class="badge badge-semcusto">Sem Custo</span></td><td>110</td><td>—</td></tr>
           <tr><td>Distr. Isaque 16631</td><td class="muted">Câmara Montada</td><td>20 KG</td><td>160+30</td><td>R$10,84</td><td class="green">R$2.059,60</td><td class="muted">—</td><td>—</td><td>190</td></tr>
           <tr><td>Conv MXY 16457</td><td class="muted">Câmara Dupla</td><td>20 KG</td><td>63</td><td>R$10,84</td><td class="green">R$682,92</td><td class="muted">—</td><td>—</td><td>63</td></tr>
@@ -243,7 +244,7 @@
         <tbody>
           <tr><td>05 KG</td><td>1.800</td><td>9.000</td><td>R$1,038</td><td class="yellow">R$1.868,76</td><td class="muted">R$10.850</td><td class="muted">—</td><td class="blue">R$6,88</td></tr>
           <tr><td>10 KG</td><td>1.800</td><td>18.000</td><td>R$1,857</td><td class="yellow">R$3.343,14</td><td class="muted">R$12.726</td><td class="muted">—</td><td class="blue">R$8,12</td></tr>
-          <tr><td>20 KG</td><td>—</td><td>—</td><td>R$10,84</td><td class="yellow">—</td><td class="muted">R$34.355</td><td class="muted">—</td><td class="blue">R$9,78</td></tr>
+          <tr><td>20 KG</td><td>9.828</td><td>196.560</td><td>R$10,84</td><td class="yellow">R$106.535,52 <span title="Recalculado — Excel tinha #REF! por fórmula quebrada" style="cursor:help;color:var(--yellow);font-size:10px">⚠ recalc.</span></td><td class="muted">R$34.355</td><td class="muted">—</td><td class="blue">R$9,78</td></tr>
           <tr><td>40 KG</td><td>600</td><td>24.000</td><td>R$6,373</td><td class="yellow">R$3.823,62</td><td class="muted">R$65.550</td><td class="muted">—</td><td class="blue">R$12,57</td></tr>
         </tbody>
       </table>
