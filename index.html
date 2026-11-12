@@ -1663,7 +1663,6 @@
         const motor  = isObj ? r.motorista  : r[5];
         const status = isObj ? r.status     : r[8];
         if (!vda || status === 'Inativo') return;
-        const isObj = !Array.isArray(r);
         const modal   = isObj ? (r.modalidade||'') : (r[10]||'');
         const cTotal  = isObj && r.custo_total_vda ? parseF(r.custo_total_vda)
           : (parseF(isObj?r.custo_diario:r[11]) + parseF(isObj?r.custo_combustivel:r[12]) + parseF(isObj?r.custo_pedagio:r[13]) + parseF(isObj?r.custo_outros:r[14]));
