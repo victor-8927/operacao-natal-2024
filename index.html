@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Operação Natal & Ano Novo 2024</title>
+<title>Operação Natal & Ano Novo — Amazon Indústria de Gelo</title>
 <style>
   :root {
     --bg: #0f1117;
@@ -160,15 +160,70 @@
   .diff-dn { background: rgba(242,107,107,.15); color: var(--red); }
   .diff-new { background: rgba(79,142,247,.15); color: var(--accent); }
   .badge-nao { background: rgba(242,107,107,.18); color: var(--red); border: 1px solid rgba(242,107,107,.35); font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: .4px; text-transform: uppercase; }
+
+  /* ===== 2026 EDITABLE STYLES ===== */
+  .tab-btn.purple { --tab-active: #a78bfa; }
+  .year-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(167,139,250,.18); color:#a78bfa; border:1px solid rgba(167,139,250,.35); margin-left:8px; }
+  .e26-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .e26-toolbar .btn { padding:7px 16px; border-radius:7px; border:none; cursor:pointer; font-size:12px; font-weight:700; transition:all .15s; }
+  .btn-add { background:rgba(52,196,124,.18); color:var(--green); border:1px solid rgba(52,196,124,.4); }
+  .btn-add:hover { background:rgba(52,196,124,.32); }
+  .btn-save { background:rgba(79,142,247,.18); color:var(--accent); border:1px solid rgba(79,142,247,.4); }
+  .btn-save:hover { background:rgba(79,142,247,.32); }
+  .btn-del { background:rgba(242,107,107,.18); color:var(--red); border:1px solid rgba(242,107,107,.4); font-size:11px; padding:3px 8px; }
+  .btn-del:hover { background:rgba(242,107,107,.32); }
+  .btn-sm { padding:4px 10px; font-size:11px; }
+  .save-status { font-size:11px; color:var(--green); opacity:0; transition:opacity .4s; }
+  .save-status.show { opacity:1; }
+
+  /* editable cells */
+  td[contenteditable="true"] {
+    outline:none; cursor:text;
+    border-bottom: 1px dashed rgba(79,142,247,.4);
+    min-width:40px;
+  }
+  td[contenteditable="true"]:focus {
+    background:rgba(79,142,247,.08);
+    border-bottom-color:var(--accent);
+  }
+  select.cell-select {
+    background:var(--surface2); color:var(--text); border:none;
+    font-size:12px; padding:0 4px; border-radius:4px; cursor:pointer;
+    outline:none; width:100%;
+  }
+
+  /* sub-tabs inside 2026 */
+  .subtabs-bar { display:flex; gap:4px; margin-bottom:18px; flex-wrap:wrap; }
+  .subtab-btn {
+    padding:7px 16px; border-radius:7px; border:1px solid var(--border);
+    background:var(--surface); color:var(--muted); font-size:12px; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .subtab-btn:hover { color:var(--text); background:var(--surface2); }
+  .subtab-btn.active { background:rgba(167,139,250,.18); color:#a78bfa; border-color:rgba(167,139,250,.4); }
+  .subtab-panel { display:none; }
+  .subtab-panel.active { display:block; }
+
+  /* capacity bar */
+  .cap-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .cap-bar { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .cap-bar-fill { height:100%; border-radius:4px; transition:width .4s; }
+  .cap-bar-fill.ok { background:var(--green); }
+  .cap-bar-fill.warn { background:var(--yellow); }
+  .cap-bar-fill.over { background:var(--red); }
+
+  /* info box */
+  .info-box { background:rgba(79,142,247,.07); border:1px solid rgba(79,142,247,.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:14px; }
+  .info-box strong { display:block; margin-bottom:3px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-icon">🎄</div>
+  <div class="header-icon">🧊</div>
   <div>
-    <div class="header-title">Operação Natal & Ano Novo 2024 — Amazon Indústria de Gelo</div>
-    <div class="header-sub">Simulação, Escalonamento, Frota e Comodato · 5 abas · Manaus, AM</div>
+    <div class="header-title">Operação Natal & Ano Novo — Amazon Indústria de Gelo Ltda.</div>
+    <div class="header-sub">Simulação, Escalonamento, Frota e Comodato · Manaus, AM · <span style="color:var(--muted)">2024</span> e <span style="color:#a78bfa;font-weight:700">2026</span></div>
   </div>
 </div>
 
@@ -178,6 +233,7 @@
   <button class="tab-btn yellow" onclick="switchTab(2)">🚚 VDAS PARA O NATAL</button>
   <button class="tab-btn orange" onclick="switchTab(3)">🎆 ANO NOVO pg de terceiros</button>
   <button class="tab-btn" onclick="switchTab(4)">🚛 VDAS PARA O ANO NOVO</button>
+  <button class="tab-btn purple" onclick="switchTab(5)" style="border-left:2px solid rgba(167,139,250,.3);margin-left:8px">🗓️ OPERAÇÃO 2026 ✦</button>
 </div>
 
 <!-- ==================== ABA 1: NATAL SIMULADO ==================== -->
@@ -707,7 +763,289 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2026 — OPERAÇÃO NATAL & ANO NOVO 2026
+══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab6">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <div style="font-size:22px;font-weight:800;color:#a78bfa">Operação 2026 <span class="year-badge">AO VIVO</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">Todos os dados são editáveis e salvos localmente no navegador</div>
+    <span id="globalSaveStatus" class="save-status">✓ Salvo</span>
+  </div>
+
+  <!-- SUB-TABS -->
+  <div class="subtabs-bar">
+    <button class="subtab-btn active" onclick="switchSubtab('st-cadVDA')">🚛 VDAs / Frota</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-cadFunc')">👷 Funcionários</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-cadCliente')">🏪 Clientes</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-produtos')">🧊 Produtos</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-natal26')">🎄 Natal 2026</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-anonovo26')">🎆 Ano Novo 2026</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-resumo26')">📊 Resumo Geral</button>
+  </div>
+
+  <!-- ── VDAs / FROTA ── -->
+  <div class="subtab-panel active" id="st-cadVDA">
+    <div class="section-title">🚛 Cadastro de VDAs / Frota com Baú</div>
+    <div class="info-box">
+      <strong>Capacidades pré-cadastradas (baús refrigerados)</strong>
+      Toco (01/02/03/70/80/81) = 8.800 kg &nbsp;|&nbsp; Truck 1 (46/47) = 14.000 kg &nbsp;|&nbsp; Truck 2 (90/94) = 16.000 kg &nbsp;|&nbsp; Acello (Comodato) = 4.000 kg &nbsp;|&nbsp; Sem baú = campo livre
+    </div>
+    <div class="e26-toolbar">
+      <button class="btn btn-add" onclick="addRow('tbl-vda', vdaBlank)">+ Nova VDA</button>
+      <button class="btn btn-save" onclick="saveTable('tbl-vda','vdas26')">💾 Salvar</button>
+      <span id="sv-vda" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-vda">
+        <thead><tr>
+          <th>VDA #</th><th>Placa</th><th>Tipo</th><th>Cap. Baú (kg)</th>
+          <th>Carroceria</th><th>Motorista Fixo</th><th>Ajudante 1</th><th>Ajudante 2</th>
+          <th>Status</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-vda"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── FUNCIONÁRIOS ── -->
+  <div class="subtab-panel" id="st-cadFunc">
+    <div class="section-title">👷 Cadastro de Funcionários</div>
+    <div class="e26-toolbar">
+      <button class="btn btn-add" onclick="addRow('tbl-func', funcBlank)">+ Novo Funcionário</button>
+      <button class="btn btn-save" onclick="saveTable('tbl-func','funcs26')">💾 Salvar</button>
+      <span id="sv-func" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-func">
+        <thead><tr>
+          <th>Nome</th><th>Função</th><th>Turno</th><th>VDA Fixo</th>
+          <th>CPF / ID</th><th>Tel</th><th>Status</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-func"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── CLIENTES ── -->
+  <div class="subtab-panel" id="st-cadCliente">
+    <div class="section-title">🏪 Cadastro de Clientes / Pontos de Entrega</div>
+    <div class="e26-toolbar">
+      <button class="btn btn-add" onclick="addRow('tbl-cli', cliBlank)">+ Novo Cliente</button>
+      <button class="btn btn-save" onclick="saveTable('tbl-cli','clientes26')">💾 Salvar</button>
+      <span id="sv-cli" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-cli">
+        <thead><tr>
+          <th>Código</th><th>Nome / Ponto</th><th>Tipo Equip.</th><th>Produto</th>
+          <th>Qtd Padrão</th><th>Tabela R$/saca</th><th>Modalidade</th>
+          <th>Rota / VDA</th><th>Endereço</th><th>Tel</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-cli"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PRODUTOS ── -->
+  <div class="subtab-panel" id="st-produtos">
+    <div class="section-title">🧊 Tabela de Produtos</div>
+    <div class="info-box">
+      <strong>Pesos brutos cadastrados (padrão fábrica)</strong>
+      5 kg → 6 kg bruto &nbsp;|&nbsp; 10 kg → 11 kg bruto &nbsp;|&nbsp; 20 kg → 23 kg bruto &nbsp;|&nbsp; 40 kg → 45 kg bruto
+    </div>
+    <div class="e26-toolbar">
+      <button class="btn btn-save" onclick="saveTable('tbl-prod','produtos26')">💾 Salvar tabela de preços</button>
+      <span id="sv-prod" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-prod">
+        <thead><tr>
+          <th>Produto</th><th>Peso Líq. (kg)</th><th>Peso Bruto (kg)</th>
+          <th>Custo Produção R$/saca</th><th>Preço Venda Padrão R$/saca</th>
+          <th>Preço Acello R$/saca</th><th>Preço Consignação R$/saca</th>
+          <th>Preço Manifesto R$/saca</th><th>Obs</th>
+        </tr></thead>
+        <tbody id="tbody-prod"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── NATAL 2026 ── -->
+  <div class="subtab-panel" id="st-natal26">
+    <div class="section-title">🎄 Escalonamento — Natal 2026</div>
+
+    <!-- KPIs auto-calculados -->
+    <div class="kpi-row" id="kpi-natal26">
+      <div class="kpi"><div class="kpi-label">Fat. Programado</div><div class="kpi-value blue" id="kn-fat">R$0</div><div class="kpi-sub">Soma sacas × preço</div></div>
+      <div class="kpi"><div class="kpi-label">Total Sacas</div><div class="kpi-value" id="kn-sacas" style="color:#a78bfa">0</div><div class="kpi-sub">Todas as rotas</div></div>
+      <div class="kpi"><div class="kpi-label">Peso Total (kg)</div><div class="kpi-value yellow" id="kn-peso">0</div><div class="kpi-sub">Bruto estimado</div></div>
+      <div class="kpi"><div class="kpi-label">Custo Desp. 3°</div><div class="kpi-value orange" id="kn-desp">R$0</div><div class="kpi-sub">Tabela comodatos</div></div>
+    </div>
+
+    <div class="e26-toolbar">
+      <button class="btn btn-add" onclick="addRow('tbl-nat26', rotaBlank)">+ Nova Rota / Cliente</button>
+      <button class="btn btn-save" onclick="saveTable('tbl-nat26','natal26'); calcKpis26('nat')">💾 Salvar + Recalcular</button>
+      <span id="sv-nat26" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-nat26">
+        <thead><tr>
+          <th>Cliente / Ponto</th><th>Equip.</th><th>Produto</th><th>Qtd Programada</th>
+          <th>R$/saca</th><th>FAT Prog. R$</th><th>Modalidade</th>
+          <th>VDA</th><th>Motorista</th><th>Data Entrega</th><th>Retorno</th><th>Venda Real</th><th>FAT Real R$</th><th>Status</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-nat26"></tbody>
+      </table>
+    </div>
+
+    <!-- Tabela de cargas por VDA -->
+    <div style="margin-top:24px">
+      <div class="section-title">📦 Distribuição de Carga por VDA — Natal 2026</div>
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-carga-nat', cargaBlank)">+ Adicionar VDA</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-carga-nat','cargaNat26')">💾 Salvar</button>
+        <span id="sv-cnat" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-carga-nat">
+          <thead><tr>
+            <th>VDA</th><th>Motorista</th><th>Ajudantes</th><th>Rota / Zona</th>
+            <th>5 KG (sacas)</th><th>10 KG (sacas)</th><th>20 KG (sacas)</th><th>40 KG (sacas)</th>
+            <th>Peso Total (kg)</th><th>Cap. Baú (kg)</th><th>Ocupação</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-carga-nat"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Comodatos Natal 2026 -->
+    <div style="margin-top:24px">
+      <div class="section-title">🤝 Comodatos / Pagamento de Terceiros — Natal 2026</div>
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-com-nat', comodatoBlank)">+ Novo Comodato</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-com-nat','comodNat26')">💾 Salvar</button>
+        <span id="sv-comnat" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-com-nat">
+          <thead><tr>
+            <th>Fornecedor</th><th>Tipo Equip.</th><th>Qtd Sacas</th><th>Produto</th>
+            <th>R$/saca</th><th>Total R$</th><th>Cliente Destino</th><th>Data</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-com-nat"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANO NOVO 2026 ── -->
+  <div class="subtab-panel" id="st-anonovo26">
+    <div class="section-title">🎆 Escalonamento — Ano Novo 2026</div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Fat. Programado</div><div class="kpi-value blue" id="kan-fat">R$0</div><div class="kpi-sub">Soma sacas × preço</div></div>
+      <div class="kpi"><div class="kpi-label">Total Sacas</div><div class="kpi-value" id="kan-sacas" style="color:#a78bfa">0</div></div>
+      <div class="kpi"><div class="kpi-label">Peso Total (kg)</div><div class="kpi-value yellow" id="kan-peso">0</div></div>
+      <div class="kpi"><div class="kpi-label">Custo Desp. 3°</div><div class="kpi-value orange" id="kan-desp">R$0</div></div>
+    </div>
+
+    <div class="e26-toolbar">
+      <button class="btn btn-add" onclick="addRow('tbl-an26', rotaBlank)">+ Nova Rota / Cliente</button>
+      <button class="btn btn-save" onclick="saveTable('tbl-an26','anonovo26'); calcKpis26('an')">💾 Salvar + Recalcular</button>
+      <span id="sv-an26" class="save-status">✓ Salvo</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl-an26">
+        <thead><tr>
+          <th>Cliente / Ponto</th><th>Equip.</th><th>Produto</th><th>Qtd Programada</th>
+          <th>R$/saca</th><th>FAT Prog. R$</th><th>Modalidade</th>
+          <th>VDA</th><th>Motorista</th><th>Data Entrega</th><th>Retorno</th><th>Venda Real</th><th>FAT Real R$</th><th>Status</th><th>Obs</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-an26"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:24px">
+      <div class="section-title">📦 Distribuição de Carga por VDA — Ano Novo 2026</div>
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-carga-an', cargaBlank)">+ Adicionar VDA</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-carga-an','cargaAn26')">💾 Salvar</button>
+        <span id="sv-can" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-carga-an">
+          <thead><tr>
+            <th>VDA</th><th>Motorista</th><th>Ajudantes</th><th>Rota / Zona</th>
+            <th>5 KG (sacas)</th><th>10 KG (sacas)</th><th>20 KG (sacas)</th><th>40 KG (sacas)</th>
+            <th>Peso Total (kg)</th><th>Cap. Baú (kg)</th><th>Ocupação</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-carga-an"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:24px">
+      <div class="section-title">🤝 Comodatos / Pagamento de Terceiros — Ano Novo 2026</div>
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-com-an', comodatoBlank)">+ Novo Comodato</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-com-an','comodAn26')">💾 Salvar</button>
+        <span id="sv-coman" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-com-an">
+          <thead><tr>
+            <th>Fornecedor</th><th>Tipo Equip.</th><th>Qtd Sacas</th><th>Produto</th>
+            <th>R$/saca</th><th>Total R$</th><th>Cliente Destino</th><th>Data</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-com-an"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESUMO GERAL ── -->
+  <div class="subtab-panel" id="st-resumo26">
+    <div class="section-title">📊 Resumo Comparativo — 2024 vs 2026</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Natal 2024 — FAT</div><div class="kpi-value green">R$142.772</div><div class="kpi-sub">Recalculado</div></div>
+      <div class="kpi"><div class="kpi-label">Natal 2026 — FAT Prog.</div><div class="kpi-value blue" id="res-fat-nat26">R$0</div><div class="kpi-sub">Atualizado ao salvar</div></div>
+      <div class="kpi"><div class="kpi-label">Ano Novo 2024 — FAT</div><div class="kpi-value green">R$167.988</div></div>
+      <div class="kpi"><div class="kpi-label">Ano Novo 2026 — FAT Prog.</div><div class="kpi-value blue" id="res-fat-an26">R$0</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:16px">📋 Base de Clientes Cadastrados 2026</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Código</th><th>Cliente</th><th>Produto</th><th>Qtd Padrão</th>
+          <th>R$/saca</th><th>Modalidade</th><th>Rota / VDA</th>
+        </tr></thead>
+        <tbody id="tbody-resumo-cli"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">🚛 Frota Ativa 2026</div>
+      <div id="resumo-frota" class="frota-grid" style="margin-top:8px"></div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">💾 Gestão de Dados</div>
+      <div class="e26-toolbar">
+        <button class="btn btn-save" onclick="exportAll26()">📥 Exportar JSON</button>
+        <button class="btn btn-add" onclick="document.getElementById('importFile').click()">📤 Importar JSON</button>
+        <button class="btn btn-del" onclick="if(confirm('Apagar TODOS os dados 2026? Ação irreversível.')) clearAll26()">🗑 Limpar tudo</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAll26(event)">
+      </div>
+    </div>
+  </div>
+</div><!-- /tab6 -->
+
 <script>
+  /* =========================================================
+     TAB SWITCHING (original + new tab6)
+  ========================================================= */
   function switchTab(n) {
     document.querySelectorAll('.tab-content').forEach((el, i) => {
       el.classList.toggle('active', i === n);
@@ -716,6 +1054,427 @@
       el.classList.toggle('active', i === n);
     });
   }
+
+  /* =========================================================
+     SUB-TABS (dentro de 2026)
+  ========================================================= */
+  function switchSubtab(id) {
+    document.querySelectorAll('.subtab-panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  /* =========================================================
+     BANCO DE DADOS LOCAL (localStorage)
+  ========================================================= */
+  const KEYS = {
+    vdas26: 'vdas26', funcs26: 'funcs26', clientes26: 'clientes26',
+    produtos26: 'produtos26', natal26: 'natal26', anonovo26: 'anonovo26',
+    cargaNat26: 'cargaNat26', cargaAn26: 'cargaAn26',
+    comodNat26: 'comodNat26', comodAn26: 'comodAn26'
+  };
+
+  function loadDB(key) {
+    try { return JSON.parse(localStorage.getItem('op26_' + key) || '[]'); } catch(e) { return []; }
+  }
+  function saveDB(key, arr) {
+    localStorage.setItem('op26_' + key, JSON.stringify(arr));
+  }
+
+  /* =========================================================
+     PRODUTOS DEFAULT (pesos brutos pré-cadastrados)
+  ========================================================= */
+  const PRODUTOS_DEFAULT = [
+    ['5 KG',  '5',  '6',  '1,04',  '8,27',  '—',     '—',     '8,27',  ''],
+    ['10 KG', '10', '11', '1,86',  '9,52',  '—',     '—',     '9,52',  ''],
+    ['20 KG', '20', '23', '10,84', '10,84', '10,84', '11,10', '10,84', ''],
+    ['40 KG', '40', '45', '6,37',  '16,19', '16,19', '14,20', '—',     ''],
+  ];
+
+  /* =========================================================
+     VDAs DEFAULT (frota com baú)
+  ========================================================= */
+  const VDAS_DEFAULT = [
+    ['01','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['02','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['03','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['46','','Truck 1','14000','Baú Refrigerado','','','','Ativo',''],
+    ['47','','Truck 1','14000','Baú Refrigerado','','','','Ativo',''],
+    ['70','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['80','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['81','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
+    ['90','','Truck 2','16000','Baú Refrigerado','','','','Ativo',''],
+    ['94','','Truck 2','16000','Baú Refrigerado','','','','Ativo',''],
+    ['Acello','','Comodato','4000','Acello (Terceiro)','','','','Terceiro',''],
+  ];
+
+  /* =========================================================
+     DEFINIÇÃO DAS COLUNAS POR TABELA
+     tipo: 'text' | 'select' | 'number' | 'date' | 'calc'
+  ========================================================= */
+  const SCHEMA = {
+    vdas26: [
+      {t:'text'},{t:'text'},{t:'select',opts:['Toco','Truck 1','Truck 2','Acello','VUC','Utilitário','Outro']},
+      {t:'number'},{t:'text'},{t:'text'},{t:'text'},{t:'text'},
+      {t:'select',opts:['Ativo','Manutenção','Reserva','Inativo']},{t:'text'}
+    ],
+    funcs26: [
+      {t:'text'},{t:'select',opts:['Motorista','Ajudante','Supervisor','Operador Câmara','Administrativo']},
+      {t:'select',opts:['1° Turno','2° Turno','Diurno','Noturno','Escala']},
+      {t:'text'},{t:'text'},{t:'text'},
+      {t:'select',opts:['Ativo','Férias','Afastado','Inativo']},{t:'text'}
+    ],
+    clientes26: [
+      {t:'text'},{t:'text'},
+      {t:'select',opts:['Mini Câmara','Câmara Dupla','Câmara Média','Câmara Montada','Container Feira','Container Pátio','Container Branco','Acello','Sem Câmara']},
+      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
+      {t:'number'},{t:'number'},
+      {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
+      {t:'text'},{t:'text'},{t:'text'},{t:'text'}
+    ],
+    natal26: [
+      {t:'text'},{t:'text'},
+      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},
+      {t:'number'},{t:'number'},{t:'calc'}, // FAT Prog = qtd × preço
+      {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
+      {t:'text'},{t:'text'},{t:'date'},{t:'number'},{t:'number'},{t:'calc'},
+      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},{t:'text'}
+    ],
+    anonovo26: [
+      {t:'text'},{t:'text'},
+      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},
+      {t:'number'},{t:'number'},{t:'calc'},
+      {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
+      {t:'text'},{t:'text'},{t:'date'},{t:'number'},{t:'number'},{t:'calc'},
+      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},{t:'text'}
+    ],
+    cargaNat26: [
+      {t:'text'},{t:'text'},{t:'text'},{t:'text'},
+      {t:'number'},{t:'number'},{t:'number'},{t:'number'},
+      {t:'calc'},{t:'number'},{t:'calc'},{t:'text'}
+    ],
+    cargaAn26: [
+      {t:'text'},{t:'text'},{t:'text'},{t:'text'},
+      {t:'number'},{t:'number'},{t:'number'},{t:'number'},
+      {t:'calc'},{t:'number'},{t:'calc'},{t:'text'}
+    ],
+    comodNat26: [{t:'text'},{t:'text'},{t:'number'},{t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},{t:'number'},{t:'calc'},{t:'text'},{t:'date'},{t:'text'}],
+    comodAn26:  [{t:'text'},{t:'text'},{t:'number'},{t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},{t:'number'},{t:'calc'},{t:'text'},{t:'date'},{t:'text'}],
+    produtos26: [{t:'text'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'text'}],
+  };
+
+  const TBODY_MAP = {
+    'tbl-vda':'tbody-vda', 'tbl-func':'tbody-func', 'tbl-cli':'tbody-cli',
+    'tbl-prod':'tbody-prod','tbl-nat26':'tbody-nat26','tbl-an26':'tbody-an26',
+    'tbl-carga-nat':'tbody-carga-nat','tbl-carga-an':'tbody-carga-an',
+    'tbl-com-nat':'tbody-com-nat','tbl-com-an':'tbody-com-an'
+  };
+  const TABLE_KEY_MAP = {
+    'tbl-vda':'vdas26','tbl-func':'funcs26','tbl-cli':'clientes26','tbl-prod':'produtos26',
+    'tbl-nat26':'natal26','tbl-an26':'anonovo26','tbl-carga-nat':'cargaNat26',
+    'tbl-carga-an':'cargaAn26','tbl-com-nat':'comodNat26','tbl-com-an':'comodAn26'
+  };
+  const SAVE_STATUS_MAP = {
+    'vdas26':'sv-vda','funcs26':'sv-func','clientes26':'sv-cli','produtos26':'sv-prod',
+    'natal26':'sv-nat26','anonovo26':'sv-an26','cargaNat26':'sv-cnat',
+    'cargaAn26':'sv-can','comodNat26':'sv-comnat','comodAn26':'sv-coman'
+  };
+
+  /* blank templates */
+  const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo',''];
+  const funcBlank    = ['','Motorista','1° Turno','','','','Ativo',''];
+  const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
+  const rotaBlank    = ['','','20 KG','0','0','','Venda','','','','0','0','','Programado',''];
+  const cargaBlank   = ['','','','','0','0','0','0','','','',''];
+  const comodatoBlank= ['','','0','20 KG','0','','','',''];
+
+  /* =========================================================
+     RENDER TABLE FROM DATA ARRAY
+  ========================================================= */
+  function renderTable(tblId, dbKey, data) {
+    const schema = SCHEMA[dbKey];
+    const tbody = document.getElementById(TBODY_MAP[tblId]);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.forEach((row, ri) => {
+      tbody.appendChild(buildRow(tblId, dbKey, schema, row, ri));
+    });
+  }
+
+  function buildRow(tblId, dbKey, schema, row, ri) {
+    const tr = document.createElement('tr');
+    schema.forEach((col, ci) => {
+      const td = document.createElement('td');
+      const val = (row[ci] !== undefined ? row[ci] : '');
+      if (col.t === 'select') {
+        const sel = document.createElement('select');
+        sel.className = 'cell-select';
+        col.opts.forEach(o => {
+          const op = document.createElement('option');
+          op.value = o; op.textContent = o;
+          if (o === val) op.selected = true;
+          sel.appendChild(op);
+        });
+        sel.onchange = () => {};
+        td.appendChild(sel);
+      } else if (col.t === 'calc') {
+        td.style.color = 'var(--green)';
+        td.style.fontWeight = '600';
+        td.textContent = val || '—';
+        td.dataset.calc = '1';
+      } else {
+        td.contentEditable = 'true';
+        td.textContent = val;
+        td.spellcheck = false;
+        if (col.t === 'number') td.style.textAlign = 'right';
+        if (col.t === 'date') td.style.color = 'var(--accent)';
+      }
+      tr.appendChild(td);
+    });
+    // delete button
+    const tdDel = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-del';
+    btn.textContent = '✕';
+    btn.title = 'Excluir linha';
+    btn.onclick = () => { tr.remove(); };
+    tdDel.appendChild(btn);
+    tr.appendChild(tdDel);
+    return tr;
+  }
+
+  /* =========================================================
+     ADD ROW
+  ========================================================= */
+  function addRow(tblId, blank) {
+    const dbKey = TABLE_KEY_MAP[tblId];
+    const schema = SCHEMA[dbKey];
+    const tbody = document.getElementById(TBODY_MAP[tblId]);
+    tbody.appendChild(buildRow(tblId, dbKey, schema, blank, tbody.rows.length));
+  }
+
+  /* =========================================================
+     READ TABLE → ARRAY
+  ========================================================= */
+  function readTable(tblId) {
+    const tbody = document.getElementById(TBODY_MAP[tblId]);
+    if (!tbody) return [];
+    const rows = [];
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const cells = tr.querySelectorAll('td:not(:last-child)');
+      const row = [];
+      cells.forEach(td => {
+        const sel = td.querySelector('select');
+        row.push(sel ? sel.value : td.textContent.trim());
+      });
+      rows.push(row);
+    });
+    return rows;
+  }
+
+  /* =========================================================
+     SAVE TABLE
+  ========================================================= */
+  function saveTable(tblId, dbKey) {
+    // recalc before save
+    recalcTable(tblId, dbKey);
+    const data = readTable(tblId);
+    saveDB(dbKey, data);
+    flashStatus(SAVE_STATUS_MAP[dbKey]);
+    // update resumo
+    updateResumo();
+  }
+
+  function flashStatus(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = '✓ Salvo ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  /* =========================================================
+     RECALC CALC CELLS
+  ========================================================= */
+  function recalcTable(tblId, dbKey) {
+    const tbody = document.getElementById(TBODY_MAP[tblId]);
+    if (!tbody) return;
+    const schema = SCHEMA[dbKey];
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const cells = tr.querySelectorAll('td:not(:last-child)');
+      // rota tables: FAT Prog = col3(qtd) × col4(preço), FAT Real = col10(venda) × col4(preço)
+      if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+        const qtd   = parseF(cells[3]?.textContent);
+        const preco = parseF(cells[4]?.textContent);
+        const venda = parseF(cells[11]?.textContent);
+        if (cells[5]?.dataset.calc)  cells[5].textContent  = fmtR(qtd * preco);
+        if (cells[12]?.dataset.calc) cells[12].textContent = fmtR(venda > 0 ? venda * preco : qtd * preco);
+      }
+      // carga tables: Peso Total = 5KG*6 + 10KG*11 + 20KG*23 + 40KG*45, Ocupação = peso/cap
+      if (dbKey === 'cargaNat26' || dbKey === 'cargaAn26') {
+        const s5  = parseF(cells[4]?.textContent);
+        const s10 = parseF(cells[5]?.textContent);
+        const s20 = parseF(cells[6]?.textContent);
+        const s40 = parseF(cells[7]?.textContent);
+        const peso = s5*6 + s10*11 + s20*23 + s40*45;
+        const cap  = parseF(cells[9]?.textContent) || 1;
+        const pct  = Math.min((peso/cap*100),100);
+        if (cells[8]?.dataset.calc)  cells[8].textContent  = peso.toLocaleString('pt-BR');
+        if (cells[10]?.dataset.calc) {
+          const cls = pct > 95 ? 'over' : pct > 80 ? 'warn' : 'ok';
+          cells[10].innerHTML = `<div class="cap-bar-wrap"><div class="cap-bar"><div class="cap-bar-fill ${cls}" style="width:${pct.toFixed(1)}%"></div></div><span style="font-size:11px">${pct.toFixed(0)}%</span></div>`;
+        }
+      }
+      // comodato: total = qtd × preço
+      if (dbKey === 'comodNat26' || dbKey === 'comodAn26') {
+        const qtd   = parseF(cells[2]?.textContent);
+        const preco = parseF(cells[4]?.textContent);
+        if (cells[5]?.dataset.calc) cells[5].textContent = fmtR(qtd * preco);
+      }
+    });
+  }
+
+  function parseF(s) {
+    if (!s || s === '—') return 0;
+    return parseFloat(String(s).replace(/R\$|\.|\s/g,'').replace(',','.')) || 0;
+  }
+  function fmtR(v) {
+    return 'R$' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  /* =========================================================
+     KPI CALC
+  ========================================================= */
+  function calcKpis26(which) {
+    const dbKey = which === 'nat' ? 'natal26' : 'anonovo26';
+    const data = loadDB(dbKey);
+    let fat = 0, sacas = 0;
+    data.forEach(row => {
+      const qtd   = parseF(row[3]);
+      const preco = parseF(row[4]);
+      fat   += qtd * preco;
+      sacas += qtd;
+    });
+    const peso = sacas * 23; // estimativa 20kg dominante
+    if (which === 'nat') {
+      setEl('kn-fat',   fmtR(fat));
+      setEl('kn-sacas', sacas.toLocaleString('pt-BR'));
+      setEl('kn-peso',  peso.toLocaleString('pt-BR'));
+      setEl('res-fat-nat26', fmtR(fat));
+    } else {
+      setEl('kan-fat',   fmtR(fat));
+      setEl('kan-sacas', sacas.toLocaleString('pt-BR'));
+      setEl('kan-peso',  peso.toLocaleString('pt-BR'));
+      setEl('res-fat-an26', fmtR(fat));
+    }
+  }
+  function setEl(id, v) { const el = document.getElementById(id); if(el) el.textContent = v; }
+
+  /* =========================================================
+     RESUMO — rebuild client list & frota cards
+  ========================================================= */
+  function updateResumo() {
+    // clientes
+    const cliData = loadDB('clientes26');
+    const tbody = document.getElementById('tbody-resumo-cli');
+    if (tbody) {
+      tbody.innerHTML = '';
+      cliData.forEach(r => {
+        if (!r[1]) return;
+        const tr = document.createElement('tr');
+        [r[0],r[1],r[3],r[4],r[5],r[6],r[7]].forEach(v => {
+          const td = document.createElement('td');
+          td.textContent = v || '—';
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+    // frota
+    const vdaData = loadDB('vdas26');
+    const fg = document.getElementById('resumo-frota');
+    if (fg) {
+      fg.innerHTML = '';
+      vdaData.forEach(r => {
+        if (!r[0] || r[8] === 'Inativo') return;
+        const card = document.createElement('div');
+        card.className = 'frota-card';
+        card.innerHTML = `<div class="frota-vda">VDA ${r[0]}</div>
+          <div class="frota-fn" style="color:var(--accent)">${r[2]} · ${Number(r[3]).toLocaleString('pt-BR')} kg</div>
+          <div class="frota-fn">${r[5] || 'Motorista não definido'}</div>
+          <div style="font-size:10px;color:${r[8]==='Ativo'?'var(--green)':'var(--yellow)'}">● ${r[8]}</div>`;
+        fg.appendChild(card);
+      });
+    }
+    calcKpis26('nat');
+    calcKpis26('an');
+  }
+
+  /* =========================================================
+     EXPORT / IMPORT / CLEAR
+  ========================================================= */
+  function exportAll26() {
+    const all = {};
+    Object.keys(KEYS).forEach(k => { all[k] = loadDB(k); });
+    const blob = new Blob([JSON.stringify(all,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'operacao_2026_backup_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+  }
+  function importAll26(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const all = JSON.parse(e.target.result);
+        Object.keys(all).forEach(k => saveDB(k, all[k]));
+        initAll26();
+        alert('Dados importados com sucesso!');
+      } catch(err) { alert('Erro ao importar: ' + err.message); }
+    };
+    reader.readAsText(file);
+  }
+  function clearAll26() {
+    Object.keys(KEYS).forEach(k => localStorage.removeItem('op26_' + k));
+    initAll26();
+  }
+
+  /* =========================================================
+     INIT — load all tables from localStorage
+  ========================================================= */
+  function initAll26() {
+    // VDAs
+    let vdas = loadDB('vdas26');
+    if (!vdas.length) { vdas = VDAS_DEFAULT; saveDB('vdas26', vdas); }
+    renderTable('tbl-vda', 'vdas26', vdas);
+
+    // Funcs
+    renderTable('tbl-func', 'funcs26', loadDB('funcs26'));
+
+    // Clientes
+    renderTable('tbl-cli', 'clientes26', loadDB('clientes26'));
+
+    // Produtos
+    let prods = loadDB('produtos26');
+    if (!prods.length) { prods = PRODUTOS_DEFAULT; saveDB('produtos26', prods); }
+    renderTable('tbl-prod', 'produtos26', prods);
+
+    // Operações
+    renderTable('tbl-nat26', 'natal26', loadDB('natal26'));
+    renderTable('tbl-an26',  'anonovo26', loadDB('anonovo26'));
+    renderTable('tbl-carga-nat', 'cargaNat26', loadDB('cargaNat26'));
+    renderTable('tbl-carga-an',  'cargaAn26',  loadDB('cargaAn26'));
+    renderTable('tbl-com-nat', 'comodNat26', loadDB('comodNat26'));
+    renderTable('tbl-com-an',  'comodAn26',  loadDB('comodAn26'));
+
+    updateResumo();
+  }
+
+  // Inicializa ao carregar
+  document.addEventListener('DOMContentLoaded', initAll26);
 </script>
 </body>
 </html>
