@@ -343,6 +343,52 @@
   .zona-select { background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:5px 8px; outline:none; width:100%; }
   .escala-save-row { display:flex; align-items:center; gap:10px; margin-top:16px; }
 
+  /* OC badge no card */
+  .oc-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; border:1px solid var(--accent); background:rgba(79,142,247,.12); color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.03em; }
+  .oc-badge.oc-empty { border-color:var(--border); background:transparent; color:var(--muted); font-weight:400; }
+
+  /* Botão manifesto no header da rota */
+  .rota-group-actions { display:flex; align-items:center; gap:8px; }
+  .btn-manifesto { padding:4px 10px; border-radius:6px; border:1px solid rgba(79,142,247,.4); background:rgba(79,142,247,.08); color:var(--accent); font-size:11px; cursor:pointer; transition:all .15s; font-weight:600; }
+  .btn-manifesto:hover { background:rgba(79,142,247,.18); border-color:var(--accent); }
+
+  /* Chip de manifesto no grupo */
+  .rota-manifesto-row { display:flex; flex-wrap:wrap; gap:6px; padding:6px 12px 0; min-height:0; }
+  .manifesto-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; border:1px solid; font-size:11px; background:transparent; color:var(--text); }
+
+  /* Modal de Manifesto */
+  .mf-modal-header h3 { margin:0 0 4px; font-size:15px; }
+  .mf-modal-header .mf-subtitle { font-size:11px; color:var(--muted); margin:0 0 14px; }
+  .mf-existing-list { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:14px; }
+  .mf-existing-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
+  .mf-existing-item { display:grid; grid-template-columns:1fr 80px 1fr 70px 24px 24px; gap:4px; align-items:center; font-size:11px; color:var(--text); padding:4px 0; border-top:1px solid var(--border); }
+  .mf-existing-item:first-of-type { border-top:none; }
+  .mf-existing-item button { background:none; border:none; cursor:pointer; padding:2px; font-size:13px; }
+  .mf-status { font-size:10px; font-weight:700; border-radius:4px; padding:1px 5px; }
+  .mf-st-planejado { background:rgba(245,200,66,.15); color:#f5c842; }
+  .mf-st-faturado  { background:rgba(52,196,124,.15); color:var(--green); }
+  .mf-st-fechado   { background:rgba(170,170,170,.12); color:var(--muted); }
+  .mf-form { display:flex; flex-direction:column; gap:12px; }
+  .mf-form-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .mf-field { display:flex; flex-direction:column; gap:4px; }
+  .mf-field label { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .mf-field input, .mf-field select { background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:6px 8px; outline:none; }
+  .mf-field input:focus, .mf-field select:focus { border-color:var(--accent); }
+  .mf-field.full { grid-column:1/-1; }
+  .mf-sacas-block { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; }
+  .mf-sacas-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+  .mf-saca-group { margin-bottom:10px; }
+  .mf-saca-group:last-child { margin-bottom:0; }
+  .mf-saca-title { font-size:12px; font-weight:700; color:var(--text); display:block; margin-bottom:6px; }
+  .mf-saca-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .mf-saca-row div { display:flex; flex-direction:column; gap:3px; }
+  .mf-saca-row label { font-size:10px; color:var(--muted); font-weight:600; }
+  .mf-saca-row input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:13px; font-weight:700; padding:5px 8px; outline:none; text-align:center; }
+  .mf-saca-row input:focus { border-color:var(--accent); }
+  .mf-btn-row { display:flex; justify-content:flex-end; gap:10px; padding-top:4px; }
+  .btn-secondary { background:transparent; border:1px solid var(--border); color:var(--muted); padding:7px 18px; border-radius:7px; cursor:pointer; font-size:12px; }
+  .btn-secondary:hover { border-color:var(--text); color:var(--text); }
+
   /* info box */
   .info-box { background:rgba(79,142,247,.07); border:1px solid rgba(79,142,247,.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:14px; }
   .info-box strong { display:block; margin-bottom:3px; }
@@ -1372,10 +1418,10 @@
     btn.classList.add('active');
     // se abriu o escalonamento e ainda não renderizou, renderiza agora
     if (panelId === 'it-nat-escala' && document.getElementById('escala-rotas-nat').children.length === 0) {
-      renderEscala('nat');
+      loadManifestosDB('nat').then(() => renderEscala('nat'));
     }
     if (panelId === 'it-an-escala' && document.getElementById('escala-rotas-an').children.length === 0) {
-      renderEscala('an');
+      loadManifestosDB('an').then(() => renderEscala('an'));
     }
   }
 
@@ -2463,14 +2509,35 @@
     { id:'apoio', label:'Apoio', maxCargas:4, zona:'Apoio' },
   ];
 
-  // Cache de VDAs carregadas
+  // Cache de VDAs e Funcionários carregados
   let _escalaVdas = [];
+  let _escalaFuncs = { motoristas: [], ajudantes: [] }; // { nome, id }
 
   async function loadEscalaVdas() {
     if (_escalaVdas.length) return _escalaVdas;
     const data = await loadDB('vdas26');
     _escalaVdas = data.map(r => Array.isArray(r) ? r[0] : (r.vda || '')).filter(Boolean);
     return _escalaVdas;
+  }
+
+  async function loadEscalaFuncs() {
+    if (_escalaFuncs.motoristas.length || _escalaFuncs.ajudantes.length) return _escalaFuncs;
+    const data = await loadDB('funcs26');
+    _escalaFuncs.motoristas = data
+      .filter(r => {
+        const f = Array.isArray(r) ? r[1] : r.funcao;
+        return f && f.toLowerCase().includes('motorista');
+      })
+      .map(r => Array.isArray(r) ? r[0] : r.nome)
+      .filter(Boolean);
+    _escalaFuncs.ajudantes = data
+      .filter(r => {
+        const f = Array.isArray(r) ? r[1] : r.funcao;
+        return f && (f.toLowerCase().includes('ajudante') || f.toLowerCase().includes('aux'));
+      })
+      .map(r => Array.isArray(r) ? r[0] : r.nome)
+      .filter(Boolean);
+    return _escalaFuncs;
   }
 
   // Estado em memória: { nat: { '801': [cardObj, ...], ... }, an: {...} }
@@ -2498,6 +2565,7 @@
       rota:      row.rota       || '',
       zona:      row.zona       || '',
       num_carga: Number(row.num_carga) || 1,
+      num_oc:    row.num_oc     || '',
       s5:        Number(row.s5)        || 0,
       s10:       Number(row.s10)       || 0,
       s20:       Number(row.s20)       || 0,
@@ -2526,11 +2594,23 @@
       `<option value="${z}" ${z===card.zona?'selected':''}>${z||'— Zona —'}</option>`
     ).join('');
 
+    // Autocomplete datalists
+    const dlMotorId = `${uid}-dl-mot`;
+    const dlAjudId  = `${uid}-dl-ajud`;
+    const motOpts   = _escalaFuncs.motoristas.map(n => `<option value="${n}">`).join('');
+    const ajudOpts  = _escalaFuncs.ajudantes.map(n => `<option value="${n}">`).join('');
+    const ocBadge   = card.num_oc
+      ? `<span class="oc-badge" title="Ordem de Carga">OC&nbsp;${card.num_oc}</span>`
+      : `<span class="oc-badge oc-empty" title="Sem OC">Sem OC</span>`;
+
     return `
+    <datalist id="${dlMotorId}">${motOpts}</datalist>
+    <datalist id="${dlAjudId}">${ajudOpts}</datalist>
     <div class="carga-card" id="${uid}">
       <button class="btn-del-carga" onclick="deleteCargaCard('${which}','${rotaId}',${cardIdx})" title="Remover carga">×</button>
       <div class="carga-card-top">
         <span class="carga-num">📦 Carga ${card.num_carga}</span>
+        ${ocBadge}
         <span class="carga-peso-display" id="${uid}-peso">${peso.toLocaleString('pt-BR')} kg</span>
       </div>
       <div class="carga-fields">
@@ -2539,20 +2619,29 @@
           <select onchange="updateCardField('${which}','${rotaId}',${cardIdx},'vda',this.value)">${vdaOpts}</select>
         </div>
         <div class="carga-field">
+          <label>Num OC <span style="font-size:10px;color:var(--muted)">(portaria)</span></label>
+          <input type="text" value="${card.num_oc||''}" placeholder="Ex: OC-00001"
+            onchange="updateCardField('${which}','${rotaId}',${cardIdx},'num_oc',this.value);updateOcBadge('${uid}',this.value)">
+        </div>
+        <div class="carga-field">
           <label>Motorista</label>
-          <input type="text" value="${card.motorista}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'motorista',this.value)">
+          <input type="text" list="${dlMotorId}" value="${card.motorista}" placeholder="Nome..."
+            onchange="updateCardField('${which}','${rotaId}',${cardIdx},'motorista',this.value)">
         </div>
         <div class="carga-field">
           <label>Ajudante 1</label>
-          <input type="text" value="${card.ajudante1}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante1',this.value)">
+          <input type="text" list="${dlAjudId}" value="${card.ajudante1}" placeholder="Nome..."
+            onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante1',this.value)">
         </div>
         <div class="carga-field">
           <label>Ajudante 2</label>
-          <input type="text" value="${card.ajudante2}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante2',this.value)">
+          <input type="text" list="${dlAjudId}" value="${card.ajudante2}" placeholder="Nome..."
+            onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante2',this.value)">
         </div>
         <div class="carga-field">
           <label>Ajudante 3</label>
-          <input type="text" value="${card.ajudante3}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante3',this.value)">
+          <input type="text" list="${dlAjudId}" value="${card.ajudante3}" placeholder="Nome..."
+            onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante3',this.value)">
         </div>
         <div class="carga-field">
           <label>Zona</label>
@@ -2592,10 +2681,44 @@
     </div>`;
   }
 
+  function updateOcBadge(uid, val) {
+    const top = document.querySelector(`#${uid} .carga-card-top`);
+    if (!top) return;
+    const badge = top.querySelector('.oc-badge');
+    if (!badge) return;
+    if (val && val.trim()) {
+      badge.className = 'oc-badge';
+      badge.textContent = 'OC ' + val.trim();
+    } else {
+      badge.className = 'oc-badge oc-empty';
+      badge.textContent = 'Sem OC';
+    }
+  }
+
   function buildRotaGroup(which, rotaConf, cards, vdas) {
     const { id, label, maxCargas } = rotaConf;
     const cls = `rota-${id}`;
     const canAdd = cards.length < maxCargas;
+
+    // resumo de manifestos para esta rota+dia
+    const dataOp = _manifestosDia || null;
+    const manifRota = (_manifestosState[which] || []).filter(m => m.rota_num === id);
+    const manifHtml = manifRota.length
+      ? manifRota.map(m => {
+          const qty20 = m.kg20_planejado || 0;
+          const qty5  = m.kg5_planejado  || 0;
+          const qty10 = m.kg10_planejado || 0;
+          const parts = [];
+          if (qty20) parts.push(`${qty20}×20kg`);
+          if (qty10) parts.push(`${qty10}×10kg`);
+          if (qty5)  parts.push(`${qty5}×5kg`);
+          const st = m.status || 'planejado';
+          const stColor = st==='faturado' ? 'var(--green)' : st==='fechado' ? 'var(--muted)' : '#f5a623';
+          return `<span class="manifesto-chip" style="border-color:${stColor}" title="OC: ${m.num_oc||'—'} · Status: ${st}">
+            📋 ${parts.join(' + ') || '—'} <span style="color:${stColor};font-size:10px">${st}</span>
+          </span>`;
+        }).join('')
+      : `<span style="font-size:11px;color:var(--muted)">Sem manifesto</span>`;
 
     const cardsHtml = cards.map((card, i) =>
       buildCargaCard(which, id, i, card, vdas, maxCargas)
@@ -2612,8 +2735,12 @@
           <span class="rota-badge ${cls}">${label}</span>
           <span style="font-size:11px;color:var(--muted)">${cards.length} carga${cards.length!==1?'s':''} · máx ${maxCargas}</span>
         </div>
-        ${addBtn}
+        <div class="rota-group-actions">
+          <button class="btn-manifesto" onclick="openManifestoModal('${which}','${id}')" title="Criar/editar nota mãe desta rota">📋 Manifesto</button>
+          ${addBtn}
+        </div>
       </div>
+      <div class="rota-manifesto-row" id="rmr-${which}-${id}">${manifHtml}</div>
       <div class="rota-group-cards" id="rgc-${which}-${id}">
         ${cards.length ? cardsHtml : '<div style="font-size:12px;color:var(--muted);padding:8px 4px">Nenhuma carga. Clique em "+ Carga 1" para adicionar.</div>'}
       </div>
@@ -2621,7 +2748,7 @@
   }
 
   async function renderEscala(which) {
-    const vdas = await loadEscalaVdas();
+    const [vdas] = await Promise.all([loadEscalaVdas(), loadEscalaFuncs()]);
     const container = document.getElementById(`escala-rotas-${which}`);
     if (!container) return;
 
@@ -2669,7 +2796,7 @@
     _escalaState[which][rotaId].push({
       vda:'', motorista:'', ajudante1:'', ajudante2:'', ajudante3:'',
       rota: rotaId, zona: rc.zona, num_carga: _escalaState[which][rotaId].length + 1,
-      s5:0, s10:0, s20:0, s40:0, cap_bau_kg:8800, obs:''
+      num_oc: '', s5:0, s10:0, s20:0, s40:0, cap_bau_kg:8800, obs:''
     });
     await renderEscala(which);
   }
@@ -2697,6 +2824,7 @@
           rota:       card.rota,
           zona:       card.zona,
           num_carga:  card.num_carga,
+          num_oc:     card.num_oc || '',
           s5:         card.s5,
           s10:        card.s10,
           s20:        card.s20,
@@ -2734,6 +2862,303 @@
   }
 
   /* =========================================================
+     MANIFESTOS — nota mãe por rota+dia
+  ========================================================= */
+  let _manifestosState = { nat: [], an: [] }; // lista de manifestos por período
+  let _manifestosDia   = null; // data selecionada no modal
+
+  // Datas de operação
+  const OP_DATES = [
+    { val: '2024-12-23', label: '23/12/2024 (Natal)' },
+    { val: '2024-12-24', label: '24/12/2024 (Véspera Natal)' },
+    { val: '2024-12-30', label: '30/12/2024 (Pré Réveillon)' },
+    { val: '2024-12-31', label: '31/12/2024 (Réveillon)' },
+  ];
+
+  // Mapa rota → tipos de saco (baseado na config da operação)
+  function rotaTiposSaco(rotaNum) {
+    const so20 = ['801','803','821'];
+    return so20.includes(rotaNum) ? ['kg20'] : ['kg5','kg10'];
+  }
+
+  async function loadManifestosDB(which) {
+    // Busca manifestos do Supabase op26_manifestos com join na rota
+    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
+    try {
+      const r = await fetch(`${SB_URL}/op26_manifestos?select=*,op26_rotas(numero)&order=data,id`, {
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+      });
+      if (!r.ok) return;
+      const rows = await r.json();
+      // Mapear para estado com rota_num
+      const mapped = rows.map(m => ({
+        ...m,
+        rota_num: m.op26_rotas?.numero || String(m.rota_id)
+      }));
+      // Separar por período (nat = dez 23/24, an = dez 30/31)
+      _manifestosState.nat = mapped.filter(m => m.data === '2024-12-23' || m.data === '2024-12-24');
+      _manifestosState.an  = mapped.filter(m => m.data === '2024-12-30' || m.data === '2024-12-31');
+    } catch(e) { console.warn('loadManifestosDB:', e); }
+  }
+
+  async function openManifestoModal(which, rotaNum) {
+    // Carrega rota_id do banco
+    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
+
+    // busca rota_id pelo numero
+    let rotaId = null;
+    try {
+      const r = await fetch(`${SB_URL}/op26_rotas?numero=eq.${rotaNum}&select=id`, {
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+      });
+      const rows = await r.json();
+      if (rows && rows[0]) rotaId = rows[0].id;
+    } catch(e) {}
+
+    // Datas do período
+    const dataDoPeriodo = which === 'nat'
+      ? OP_DATES.slice(0,2)
+      : OP_DATES.slice(2,4);
+
+    // Tipos de saco desta rota
+    const tipos = rotaTiposSaco(rotaNum);
+
+    // Manifestos existentes desta rota+período
+    const existing = (_manifestosState[which] || []).filter(m => m.rota_num === rotaNum);
+
+    const modal = document.getElementById('manifesto-modal');
+    const body  = document.getElementById('manifesto-modal-body');
+    if (!modal || !body) return;
+
+    const dateOpts = dataDoPeriodo.map(d =>
+      `<option value="${d.val}">${d.label}</option>`
+    ).join('');
+
+    const camposSacas = tipos.map(t => {
+      const labels = { kg5:'5 KG', kg10:'10 KG', kg20:'20 KG', kg40:'40 KG' };
+      const flds = ['planejado','faturado'];
+      return `
+      <div class="mf-saca-group">
+        <label class="mf-saca-title">${labels[t]||t}</label>
+        <div class="mf-saca-row">
+          <div><label>Planejado</label><input type="number" min="0" id="mf-${t}-plan" placeholder="0"></div>
+          <div><label>Faturado</label><input type="number" min="0" id="mf-${t}-fat" placeholder="0"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const listaExist = existing.length
+      ? `<div class="mf-existing-list">
+          <div class="mf-existing-title">Manifestos já criados para Rota ${rotaNum}:</div>
+          ${existing.map(m => {
+            const d = OP_DATES.find(x => x.val===m.data);
+            const q20 = m.kg20_planejado||0, q5=m.kg5_planejado||0, q10=m.kg10_planejado||0;
+            const parts=[];
+            if(q20) parts.push(`${q20}×20kg`);
+            if(q10) parts.push(`${q10}×10kg`);
+            if(q5)  parts.push(`${q5}×5kg`);
+            return `<div class="mf-existing-item">
+              <span>${d?.label||m.data}</span>
+              <span>${m.num_oc||'—'}</span>
+              <span>${parts.join(' + ')||'—'}</span>
+              <span class="mf-status mf-st-${m.status}">${m.status}</span>
+              <button onclick="editManifesto(${m.id},'${which}','${rotaNum}')">✏️</button>
+              <button onclick="deleteManifesto(${m.id},'${which}','${rotaNum}')">🗑</button>
+            </div>`;
+          }).join('')}
+        </div>`
+      : '';
+
+    body.innerHTML = `
+    <div class="mf-modal-header">
+      <h3>📋 Manifesto — Rota ${rotaNum}</h3>
+      <p class="mf-subtitle">Nota mãe que fatura todas as vendas. Não duplica as cargas — trabalham juntos.</p>
+    </div>
+    ${listaExist}
+    <div class="mf-form" id="mf-form-${rotaNum}">
+      <div class="mf-form-row">
+        <div class="mf-field">
+          <label>Data da Operação</label>
+          <select id="mf-data">${dateOpts}</select>
+        </div>
+        <div class="mf-field">
+          <label>Num OC (nota mãe)</label>
+          <input type="text" id="mf-num-oc" placeholder="Ex: NF-00001">
+        </div>
+        <div class="mf-field">
+          <label>Status</label>
+          <select id="mf-status">
+            <option value="planejado">Planejado</option>
+            <option value="faturado">Faturado</option>
+            <option value="fechado">Fechado</option>
+          </select>
+        </div>
+      </div>
+      <div class="mf-sacas-block">
+        <div class="mf-sacas-title">Sacas</div>
+        ${camposSacas}
+      </div>
+      <div class="mf-field full" style="margin-top:10px">
+        <label>Obs</label>
+        <input type="text" id="mf-obs" placeholder="Observações...">
+      </div>
+      <div class="mf-btn-row">
+        <button class="btn btn-secondary" onclick="closeManifestoModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveManifesto('${which}','${rotaNum}',${rotaId||'null'})">💾 Salvar Manifesto</button>
+      </div>
+    </div>`;
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeManifestoModal() {
+    const modal = document.getElementById('manifesto-modal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  async function saveManifesto(which, rotaNum, rotaId) {
+    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
+
+    const data    = document.getElementById('mf-data')?.value;
+    const num_oc  = document.getElementById('mf-num-oc')?.value?.trim() || null;
+    const status  = document.getElementById('mf-status')?.value || 'planejado';
+    const obs     = document.getElementById('mf-obs')?.value?.trim() || null;
+
+    const val = id => Number(document.getElementById(id)?.value) || 0;
+
+    const payload = {
+      rota_id:        rotaId,
+      data:           data,
+      num_oc:         num_oc,
+      status:         status,
+      obs:            obs,
+      kg5_planejado:  val('mf-kg5-plan'),
+      kg10_planejado: val('mf-kg10-plan'),
+      kg20_planejado: val('mf-kg20-plan'),
+      kg40_planejado: val('mf-kg40-plan'),
+      kg5_faturado:   val('mf-kg5-fat'),
+      kg10_faturado:  val('mf-kg10-fat'),
+      kg20_faturado:  val('mf-kg20-fat'),
+      kg40_faturado:  val('mf-kg40-fat'),
+    };
+
+    // Remove nulls e zeros para payload mais limpo
+    Object.keys(payload).forEach(k => {
+      if (payload[k] === null || payload[k] === undefined) delete payload[k];
+    });
+
+    try {
+      const r = await fetch(`${SB_URL}/op26_manifestos`, {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': `Bearer ${SB_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) {
+        const err = await r.text();
+        alert('Erro ao salvar manifesto: ' + err);
+        return;
+      }
+    } catch(e) {
+      alert('Erro de rede: ' + e.message);
+      return;
+    }
+
+    closeManifestoModal();
+    // Recarrega manifestos e re-renderiza
+    await loadManifestosDB(which);
+    await renderEscala(which);
+  }
+
+  async function deleteManifesto(id, which, rotaNum) {
+    if (!confirm('Remover este manifesto?')) return;
+    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
+    try {
+      await fetch(`${SB_URL}/op26_manifestos?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+      });
+    } catch(e) {}
+    await loadManifestosDB(which);
+    await renderEscala(which);
+  }
+
+  async function editManifesto(id, which, rotaNum) {
+    // Carrega dados existentes nos campos do modal para edição
+    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
+    const r = await fetch(`${SB_URL}/op26_manifestos?id=eq.${id}&select=*`, {
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+    });
+    const rows = await r.json();
+    if (!rows || !rows[0]) return;
+    const m = rows[0];
+
+    // Popula campos (reabre modal nesta rota e preenche)
+    await openManifestoModal(which, rotaNum);
+
+    const setV = (eid, val) => { const el = document.getElementById(eid); if(el) el.value = val||''; };
+    setV('mf-data',   m.data);
+    setV('mf-num-oc', m.num_oc);
+    setV('mf-status', m.status);
+    setV('mf-obs',    m.obs);
+    setV('mf-kg5-plan',  m.kg5_planejado);
+    setV('mf-kg10-plan', m.kg10_planejado);
+    setV('mf-kg20-plan', m.kg20_planejado);
+    setV('mf-kg40-plan', m.kg40_planejado);
+    setV('mf-kg5-fat',   m.kg5_faturado);
+    setV('mf-kg10-fat',  m.kg10_faturado);
+    setV('mf-kg20-fat',  m.kg20_faturado);
+    setV('mf-kg40-fat',  m.kg40_faturado);
+
+    // Troca botão salvar para fazer UPDATE
+    const saveBtn = document.querySelector('#manifesto-modal .btn-save');
+    if (saveBtn) {
+      saveBtn.textContent = '💾 Atualizar Manifesto';
+      saveBtn.onclick = async () => {
+        // UPDATE
+        const data   = document.getElementById('mf-data')?.value;
+        const num_oc = document.getElementById('mf-num-oc')?.value?.trim()||null;
+        const status = document.getElementById('mf-status')?.value||'planejado';
+        const obs    = document.getElementById('mf-obs')?.value?.trim()||null;
+        const val    = eid => Number(document.getElementById(eid)?.value)||0;
+        const payload = {
+          data, num_oc, status, obs,
+          kg5_planejado:  val('mf-kg5-plan'),
+          kg10_planejado: val('mf-kg10-plan'),
+          kg20_planejado: val('mf-kg20-plan'),
+          kg40_planejado: val('mf-kg40-plan'),
+          kg5_faturado:   val('mf-kg5-fat'),
+          kg10_faturado:  val('mf-kg10-fat'),
+          kg20_faturado:  val('mf-kg20-fat'),
+          kg40_faturado:  val('mf-kg40-fat'),
+        };
+        await fetch(`${SB_URL}/op26_manifestos?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
+            'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(payload)
+        });
+        closeManifestoModal();
+        await loadManifestosDB(which);
+        await renderEscala(which);
+      };
+    }
+  }
+
+  /* =========================================================
      INIT — carrega todas as tabelas do Supabase
   ========================================================= */
   async function initAll26() {
@@ -2765,12 +3190,14 @@
     renderTable('tbl-nat26',  'natal26',    await loadDB('natal26'));
     renderTable('tbl-com-nat','comodNat26', await loadDB('comodNat26'));
     await loadEscalaFromDB('nat');
+    await loadManifestosDB('nat');
     await renderEscala('nat');
 
     // Operações Ano Novo
     renderTable('tbl-an26',   'anonovo26',  await loadDB('anonovo26'));
     renderTable('tbl-com-an', 'comodAn26',  await loadDB('comodAn26'));
     await loadEscalaFromDB('an');
+    await loadManifestosDB('an');
     await renderEscala('an');
 
     updateResumo();
@@ -2952,5 +3379,16 @@
     leg.innerHTML += `<div class="leg-item" style="margin-left:12px"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="none" stroke="var(--yellow)" stroke-width="1.5" stroke-dasharray="3 1.5"/><circle cx="7" cy="7" r="4" fill="var(--yellow)" opacity=".7"/><circle cx="7" cy="7" r="2" fill="#fff" opacity=".9"/></svg> Com comodato</div>`;
   }
 </script>
+
+<!-- ===== MODAL DE MANIFESTO ===== -->
+<div id="manifesto-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface1);border:1px solid var(--border);border-radius:12px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 10px;border-bottom:1px solid var(--border)">
+      <span style="font-weight:700;font-size:15px;color:var(--text)">📋 Manifesto — Nota Mãe</span>
+      <button onclick="closeManifestoModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1">×</button>
+    </div>
+    <div id="manifesto-modal-body" style="padding:16px 20px 20px"></div>
+  </div>
+</div>
 </body>
 </html>
