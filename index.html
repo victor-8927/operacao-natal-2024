@@ -245,6 +245,47 @@
   .cap-bar-fill.warn { background:var(--yellow); }
   .cap-bar-fill.over { background:var(--red); }
 
+  /* ===== CARDS DE ESCALONAMENTO POR ROTA ===== */
+  .escala-section { margin-top:24px; }
+  .escala-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+  .escala-header .section-title { margin:0; }
+  .escala-rotas { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:16px; }
+  .rota-group { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .rota-group-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--surface2); border-bottom:1px solid var(--border); }
+  .rota-group-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+  .rota-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:800; }
+  .rota-801 { background:rgba(79,142,247,.2); color:#4f8ef7; }
+  .rota-802 { background:rgba(52,196,124,.2); color:#34c47c; }
+  .rota-803 { background:rgba(245,200,66,.2); color:#f5c842; }
+  .rota-804 { background:rgba(242,107,107,.2); color:#f26b6b; }
+  .rota-805 { background:rgba(245,156,60,.2); color:#f59c3c; }
+  .rota-821 { background:rgba(167,139,250,.2); color:#a78bfa; }
+  .rota-822 { background:rgba(56,189,248,.2); color:#38bdf8; }
+  .rota-apoio { background:rgba(251,113,133,.2); color:#fb7185; }
+  .rota-group-cards { padding:10px; display:flex; flex-direction:column; gap:10px; }
+  .btn-add-carga { padding:4px 12px; border-radius:6px; border:1px dashed var(--border); background:transparent; color:var(--muted); font-size:11px; cursor:pointer; transition:all .15s; }
+  .btn-add-carga:hover { border-color:var(--accent); color:var(--accent); }
+  .carga-card { background:var(--surface2); border:1px solid var(--border); border-radius:9px; padding:12px; position:relative; }
+  .carga-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .carga-num { font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .carga-peso-display { font-size:12px; font-weight:700; color:var(--yellow); }
+  .carga-fields { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  .carga-field { display:flex; flex-direction:column; gap:3px; }
+  .carga-field.full { grid-column:1/-1; }
+  .carga-field label { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .carga-field input, .carga-field select { background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:5px 8px; outline:none; width:100%; }
+  .carga-field input:focus, .carga-field select:focus { border-color:var(--accent); }
+  .carga-sacas-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
+  .carga-saca-item { display:flex; flex-direction:column; gap:3px; }
+  .carga-saca-item label { font-size:10px; color:var(--muted); font-weight:600; text-align:center; }
+  .carga-saca-item input { text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:13px; font-weight:700; padding:5px 4px; outline:none; width:100%; }
+  .carga-saca-item input:focus { border-color:var(--accent); }
+  .carga-peso-bar { margin-top:8px; }
+  .btn-del-carga { position:absolute; top:8px; right:8px; width:20px; height:20px; border-radius:50%; border:none; background:rgba(242,107,107,.15); color:#f26b6b; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; padding:0; }
+  .btn-del-carga:hover { background:rgba(242,107,107,.35); }
+  .zona-select { background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:5px 8px; outline:none; width:100%; }
+  .escala-save-row { display:flex; align-items:center; gap:10px; margin-top:16px; }
+
   /* info box */
   .info-box { background:rgba(79,142,247,.07); border:1px solid rgba(79,142,247,.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:14px; }
   .info-box strong { display:block; margin-bottom:3px; }
@@ -967,23 +1008,17 @@
       </table>
     </div>
 
-    <!-- Tabela de cargas por VDA -->
-    <div style="margin-top:24px">
-      <div class="section-title">📦 Distribuição de Carga por VDA — Natal 2026</div>
-      <div class="e26-toolbar">
-        <button class="btn btn-add" onclick="addRow('tbl-carga-nat', cargaBlank)">+ Adicionar VDA</button>
-        <button class="btn btn-save" onclick="saveTable('tbl-carga-nat','cargaNat26')">💾 Salvar</button>
-        <span id="sv-cnat" class="save-status">✓ Salvo</span>
+    <!-- Escalonamento de Equipes por Rota -->
+    <div class="escala-section" id="escala-nat">
+      <div class="escala-header">
+        <div class="section-title">📦 Escalonamento de Equipes por Rota — Natal 2026</div>
+        <div class="escala-save-row">
+          <button class="btn btn-save" onclick="saveEscala('nat')">💾 Salvar Escalonamento</button>
+          <span id="sv-cnat" class="save-status">✓ Salvo</span>
+        </div>
       </div>
-      <div class="tbl-wrap">
-        <table id="tbl-carga-nat">
-          <thead><tr>
-            <th>VDA</th><th>Motorista</th><th>Ajudantes</th><th>Rota / Zona</th>
-            <th>5 KG (sacas)</th><th>10 KG (sacas)</th><th>20 KG (sacas)</th><th>40 KG (sacas)</th>
-            <th>Peso Total (kg)</th><th>Cap. Baú (kg)</th><th>Ocupação</th><th>Obs</th><th></th>
-          </tr></thead>
-          <tbody id="tbody-carga-nat"></tbody>
-        </table>
+      <div class="escala-rotas" id="escala-rotas-nat">
+        <!-- Cards gerados pelo JS via renderEscala() -->
       </div>
     </div>
 
@@ -1034,22 +1069,17 @@
       </table>
     </div>
 
-    <div style="margin-top:24px">
-      <div class="section-title">📦 Distribuição de Carga por VDA — Ano Novo 2026</div>
-      <div class="e26-toolbar">
-        <button class="btn btn-add" onclick="addRow('tbl-carga-an', cargaBlank)">+ Adicionar VDA</button>
-        <button class="btn btn-save" onclick="saveTable('tbl-carga-an','cargaAn26')">💾 Salvar</button>
-        <span id="sv-can" class="save-status">✓ Salvo</span>
+    <!-- Escalonamento de Equipes por Rota -->
+    <div class="escala-section" id="escala-an">
+      <div class="escala-header">
+        <div class="section-title">📦 Escalonamento de Equipes por Rota — Ano Novo 2026</div>
+        <div class="escala-save-row">
+          <button class="btn btn-save" onclick="saveEscala('an')">💾 Salvar Escalonamento</button>
+          <span id="sv-can" class="save-status">✓ Salvo</span>
+        </div>
       </div>
-      <div class="tbl-wrap">
-        <table id="tbl-carga-an">
-          <thead><tr>
-            <th>VDA</th><th>Motorista</th><th>Ajudantes</th><th>Rota / Zona</th>
-            <th>5 KG (sacas)</th><th>10 KG (sacas)</th><th>20 KG (sacas)</th><th>40 KG (sacas)</th>
-            <th>Peso Total (kg)</th><th>Cap. Baú (kg)</th><th>Ocupação</th><th>Obs</th><th></th>
-          </tr></thead>
-          <tbody id="tbody-carga-an"></tbody>
-        </table>
+      <div class="escala-rotas" id="escala-rotas-an">
+        <!-- Cards gerados pelo JS via renderEscala() -->
       </div>
     </div>
 
@@ -1619,8 +1649,8 @@
     produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
     natal26:   ['cliente','equip','produto','qtd_prog','preco_saca',null,'modalidade','vda','motorista','data_entrega','retorno','venda_real',null,'status','obs'],
     anonovo26: ['cliente','equip','produto','qtd_prog','preco_saca',null,'modalidade','vda','motorista','data_entrega','retorno','venda_real',null,'status','obs'],
-    cargaNat26:['vda','motorista','ajudantes','rota','s5','s10','s20','s40',null,'cap_bau_kg',null,'obs'],
-    cargaAn26: ['vda','motorista','ajudantes','rota','s5','s10','s20','s40',null,'cap_bau_kg',null,'obs'],
+    cargaNat26:['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
+    cargaAn26: ['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
     comodAn26: ['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
   };
@@ -1966,6 +1996,292 @@
   }
 
   /* =========================================================
+     ESCALONAMENTO DE EQUIPES POR ROTA — Card UI
+  ========================================================= */
+
+  // Configuração das rotas: id, label, maxCargas
+  const ROTAS_CONFIG = [
+    { id:'801', label:'Rota 801', maxCargas:4, zona:'Zona Sul' },
+    { id:'802', label:'Rota 802', maxCargas:2, zona:'Zona Leste' },
+    { id:'803', label:'Rota 803', maxCargas:4, zona:'Zona Norte' },
+    { id:'804', label:'Rota 804', maxCargas:2, zona:'Zona Oeste' },
+    { id:'805', label:'Rota 805', maxCargas:2, zona:'Zona Norte' },
+    { id:'821', label:'Rota 821', maxCargas:4, zona:'Interior' },
+    { id:'822', label:'Rota 822', maxCargas:2, zona:'Zona Sul' },
+    { id:'apoio', label:'Apoio', maxCargas:4, zona:'Apoio' },
+  ];
+
+  // Cache de VDAs carregadas
+  let _escalaVdas = [];
+
+  async function loadEscalaVdas() {
+    if (_escalaVdas.length) return _escalaVdas;
+    const data = await loadDB('vdas26');
+    _escalaVdas = data.map(r => Array.isArray(r) ? r[0] : (r.vda || '')).filter(Boolean);
+    return _escalaVdas;
+  }
+
+  // Estado em memória: { nat: { '801': [cardObj, ...], ... }, an: {...} }
+  let _escalaState = { nat: {}, an: {} };
+
+  function escalaCardFromDB(row) {
+    // row pode ser objeto Supabase ou array
+    if (Array.isArray(row)) {
+      // legado: posições [vda,motorista,ajudantes,rota,s5,s10,s20,s40,cap_bau_kg,obs]
+      return {
+        vda: row[0]||'', motorista: row[1]||'',
+        ajudante1: row[2]||'', ajudante2: '', ajudante3: '',
+        rota: row[3]||'', zona: '', num_carga: 1,
+        s5: Number(row[4])||0, s10: Number(row[5])||0,
+        s20: Number(row[6])||0, s40: Number(row[7])||0,
+        cap_bau_kg: Number(row[9])||8800, obs: row[11]||''
+      };
+    }
+    return {
+      vda:       row.vda        || '',
+      motorista: row.motorista  || '',
+      ajudante1: row.ajudante1  || '',
+      ajudante2: row.ajudante2  || '',
+      ajudante3: row.ajudante3  || '',
+      rota:      row.rota       || '',
+      zona:      row.zona       || '',
+      num_carga: Number(row.num_carga) || 1,
+      s5:        Number(row.s5)        || 0,
+      s10:       Number(row.s10)       || 0,
+      s20:       Number(row.s20)       || 0,
+      s40:       Number(row.s40)       || 0,
+      cap_bau_kg:Number(row.cap_bau_kg)|| 8800,
+      obs:       row.obs        || '',
+    };
+  }
+
+  function escalaCalcPeso(card) {
+    return card.s5*6 + card.s10*11 + card.s20*23 + card.s40*45;
+  }
+
+  function buildCargaCard(which, rotaId, cardIdx, card, vdas, maxCargas) {
+    const uid = `ec-${which}-${rotaId}-${cardIdx}`;
+    const peso = escalaCalcPeso(card);
+    const cap  = card.cap_bau_kg || 8800;
+    const pct  = Math.min(peso/cap*100, 100);
+    const cls  = pct > 95 ? 'over' : pct > 80 ? 'warn' : 'ok';
+
+    const vdaOpts = ['', ...vdas].map(v =>
+      `<option value="${v}" ${v===card.vda?'selected':''}>${v||'— Selecionar VDA —'}</option>`
+    ).join('');
+
+    const zonaOpts = ['','Norte','Sul','Leste','Oeste','Centro','Interior','Apoio'].map(z =>
+      `<option value="${z}" ${z===card.zona?'selected':''}>${z||'— Zona —'}</option>`
+    ).join('');
+
+    return `
+    <div class="carga-card" id="${uid}">
+      <button class="btn-del-carga" onclick="deleteCargaCard('${which}','${rotaId}',${cardIdx})" title="Remover carga">×</button>
+      <div class="carga-card-top">
+        <span class="carga-num">📦 Carga ${card.num_carga}</span>
+        <span class="carga-peso-display" id="${uid}-peso">${peso.toLocaleString('pt-BR')} kg</span>
+      </div>
+      <div class="carga-fields">
+        <div class="carga-field">
+          <label>VDA</label>
+          <select onchange="updateCardField('${which}','${rotaId}',${cardIdx},'vda',this.value)">${vdaOpts}</select>
+        </div>
+        <div class="carga-field">
+          <label>Motorista</label>
+          <input type="text" value="${card.motorista}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'motorista',this.value)">
+        </div>
+        <div class="carga-field">
+          <label>Ajudante 1</label>
+          <input type="text" value="${card.ajudante1}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante1',this.value)">
+        </div>
+        <div class="carga-field">
+          <label>Ajudante 2</label>
+          <input type="text" value="${card.ajudante2}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante2',this.value)">
+        </div>
+        <div class="carga-field">
+          <label>Ajudante 3</label>
+          <input type="text" value="${card.ajudante3}" placeholder="Nome..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'ajudante3',this.value)">
+        </div>
+        <div class="carga-field">
+          <label>Zona</label>
+          <select onchange="updateCardField('${which}','${rotaId}',${cardIdx},'zona',this.value)">${zonaOpts}</select>
+        </div>
+        <div class="carga-field full">
+          <label>Obs</label>
+          <input type="text" value="${card.obs}" placeholder="Observação..." onchange="updateCardField('${which}','${rotaId}',${cardIdx},'obs',this.value)">
+        </div>
+      </div>
+
+      <div class="carga-sacas-row">
+        <div class="carga-saca-item">
+          <label>5 KG</label>
+          <input type="number" min="0" value="${card.s5}" oninput="updateCardSacas('${which}','${rotaId}',${cardIdx},'s5',this.value,'${uid}')">
+        </div>
+        <div class="carga-saca-item">
+          <label>10 KG</label>
+          <input type="number" min="0" value="${card.s10}" oninput="updateCardSacas('${which}','${rotaId}',${cardIdx},'s10',this.value,'${uid}')">
+        </div>
+        <div class="carga-saca-item">
+          <label>20 KG</label>
+          <input type="number" min="0" value="${card.s20}" oninput="updateCardSacas('${which}','${rotaId}',${cardIdx},'s20',this.value,'${uid}')">
+        </div>
+        <div class="carga-saca-item">
+          <label>40 KG</label>
+          <input type="number" min="0" value="${card.s40}" oninput="updateCardSacas('${which}','${rotaId}',${cardIdx},'s40',this.value,'${uid}')">
+        </div>
+      </div>
+
+      <div class="carga-peso-bar">
+        <div class="cap-bar-wrap">
+          <div class="cap-bar"><div class="cap-bar-fill ${cls}" id="${uid}-bar" style="width:${pct.toFixed(1)}%"></div></div>
+          <span style="font-size:11px;color:var(--muted)" id="${uid}-pct">${pct.toFixed(0)}% de ${(cap/1000).toFixed(1)}t</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function buildRotaGroup(which, rotaConf, cards, vdas) {
+    const { id, label, maxCargas } = rotaConf;
+    const cls = `rota-${id}`;
+    const canAdd = cards.length < maxCargas;
+
+    const cardsHtml = cards.map((card, i) =>
+      buildCargaCard(which, id, i, card, vdas, maxCargas)
+    ).join('');
+
+    const addBtn = canAdd
+      ? `<button class="btn-add-carga" onclick="addCargaCard('${which}','${id}')">+ Carga ${cards.length+1}</button>`
+      : `<span style="font-size:11px;color:var(--muted)">Máx. ${maxCargas} cargas atingido</span>`;
+
+    return `
+    <div class="rota-group" id="rg-${which}-${id}">
+      <div class="rota-group-header">
+        <div class="rota-group-title">
+          <span class="rota-badge ${cls}">${label}</span>
+          <span style="font-size:11px;color:var(--muted)">${cards.length} carga${cards.length!==1?'s':''} · máx ${maxCargas}</span>
+        </div>
+        ${addBtn}
+      </div>
+      <div class="rota-group-cards" id="rgc-${which}-${id}">
+        ${cards.length ? cardsHtml : '<div style="font-size:12px;color:var(--muted);padding:8px 4px">Nenhuma carga. Clique em "+ Carga 1" para adicionar.</div>'}
+      </div>
+    </div>`;
+  }
+
+  async function renderEscala(which) {
+    const vdas = await loadEscalaVdas();
+    const container = document.getElementById(`escala-rotas-${which}`);
+    if (!container) return;
+
+    // garante que o estado existe
+    if (!_escalaState[which]) _escalaState[which] = {};
+
+    container.innerHTML = ROTAS_CONFIG.map(rc =>
+      buildRotaGroup(which, rc, _escalaState[which][rc.id] || [], vdas)
+    ).join('');
+  }
+
+  function updateCardField(which, rotaId, idx, field, value) {
+    if (!_escalaState[which]) _escalaState[which] = {};
+    if (!_escalaState[which][rotaId]) _escalaState[which][rotaId] = [];
+    if (_escalaState[which][rotaId][idx]) {
+      _escalaState[which][rotaId][idx][field] = value;
+    }
+  }
+
+  function updateCardSacas(which, rotaId, idx, field, value, uid) {
+    updateCardField(which, rotaId, idx, field, Number(value)||0);
+    // Recalcula peso no DOM sem re-render completo
+    const card = _escalaState[which][rotaId][idx];
+    const peso = escalaCalcPeso(card);
+    const cap  = card.cap_bau_kg || 8800;
+    const pct  = Math.min(peso/cap*100, 100);
+    const cls  = pct > 95 ? 'over' : pct > 80 ? 'warn' : 'ok';
+    const pesoEl = document.getElementById(uid+'-peso');
+    const barEl  = document.getElementById(uid+'-bar');
+    const pctEl  = document.getElementById(uid+'-pct');
+    if (pesoEl) pesoEl.textContent = peso.toLocaleString('pt-BR') + ' kg';
+    if (barEl) {
+      barEl.style.width = pct.toFixed(1) + '%';
+      barEl.className = `cap-bar-fill ${cls}`;
+    }
+    if (pctEl) pctEl.textContent = pct.toFixed(0) + '% de ' + (cap/1000).toFixed(1) + 't';
+  }
+
+  async function addCargaCard(which, rotaId) {
+    if (!_escalaState[which]) _escalaState[which] = {};
+    if (!_escalaState[which][rotaId]) _escalaState[which][rotaId] = [];
+    const rc = ROTAS_CONFIG.find(r => r.id === rotaId);
+    if (!rc) return;
+    if (_escalaState[which][rotaId].length >= rc.maxCargas) return;
+    _escalaState[which][rotaId].push({
+      vda:'', motorista:'', ajudante1:'', ajudante2:'', ajudante3:'',
+      rota: rotaId, zona: rc.zona, num_carga: _escalaState[which][rotaId].length + 1,
+      s5:0, s10:0, s20:0, s40:0, cap_bau_kg:8800, obs:''
+    });
+    await renderEscala(which);
+  }
+
+  async function deleteCargaCard(which, rotaId, idx) {
+    if (!_escalaState[which]?.[rotaId]) return;
+    _escalaState[which][rotaId].splice(idx, 1);
+    // Renumera num_carga
+    _escalaState[which][rotaId].forEach((c, i) => { c.num_carga = i + 1; });
+    await renderEscala(which);
+  }
+
+  async function saveEscala(which) {
+    const dbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
+    const rows = [];
+    ROTAS_CONFIG.forEach(rc => {
+      const cards = (_escalaState[which]?.[rc.id]) || [];
+      cards.forEach(card => {
+        rows.push({
+          vda:        card.vda,
+          motorista:  card.motorista,
+          ajudante1:  card.ajudante1,
+          ajudante2:  card.ajudante2,
+          ajudante3:  card.ajudante3,
+          rota:       card.rota,
+          zona:       card.zona,
+          num_carga:  card.num_carga,
+          s5:         card.s5,
+          s10:        card.s10,
+          s20:        card.s20,
+          s40:        card.s40,
+          cap_bau_kg: card.cap_bau_kg,
+          obs:        card.obs,
+        });
+      });
+    });
+    await saveDB(dbKey, rows);
+    flashStatus(which === 'nat' ? 'sv-cnat' : 'sv-can');
+    updateResumo();
+  }
+
+  async function loadEscalaFromDB(which) {
+    const dbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
+    const data  = await loadDB(dbKey);
+    const state = {};
+    ROTAS_CONFIG.forEach(rc => { state[rc.id] = []; });
+
+    data.forEach(row => {
+      const card = escalaCardFromDB(row);
+      const rid  = String(card.rota || '').replace('Rota ', '').trim() || 'apoio';
+      const key  = ROTAS_CONFIG.find(r => r.id === rid) ? rid : 'apoio';
+      if (!state[key]) state[key] = [];
+      state[key].push(card);
+    });
+
+    // Ordena por num_carga dentro de cada rota
+    Object.keys(state).forEach(rid => {
+      state[rid].sort((a,b) => (a.num_carga||1) - (b.num_carga||1));
+    });
+
+    _escalaState[which] = state;
+  }
+
+  /* =========================================================
      INIT — carrega todas as tabelas do Supabase
   ========================================================= */
   async function initAll26() {
@@ -1994,14 +2310,16 @@
     renderTable('tbl-prod', 'produtos26', prods);
 
     // Operações Natal
-    renderTable('tbl-nat26',     'natal26',    await loadDB('natal26'));
-    renderTable('tbl-carga-nat', 'cargaNat26', await loadDB('cargaNat26'));
-    renderTable('tbl-com-nat',   'comodNat26', await loadDB('comodNat26'));
+    renderTable('tbl-nat26',  'natal26',    await loadDB('natal26'));
+    renderTable('tbl-com-nat','comodNat26', await loadDB('comodNat26'));
+    await loadEscalaFromDB('nat');
+    await renderEscala('nat');
 
     // Operações Ano Novo
-    renderTable('tbl-an26',      'anonovo26',  await loadDB('anonovo26'));
-    renderTable('tbl-carga-an',  'cargaAn26',  await loadDB('cargaAn26'));
-    renderTable('tbl-com-an',    'comodAn26',  await loadDB('comodAn26'));
+    renderTable('tbl-an26',   'anonovo26',  await loadDB('anonovo26'));
+    renderTable('tbl-com-an', 'comodAn26',  await loadDB('comodAn26'));
+    await loadEscalaFromDB('an');
+    await renderEscala('an');
 
     updateResumo();
   }
