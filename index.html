@@ -249,6 +249,51 @@
   .inner-tab-panel { display:none; }
   .inner-tab-panel.active { display:block; }
 
+  /* ── Célula Ponto Estratégico (col 0 natal/anonovo) ── */
+  .ponto-cell { position:relative; display:flex; align-items:center; gap:6px; min-width:200px; }
+  .ponto-input {
+    flex:1; background:transparent; border:none; border-bottom:1px dashed var(--border);
+    color:var(--text); font-size:12px; padding:2px 4px; outline:none; min-width:140px;
+  }
+  .ponto-input:focus { border-bottom-color:var(--accent); }
+  .ponto-input::placeholder { color:var(--muted); font-style:italic; }
+  .ponto-rota-sel {
+    flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:5px;
+    color:var(--text); font-size:12px; padding:3px 6px; outline:none; min-width:110px; cursor:pointer;
+  }
+  .ponto-rota-sel:focus { border-color:var(--accent); }
+  .btn-expand-ponto {
+    flex-shrink:0; width:20px; height:20px; border-radius:50%; border:1px solid var(--accent);
+    background:transparent; color:var(--accent); font-size:11px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;
+    transition:all .15s; padding:0;
+  }
+  .btn-expand-ponto:hover { background:var(--accent); color:#000; }
+  .ponto-dropdown {
+    position:absolute; top:calc(100% + 4px); left:0; z-index:9999;
+    background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.45); min-width:280px; max-height:220px;
+    overflow-y:auto; display:none;
+  }
+  .ponto-dropdown.open { display:block; }
+  .ponto-dd-item {
+    padding:7px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;
+    font-size:12px; border-bottom:1px solid var(--border); transition:background .1s;
+  }
+  .ponto-dd-item:last-child { border-bottom:none; }
+  .ponto-dd-item:hover, .ponto-dd-item.focused { background:rgba(52,196,124,.12); }
+  .ponto-dd-cod { font-weight:700; color:var(--accent); font-size:11px; min-width:38px; }
+  .ponto-dd-rota { font-size:10px; color:var(--muted); margin-left:auto; }
+  .ponto-info-pop {
+    position:absolute; top:calc(100% + 4px); left:0; z-index:9999;
+    background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.45); min-width:220px; padding:10px 14px;
+    font-size:11px; line-height:1.6; display:none; pointer-events:none;
+  }
+  .ponto-info-pop.show { display:block; }
+  .ponto-info-pop strong { color:var(--accent); display:block; margin-bottom:4px; font-size:12px; }
+  .ponto-info-pop span { color:var(--muted); }
+
   /* capacity bar */
   .cap-bar-wrap { display:flex; align-items:center; gap:8px; }
   .cap-bar { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
@@ -1540,7 +1585,7 @@
     ],
     natal26: [
       // 0:ponto  1:tipo_veiculo  2:tipo_op  3:gelo
-      {t:'text'},
+      {t:'ponto'},
       {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
       {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
       {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
@@ -1559,7 +1604,7 @@
       {t:'text'}
     ],
     anonovo26: [
-      {t:'text'},
+      {t:'ponto'},
       {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
       {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
       {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
@@ -1609,7 +1654,7 @@
   const funcBlank    = ['','Motorista','1° Turno','','','','Ativo','','próprio','0','0','0','0','0','0'];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
   // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), liquidacao, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
-  const rotaBlank    = ['','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
+  const rotaBlank    = ['801','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
   const cargaBlank   = ['','','','','0','0','0','0','','','',''];
   const comodatoBlank= ['','','0','20 KG','0','','','',''];
 
@@ -1654,7 +1699,15 @@
     schema.forEach((col, ci) => {
       const td = document.createElement('td');
       const val = (row[ci] !== undefined ? row[ci] : '');
-      if (col.t === 'select') {
+      if (col.t === 'ponto' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+        td.style.padding = '4px 8px';
+        // col2 = Tipo Op. (index 2) — lida após o loop, depois de tr montado
+        td._pontoDbKey = dbKey;
+        td._pontoVal   = val;
+        td._pontoTr    = tr;
+        // placeholder rendered after loop (needs col2 select)
+        td.dataset.pontoCell = '1';
+      } else if (col.t === 'select') {
         const sel = document.createElement('select');
         sel.className = 'cell-select';
         col.opts.forEach(o => {
@@ -1663,7 +1716,19 @@
           if (o === val) op.selected = true;
           sel.appendChild(op);
         });
-        sel.onchange = () => {};
+        // col2 (Tipo Op.) → atualiza célula ponto (col0) ao mudar
+        if (ci === 2 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+          sel.onchange = () => {
+            const pontoTd = tr.querySelectorAll('td')[0];
+            if (pontoTd?.dataset.pontoCell) renderPontoCell(pontoTd, dbKey, sel.value, pontoTd._pontoVal || '');
+          };
+        } else {
+          sel.onchange = () => {};
+        }
+        // col3 (Gelo) → recalc
+        if (ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+          sel.onchange = () => recalcRow(tr, dbKey);
+        }
         td.appendChild(sel);
       } else if (col.t === 'calc') {
         td.style.color = 'var(--green)';
@@ -1687,6 +1752,15 @@
       }
       tr.appendChild(td);
     });
+    // após loop: renderiza célula ponto (precisa do col2 select já no tr)
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      const pontoTd = tr.querySelectorAll('td')[0];
+      if (pontoTd?.dataset.pontoCell) {
+        const col2Sel = tr.querySelectorAll('td')[2]?.querySelector('select');
+        const tipoOp  = col2Sel?.value || row[2] || 'Rota';
+        renderPontoCell(pontoTd, dbKey, tipoOp, pontoTd._pontoVal || '');
+      }
+    }
     // delete button
     const tdDel = document.createElement('td');
     const btn = document.createElement('button');
@@ -1720,7 +1794,14 @@
       const cells = tr.querySelectorAll('td:not(:last-child)');
       const row = [];
       cells.forEach(td => {
-        const sel = td.querySelector('select');
+        // célula ponto estratégico: usa _pontoVal
+        if (td.dataset.pontoCell) {
+          row.push(td._pontoVal || '');
+          return;
+        }
+        const sel = td.querySelector('select:not(.ponto-rota-sel):not(.ponto-dropdown *)');
+        const pontoSel = td.querySelector('.ponto-rota-sel');
+        if (pontoSel) { row.push(pontoSel.value); return; }
         row.push(sel ? sel.value : td.textContent.trim());
       });
       rows.push(row);
@@ -1848,6 +1929,139 @@
         if (cells[5]?.dataset.calc) cells[5].textContent = fmtR(qtd * preco);
       }
     });
+  }
+
+  /* =========================================================
+     PONTO ESTRATÉGICO — célula inteligente
+     Modo Rota  → <select> 801/802/803/804/805/821/822
+     Modo Ponto → autocomplete de cliente (código + nome)
+  ========================================================= */
+  const ROTAS_OPS = ['801','802','803','804','805','821','822'];
+
+  function renderPontoCell(td, dbKey, tipoOp, savedVal) {
+    td._pontoVal = savedVal;
+    td.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'ponto-cell';
+
+    if (tipoOp === 'Rota') {
+      // ── modo rota: select fixo
+      const sel = document.createElement('select');
+      sel.className = 'ponto-rota-sel';
+      ROTAS_OPS.forEach(r => {
+        const op = document.createElement('option');
+        op.value = r; op.textContent = 'Rota ' + r;
+        if (r === savedVal) op.selected = true;
+        sel.appendChild(op);
+      });
+      sel.onchange = () => { td._pontoVal = sel.value; };
+      wrap.appendChild(sel);
+    } else {
+      // ── modo ponto/câmara/pátio: autocomplete de cliente
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'ponto-input';
+      inp.value = savedVal;
+      inp.placeholder = 'Cód ou nome...';
+      inp.autocomplete = 'off';
+      inp.spellcheck = false;
+
+      const dd = document.createElement('div');
+      dd.className = 'ponto-dropdown';
+
+      let _timer = null;
+      let _hits  = [];
+      let _focus = -1;
+
+      inp.oninput = () => {
+        td._pontoVal = inp.value;
+        clearTimeout(_timer);
+        const q = inp.value.trim();
+        if (q.length < 2) { dd.classList.remove('open'); return; }
+        _timer = setTimeout(async () => {
+          const all = await cliLoadAll();
+          _hits = all.filter(c => {
+            const cod  = String(c.codigo_erp || '');
+            const nome = (c.nome || '').toLowerCase();
+            return cod.startsWith(q) || nome.includes(q.toLowerCase());
+          }).slice(0, 25);
+          _focus = -1;
+          if (!_hits.length) { dd.innerHTML = '<div style="padding:8px 12px;color:var(--muted);font-size:11px">Nenhum resultado.</div>'; dd.classList.add('open'); return; }
+          dd.innerHTML = _hits.map((c, i) => `
+            <div class="ponto-dd-item" data-idx="${i}">
+              <span class="ponto-dd-cod">#${c.codigo_erp}</span>
+              <span>${c.nome}</span>
+              <span class="ponto-dd-rota">R${c.rota||'—'}</span>
+            </div>`).join('');
+          dd.querySelectorAll('.ponto-dd-item').forEach(el => {
+            el.onmousedown = (e) => {
+              e.preventDefault();
+              const idx = parseInt(el.dataset.idx);
+              const c   = _hits[idx];
+              if (!c) return;
+              inp.value = `#${c.codigo_erp} ${c.nome}`;
+              td._pontoVal  = inp.value;
+              td._pontoInfo = c;
+              dd.classList.remove('open');
+            };
+          });
+          dd.classList.add('open');
+        }, 180);
+      };
+
+      inp.onkeydown = (e) => {
+        const items = dd.querySelectorAll('.ponto-dd-item');
+        if (!dd.classList.contains('open') || !items.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); _focus = Math.min(_focus+1, items.length-1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); _focus = Math.max(_focus-1, 0); }
+        else if (e.key === 'Enter' && _focus >= 0) {
+          e.preventDefault();
+          items[_focus].onmousedown(e);
+        } else if (e.key === 'Escape') { dd.classList.remove('open'); return; }
+        items.forEach((el,i) => el.classList.toggle('focused', i === _focus));
+        if (_focus >= 0) items[_focus].scrollIntoView({block:'nearest'});
+      };
+
+      inp.onblur = () => setTimeout(() => dd.classList.remove('open'), 200);
+
+      wrap.appendChild(inp);
+      wrap.appendChild(dd);
+    }
+
+    // ── botão + (info / expandir)
+    const btnExp = document.createElement('button');
+    btnExp.className = 'btn-expand-ponto';
+    btnExp.textContent = '+';
+    btnExp.title = 'Detalhes do cliente / rota';
+
+    // popover de info
+    const pop = document.createElement('div');
+    pop.className = 'ponto-info-pop';
+    td._pop = pop;
+
+    btnExp.onclick = (e) => {
+      e.stopPropagation();
+      if (pop.classList.contains('show')) { pop.classList.remove('show'); return; }
+      const info = td._pontoInfo;
+      if (info) {
+        pop.innerHTML = `<strong>#${info.codigo_erp} ${info.nome}</strong>
+          ${info.endereco ? `<span>📍 ${info.endereco}</span>` : ''}
+          ${info.rota ? `<span>🚚 Rota ${info.rota}</span>` : ''}
+          ${info.zona ? `<span>🗺️ Zona ${info.zona}</span>` : ''}`;
+      } else if (td._pontoVal) {
+        pop.innerHTML = `<strong>${td._pontoVal}</strong><span>Sem dados carregados</span>`;
+      } else {
+        pop.innerHTML = '<span>Preencha o campo para ver detalhes.</span>';
+      }
+      pop.classList.add('show');
+      // fecha ao clicar fora
+      const close = () => { pop.classList.remove('show'); document.removeEventListener('click', close); };
+      setTimeout(() => document.addEventListener('click', close), 10);
+    };
+
+    wrap.appendChild(btnExp);
+    wrap.appendChild(pop);
+    td.appendChild(wrap);
   }
 
   /* =========================================================
