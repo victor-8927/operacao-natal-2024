@@ -237,6 +237,18 @@
   .subtab-panel { display:none; }
   .subtab-panel.active { display:block; }
 
+  /* inner-tabs dentro de Natal / Ano Novo */
+  .inner-tabs-bar { display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--border); padding-bottom:10px; flex-wrap:wrap; }
+  .inner-tab-btn {
+    padding:6px 18px; border-radius:7px 7px 0 0; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-size:12px; font-weight:600;
+    cursor:pointer; transition:all .15s; margin-bottom:-1px;
+  }
+  .inner-tab-btn:hover { color:var(--text); background:var(--surface2); }
+  .inner-tab-btn.active { background:var(--surface2); color:#34c47c; border-color:var(--border); border-bottom-color:var(--surface2); }
+  .inner-tab-panel { display:none; }
+  .inner-tab-panel.active { display:block; }
+
   /* capacity bar */
   .cap-bar-wrap { display:flex; align-items:center; gap:8px; }
   .cap-bar { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
@@ -982,7 +994,7 @@
 
   <!-- ── NATAL 2026 ── -->
   <div class="subtab-panel" id="st-natal26">
-    <div class="section-title">🎄 Escalonamento — Natal 2026</div>
+    <div class="section-title" style="margin-bottom:14px">🎄 Operação Natal 2026</div>
 
     <!-- KPIs auto-calculados -->
     <div class="kpi-row" id="kpi-natal26">
@@ -990,41 +1002,56 @@
       <div class="kpi"><div class="kpi-label">Total Sacas</div><div class="kpi-value" id="kn-sacas" style="color:#a78bfa">0</div><div class="kpi-sub">Todas as rotas</div></div>
       <div class="kpi"><div class="kpi-label">Peso Total (kg)</div><div class="kpi-value yellow" id="kn-peso">0</div><div class="kpi-sub">Bruto estimado</div></div>
       <div class="kpi"><div class="kpi-label">Custo Desp. 3°</div><div class="kpi-value orange" id="kn-desp">R$0</div><div class="kpi-sub">Tabela comodatos</div></div>
+      <div class="kpi"><div class="kpi-label">Líquido Venda</div><div class="kpi-value" id="kn-liq" style="color:#34c47c">R$0</div><div class="kpi-sub">FAT Real − custos</div></div>
     </div>
 
-    <div class="e26-toolbar">
-      <button class="btn btn-add" onclick="addRow('tbl-nat26', rotaBlank)">+ Nova Rota / Cliente</button>
-      <button class="btn btn-save" onclick="saveTable('tbl-nat26','natal26'); calcKpis26('nat')">💾 Salvar + Recalcular</button>
-      <span id="sv-nat26" class="save-status">✓ Salvo</span>
-    </div>
-    <div class="tbl-wrap">
-      <table id="tbl-nat26">
-        <thead><tr>
-          <th>Cliente / Ponto</th><th>Equip.</th><th>Produto</th><th>Qtd Programada</th>
-          <th>R$/saca</th><th>FAT Prog. R$</th><th>Modalidade</th>
-          <th>VDA</th><th>Motorista</th><th>Data Entrega</th><th>Retorno</th><th>Venda Real</th><th>FAT Real R$</th><th>Status</th><th>Obs</th><th></th>
-        </tr></thead>
-        <tbody id="tbody-nat26"></tbody>
-      </table>
+    <!-- inner-tabs -->
+    <div class="inner-tabs-bar">
+      <button class="inner-tab-btn active" onclick="switchInnerTab('nat','it-nat-montagem',this)">📋 Montagem da Operação</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-escala',this)">📦 Escalonamento de Equipes</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-comodato',this)">🤝 Comodatos / 3°</button>
     </div>
 
-    <!-- Escalonamento de Equipes por Rota -->
-    <div class="escala-section" id="escala-nat">
-      <div class="escala-header">
-        <div class="section-title">📦 Escalonamento de Equipes por Rota — Natal 2026</div>
-        <div class="escala-save-row">
-          <button class="btn btn-save" onclick="saveEscala('nat')">💾 Salvar Escalonamento</button>
-          <span id="sv-cnat" class="save-status">✓ Salvo</span>
+    <!-- ── MONTAGEM DA OPERAÇÃO ── -->
+    <div class="inner-tab-panel active" id="it-nat-montagem">
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-nat26', rotaBlank)">+ Novo Ponto / Rota</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-nat26','natal26'); calcKpis26('nat')">💾 Salvar + Recalcular</button>
+        <span id="sv-nat26" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-nat26">
+          <thead><tr>
+            <th>Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
+            <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
+            <th>Liquidação</th><th>Vlr Total</th><th>Vlr Aluguel</th>
+            <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
+            <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
+            <th>Data</th><th>Status</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-nat26"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ESCALONAMENTO DE EQUIPES ── -->
+    <div class="inner-tab-panel" id="it-nat-escala">
+      <div class="escala-section" id="escala-nat">
+        <div class="escala-header">
+          <div class="section-title">📦 Escalonamento de Equipes por Rota — Natal 2026</div>
+          <div class="escala-save-row">
+            <button class="btn btn-save" onclick="saveEscala('nat')">💾 Salvar Escalonamento</button>
+            <span id="sv-cnat" class="save-status">✓ Salvo</span>
+          </div>
+        </div>
+        <div class="escala-rotas" id="escala-rotas-nat">
+          <!-- Cards gerados pelo JS via renderEscala() -->
         </div>
       </div>
-      <div class="escala-rotas" id="escala-rotas-nat">
-        <!-- Cards gerados pelo JS via renderEscala() -->
-      </div>
     </div>
 
-    <!-- Comodatos Natal 2026 -->
-    <div style="margin-top:24px">
-      <div class="section-title">🤝 Comodatos / Pagamento de Terceiros — Natal 2026</div>
+    <!-- ── COMODATOS ── -->
+    <div class="inner-tab-panel" id="it-nat-comodato">
       <div class="e26-toolbar">
         <button class="btn btn-add" onclick="addRow('tbl-com-nat', comodatoBlank)">+ Novo Comodato</button>
         <button class="btn btn-save" onclick="saveTable('tbl-com-nat','comodNat26')">💾 Salvar</button>
@@ -1044,47 +1071,63 @@
 
   <!-- ── ANO NOVO 2026 ── -->
   <div class="subtab-panel" id="st-anonovo26">
-    <div class="section-title">🎆 Escalonamento — Ano Novo 2026</div>
+    <div class="section-title" style="margin-bottom:14px">🎆 Operação Ano Novo 2026</div>
 
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-label">Fat. Programado</div><div class="kpi-value blue" id="kan-fat">R$0</div><div class="kpi-sub">Soma sacas × preço</div></div>
       <div class="kpi"><div class="kpi-label">Total Sacas</div><div class="kpi-value" id="kan-sacas" style="color:#a78bfa">0</div></div>
       <div class="kpi"><div class="kpi-label">Peso Total (kg)</div><div class="kpi-value yellow" id="kan-peso">0</div></div>
       <div class="kpi"><div class="kpi-label">Custo Desp. 3°</div><div class="kpi-value orange" id="kan-desp">R$0</div></div>
+      <div class="kpi"><div class="kpi-label">Líquido Venda</div><div class="kpi-value" id="kan-liq" style="color:#34c47c">R$0</div><div class="kpi-sub">FAT Real − custos</div></div>
     </div>
 
-    <div class="e26-toolbar">
-      <button class="btn btn-add" onclick="addRow('tbl-an26', rotaBlank)">+ Nova Rota / Cliente</button>
-      <button class="btn btn-save" onclick="saveTable('tbl-an26','anonovo26'); calcKpis26('an')">💾 Salvar + Recalcular</button>
-      <span id="sv-an26" class="save-status">✓ Salvo</span>
-    </div>
-    <div class="tbl-wrap">
-      <table id="tbl-an26">
-        <thead><tr>
-          <th>Cliente / Ponto</th><th>Equip.</th><th>Produto</th><th>Qtd Programada</th>
-          <th>R$/saca</th><th>FAT Prog. R$</th><th>Modalidade</th>
-          <th>VDA</th><th>Motorista</th><th>Data Entrega</th><th>Retorno</th><th>Venda Real</th><th>FAT Real R$</th><th>Status</th><th>Obs</th><th></th>
-        </tr></thead>
-        <tbody id="tbody-an26"></tbody>
-      </table>
+    <!-- inner-tabs -->
+    <div class="inner-tabs-bar">
+      <button class="inner-tab-btn active" onclick="switchInnerTab('an','it-an-montagem',this)">📋 Montagem da Operação</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-escala',this)">📦 Escalonamento de Equipes</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-comodato',this)">🤝 Comodatos / 3°</button>
     </div>
 
-    <!-- Escalonamento de Equipes por Rota -->
-    <div class="escala-section" id="escala-an">
-      <div class="escala-header">
-        <div class="section-title">📦 Escalonamento de Equipes por Rota — Ano Novo 2026</div>
-        <div class="escala-save-row">
-          <button class="btn btn-save" onclick="saveEscala('an')">💾 Salvar Escalonamento</button>
-          <span id="sv-can" class="save-status">✓ Salvo</span>
+    <!-- ── MONTAGEM DA OPERAÇÃO ── -->
+    <div class="inner-tab-panel active" id="it-an-montagem">
+      <div class="e26-toolbar">
+        <button class="btn btn-add" onclick="addRow('tbl-an26', rotaBlank)">+ Novo Ponto / Rota</button>
+        <button class="btn btn-save" onclick="saveTable('tbl-an26','anonovo26'); calcKpis26('an')">💾 Salvar + Recalcular</button>
+        <span id="sv-an26" class="save-status">✓ Salvo</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-an26">
+          <thead><tr>
+            <th>Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
+            <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
+            <th>Liquidação</th><th>Vlr Total</th><th>Vlr Aluguel</th>
+            <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
+            <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
+            <th>Data</th><th>Status</th><th>Obs</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-an26"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ESCALONAMENTO DE EQUIPES ── -->
+    <div class="inner-tab-panel" id="it-an-escala">
+      <div class="escala-section" id="escala-an">
+        <div class="escala-header">
+          <div class="section-title">📦 Escalonamento de Equipes por Rota — Ano Novo 2026</div>
+          <div class="escala-save-row">
+            <button class="btn btn-save" onclick="saveEscala('an')">💾 Salvar Escalonamento</button>
+            <span id="sv-can" class="save-status">✓ Salvo</span>
+          </div>
+        </div>
+        <div class="escala-rotas" id="escala-rotas-an">
+          <!-- Cards gerados pelo JS via renderEscala() -->
         </div>
       </div>
-      <div class="escala-rotas" id="escala-rotas-an">
-        <!-- Cards gerados pelo JS via renderEscala() -->
-      </div>
     </div>
 
-    <div style="margin-top:24px">
-      <div class="section-title">🤝 Comodatos / Pagamento de Terceiros — Ano Novo 2026</div>
+    <!-- ── COMODATOS ── -->
+    <div class="inner-tab-panel" id="it-an-comodato">
       <div class="e26-toolbar">
         <button class="btn btn-add" onclick="addRow('tbl-com-an', comodatoBlank)">+ Novo Comodato</button>
         <button class="btn btn-save" onclick="saveTable('tbl-com-an','comodAn26')">💾 Salvar</button>
@@ -1268,6 +1311,25 @@
     if (panel) panel.classList.add('active');
     const target = btn || (typeof event !== 'undefined' && event && event.currentTarget);
     if (target) target.classList.add('active');
+  }
+
+  /* inner-tabs dentro de Natal / Ano Novo */
+  function switchInnerTab(which, panelId, btn) {
+    // scope: só os inner panels dentro do subtab-panel pai
+    const parent = btn.closest('.subtab-panel');
+    if (!parent) return;
+    parent.querySelectorAll('.inner-tab-panel').forEach(el => el.classList.remove('active'));
+    parent.querySelectorAll('.inner-tab-btn').forEach(el => el.classList.remove('active'));
+    const panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('active');
+    btn.classList.add('active');
+    // se abriu o escalonamento e ainda não renderizou, renderiza agora
+    if (panelId === 'it-nat-escala' && document.getElementById('escala-rotas-nat').children.length === 0) {
+      renderEscala('nat');
+    }
+    if (panelId === 'it-an-escala' && document.getElementById('escala-rotas-an').children.length === 0) {
+      renderEscala('an');
+    }
   }
 
   /* =========================================================
@@ -1477,20 +1539,38 @@
       {t:'text'},{t:'text'},{t:'text'},{t:'text'}
     ],
     natal26: [
-      {t:'text'},{t:'text'},
-      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},
-      {t:'number'},{t:'number'},{t:'calc'}, // FAT Prog = qtd × preço
+      // 0:ponto  1:tipo_veiculo  2:tipo_op  3:gelo
+      {t:'text'},
+      {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
+      {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
+      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
+      // 4:qtd  5:tabela_preco  6:fat_calc  7:peso_calc
+      {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
+      // 8:liquidacao  9:valor_total  10:valor_aluguel
+      {t:'number'},{t:'calc'},{t:'number'},
+      // 11:tipo_op_modal  12:retorno  13:troca  14:venda_real
       {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
-      {t:'text'},{t:'text'},{t:'date'},{t:'number'},{t:'number'},{t:'calc'},
-      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},{t:'text'}
+      {t:'number'},{t:'number'},{t:'number'},
+      // 15:fat_pct  16:fat_real  17:total_rs  18:liq_venda
+      {t:'calc'},{t:'calc'},{t:'calc'},{t:'calc'},
+      // 19:data  20:status  21:obs
+      {t:'date'},
+      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},
+      {t:'text'}
     ],
     anonovo26: [
-      {t:'text'},{t:'text'},
-      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG']},
-      {t:'number'},{t:'number'},{t:'calc'},
+      {t:'text'},
+      {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
+      {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
+      {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
+      {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
+      {t:'number'},{t:'calc'},{t:'number'},
       {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
-      {t:'text'},{t:'text'},{t:'date'},{t:'number'},{t:'number'},{t:'calc'},
-      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},{t:'text'}
+      {t:'number'},{t:'number'},{t:'number'},
+      {t:'calc'},{t:'calc'},{t:'calc'},{t:'calc'},
+      {t:'date'},
+      {t:'select',opts:['Programado','Em rota','Concluído','Cancelado','Parcial']},
+      {t:'text'}
     ],
     cargaNat26: [
       {t:'text'},{t:'text'},{t:'text'},{t:'text'},
@@ -1528,7 +1608,8 @@
   const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'];
   const funcBlank    = ['','Motorista','1° Turno','','','','Ativo','','próprio','0','0','0','0','0','0'];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
-  const rotaBlank    = ['','','20 KG','0','0','','Venda','','','','0','0','','Programado',''];
+  // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), liquidacao, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
+  const rotaBlank    = ['','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
   const cargaBlank   = ['','','','','0','0','0','0','','','',''];
   const comodatoBlank= ['','','0','20 KG','0','','','',''];
 
@@ -1545,8 +1626,8 @@
       funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
-      natal26:   ['cliente','equip','produto','qtd_prog','preco_saca','','modalidade','vda','motorista','data_entrega','retorno','venda_real','','status','obs'],
-      anonovo26: ['cliente','equip','produto','qtd_prog','preco_saca','','modalidade','vda','motorista','data_entrega','retorno','venda_real','','status','obs'],
+      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','liquidacao','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
+      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','liquidacao','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
       cargaNat26:['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       cargaAn26: ['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca','','cliente_destino','data_entrega','obs'],
@@ -1595,6 +1676,14 @@
         td.spellcheck = false;
         if (col.t === 'number') td.style.textAlign = 'right';
         if (col.t === 'date') td.style.color = 'var(--accent)';
+        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26)
+        if (col.t === 'number' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+          td.oninput = () => recalcRow(tr, dbKey);
+        }
+      }
+      // recalc ao vivo para selects de gelo (col3) em montagem
+      if (col.t === 'select' && ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+        td.querySelector('select').onchange = () => recalcRow(tr, dbKey);
       }
       tr.appendChild(td);
     });
@@ -1647,8 +1736,12 @@
     funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
     clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
     produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
-    natal26:   ['cliente','equip','produto','qtd_prog','preco_saca',null,'modalidade','vda','motorista','data_entrega','retorno','venda_real',null,'status','obs'],
-    anonovo26: ['cliente','equip','produto','qtd_prog','preco_saca',null,'modalidade','vda','motorista','data_entrega','retorno','venda_real',null,'status','obs'],
+    // 0:ponto 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco_saca 6:fat(calc) 7:peso(calc)
+    // 8:liquidacao 9:valor_total(calc) 10:valor_aluguel 11:modalidade 12:retorno 13:troca
+    // 14:venda_real 15:fat_pct(calc) 16:fat_real 17:total_rs(calc) 18:liq_venda(calc)
+    // 19:data_operacao 20:status 21:obs
+    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'liquidacao',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
+    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'liquidacao',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
     cargaNat26:['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     cargaAn26: ['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
@@ -1705,13 +1798,33 @@
     const schema = SCHEMA[dbKey];
     tbody.querySelectorAll('tr').forEach(tr => {
       const cells = tr.querySelectorAll('td:not(:last-child)');
-      // rota tables: FAT Prog = col3(qtd) × col4(preço), FAT Real = col10(venda) × col4(preço)
+      // Montagem da Operação (22 cols):
+      // col4=qtd, col5=preco, col3=gelo, col8=liquidacao, col10=aluguel, col16=fat_real
+      // col6=FAT R$, col7=Peso kg, col9=Vlr Total, col15=FAT%, col17=Total R$, col18=Liq.Venda
       if (dbKey === 'natal26' || dbKey === 'anonovo26') {
-        const qtd   = parseF(cells[3]?.textContent);
-        const preco = parseF(cells[4]?.textContent);
-        const venda = parseF(cells[11]?.textContent);
-        if (cells[5]?.dataset.calc)  cells[5].textContent  = fmtR(qtd * preco);
-        if (cells[12]?.dataset.calc) cells[12].textContent = fmtR(venda > 0 ? venda * preco : qtd * preco);
+        const qtd      = parseF(cells[4]?.textContent);
+        const preco    = parseF(cells[5]?.textContent);
+        const gelo     = (cells[3]?.querySelector('select')?.value || cells[3]?.textContent || '').trim();
+        const liquidac = parseF(cells[8]?.textContent);
+        const aluguel  = parseF(cells[10]?.textContent);
+        const fatReal  = parseF(cells[16]?.textContent);
+
+        const pesoMap  = {'5 KG':6,'10 KG':11,'20 KG':23,'40 KG':45,'Misto':23};
+        const kgUnit   = pesoMap[gelo] || 23;
+
+        const fat      = qtd * preco;
+        const peso     = qtd * kgUnit;
+        const vlrTotal = fat + aluguel;
+        const fatPct   = fat > 0 ? (fatReal / fat * 100) : 0;
+        const totalRs  = fatReal + aluguel;
+        const liqVenda = totalRs - liquidac;
+
+        if (cells[6]?.dataset.calc)  cells[6].textContent  = fat > 0 ? fmtR(fat) : '—';
+        if (cells[7]?.dataset.calc)  cells[7].textContent  = peso > 0 ? peso.toLocaleString('pt-BR') + ' kg' : '—';
+        if (cells[9]?.dataset.calc)  cells[9].textContent  = vlrTotal > 0 ? fmtR(vlrTotal) : '—';
+        if (cells[15]?.dataset.calc) cells[15].textContent = fat > 0 ? fatPct.toFixed(1) + '%' : '—';
+        if (cells[17]?.dataset.calc) cells[17].textContent = totalRs > 0 ? fmtR(totalRs) : '—';
+        if (cells[18]?.dataset.calc) cells[18].textContent = (totalRs > 0 || liquidac > 0) ? fmtR(liqVenda) : '—';
       }
       // carga tables: Peso Total = 5KG*6 + 10KG*11 + 20KG*23 + 40KG*45, Ocupação = peso/cap
       if (dbKey === 'cargaNat26' || dbKey === 'cargaAn26') {
@@ -1737,6 +1850,37 @@
     });
   }
 
+  /* =========================================================
+     RECALC UMA ÚNICA LINHA (natal26 / anonovo26)
+  ========================================================= */
+  function recalcRow(tr, dbKey) {
+    if (dbKey !== 'natal26' && dbKey !== 'anonovo26') return;
+    const cells = tr.querySelectorAll('td:not(:last-child)');
+    const qtd      = parseF(cells[4]?.textContent);
+    const preco    = parseF(cells[5]?.textContent);
+    const gelo     = (cells[3]?.querySelector('select')?.value || cells[3]?.textContent || '').trim();
+    const liquidac = parseF(cells[8]?.textContent);
+    const aluguel  = parseF(cells[10]?.textContent);
+    const fatReal  = parseF(cells[16]?.textContent);
+
+    const pesoMap  = {'5 KG':6,'10 KG':11,'20 KG':23,'40 KG':45,'Misto':23};
+    const kgUnit   = pesoMap[gelo] || 23;
+
+    const fat      = qtd * preco;
+    const peso     = qtd * kgUnit;
+    const vlrTotal = fat + aluguel;
+    const fatPct   = fat > 0 ? (fatReal / fat * 100) : 0;
+    const totalRs  = fatReal + aluguel;
+    const liqVenda = totalRs - liquidac;
+
+    if (cells[6]?.dataset.calc)  cells[6].textContent  = fat > 0 ? fmtR(fat) : '—';
+    if (cells[7]?.dataset.calc)  cells[7].textContent  = peso > 0 ? peso.toLocaleString('pt-BR') + ' kg' : '—';
+    if (cells[9]?.dataset.calc)  cells[9].textContent  = vlrTotal > 0 ? fmtR(vlrTotal) : '—';
+    if (cells[15]?.dataset.calc) cells[15].textContent = fat > 0 ? fatPct.toFixed(1) + '%' : '—';
+    if (cells[17]?.dataset.calc) cells[17].textContent = totalRs > 0 ? fmtR(totalRs) : '—';
+    if (cells[18]?.dataset.calc) cells[18].textContent = (totalRs > 0 || liquidac > 0) ? fmtR(liqVenda) : '—';
+  }
+
   function parseF(s) {
     if (!s || s === '—') return 0;
     return parseFloat(String(s).replace(/R\$|\.|\s/g,'').replace(',','.')) || 0;
@@ -1751,24 +1895,32 @@
   async function calcKpis26(which) {
     const dbKey = which === 'nat' ? 'natal26' : 'anonovo26';
     const data = await loadDB(dbKey);
-    let fat = 0, sacas = 0;
+    let fat = 0, sacas = 0, fatReal = 0, liq = 0, desp = 0;
     data.forEach(row => {
-      // suporta tanto array posicional quanto objeto Supabase
-      const qtd   = parseF(Array.isArray(row) ? row[3] : (row.qtd_prog ?? 0));
-      const preco = parseF(Array.isArray(row) ? row[4] : (row.preco_saca ?? 0));
-      fat   += qtd * preco;
-      sacas += qtd;
+      const isObj = !Array.isArray(row);
+      // nova estrutura: col4=qtd, col5=preco, col16=fat_real, col8=liquidacao
+      const qtd      = parseF(isObj ? (row.qtd_prog   ?? 0) : (row[4]  ?? 0));
+      const preco    = parseF(isObj ? (row.preco_saca  ?? 0) : (row[5]  ?? 0));
+      const fReal    = parseF(isObj ? (row.fat_real    ?? 0) : (row[16] ?? 0));
+      const liquidac = parseF(isObj ? (row.liquidacao  ?? 0) : (row[8]  ?? 0));
+      fat     += qtd * preco;
+      sacas   += qtd;
+      fatReal += fReal;
+      liq     += liquidac;
     });
     const peso = sacas * 23; // estimativa 20kg dominante
+    const liqVenda = fatReal - liq;
     if (which === 'nat') {
       setEl('kn-fat',   fmtR(fat));
       setEl('kn-sacas', sacas.toLocaleString('pt-BR'));
       setEl('kn-peso',  peso.toLocaleString('pt-BR'));
+      setEl('kn-liq',   fmtR(liqVenda));
       setEl('res-fat-nat26', fmtR(fat));
     } else {
       setEl('kan-fat',   fmtR(fat));
       setEl('kan-sacas', sacas.toLocaleString('pt-BR'));
       setEl('kan-peso',  peso.toLocaleString('pt-BR'));
+      setEl('kan-liq',   fmtR(liqVenda));
       setEl('res-fat-an26', fmtR(fat));
     }
   }
