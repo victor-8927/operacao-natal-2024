@@ -820,14 +820,14 @@
 
   <!-- SUB-TABS -->
   <div class="subtabs-bar">
-    <button class="subtab-btn active" onclick="switchSubtab('st-cadVDA')">🚛 VDAs / Frota</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-cadFunc')">👷 Funcionários</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-cadCliente')">🏪 Clientes</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-produtos')">🧊 Produtos</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-natal26')">🎄 Natal 2026</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-anonovo26')">🎆 Ano Novo 2026</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-resumo26')">📊 Resumo Geral</button>
-    <button class="subtab-btn" onclick="switchSubtab('st-mapa26'); initMapa26()">🗺️ Mapa de Rotas</button>
+    <button class="subtab-btn active" onclick="switchSubtab('st-cadVDA',this)">🚛 VDAs / Frota</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-cadFunc',this)">👷 Funcionários</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-cadCliente',this)">🏪 Clientes</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-produtos',this)">🧊 Produtos</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-natal26',this)">🎄 Natal 2026</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-anonovo26',this)">🎆 Ano Novo 2026</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-resumo26',this)">📊 Resumo Geral</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-mapa26',this); initMapa26()">🗺️ Mapa de Rotas</button>
   </div>
 
   <!-- ── VDAs / FROTA ── -->
@@ -1214,11 +1214,13 @@
   /* =========================================================
      SUB-TABS (dentro de 2026)
   ========================================================= */
-  function switchSubtab(id) {
+  function switchSubtab(id, btn) {
     document.querySelectorAll('.subtab-panel').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    event.target.classList.add('active');
+    const panel = document.getElementById(id);
+    if (panel) panel.classList.add('active');
+    const target = btn || (typeof event !== 'undefined' && event && event.currentTarget);
+    if (target) target.classList.add('active');
   }
 
   /* =========================================================
