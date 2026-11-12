@@ -160,6 +160,22 @@
   .frota-vda { font-size: 14px; font-weight: 700; color: var(--accent); }
   .frota-fn { font-size: 11px; color: var(--muted); }
 
+  /* cost breakdown panel */
+  .custo-section { margin-top: 20px; }
+  .custo-kpi-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .custo-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; min-width: 150px; flex: 1; }
+  .custo-kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .custo-kpi-value { font-size: 18px; font-weight: 700; }
+  .custo-kpi-value.red { color: var(--red); }
+  .custo-kpi-value.yellow { color: var(--yellow); }
+  .custo-kpi-value.green { color: var(--green); }
+  .custo-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .custo-tbl th { background: var(--surface2); padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+  .custo-tbl td { padding: 5px 10px; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .custo-tbl tr:last-child td { border-bottom: none; }
+  .custo-tbl .total-row td { font-weight: 700; color: var(--accent); background: rgba(79,142,247,.06); }
+  .custo-tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
+
   .diff-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
   .diff-up { background: rgba(52,196,124,.15); color: var(--green); }
   .diff-dn { background: rgba(242,107,107,.15); color: var(--red); }
@@ -831,7 +847,9 @@
         <thead><tr>
           <th>VDA #</th><th>Placa</th><th>Tipo</th><th>Cap. Baú (kg)</th>
           <th>Carroceria</th><th>Motorista Fixo</th><th>Ajudante 1</th><th>Ajudante 2</th>
-          <th>Status</th><th>Obs</th><th></th>
+          <th>Status</th><th>Obs</th>
+          <th>Modalidade</th><th>Diária R$</th><th>Combustível R$</th><th>Pedágio R$</th><th>Outros R$</th>
+          <th></th>
         </tr></thead>
         <tbody id="tbody-vda"></tbody>
       </table>
@@ -850,7 +868,10 @@
       <table id="tbl-func">
         <thead><tr>
           <th>Nome</th><th>Função</th><th>Turno</th><th>VDA Fixo</th>
-          <th>CPF / ID</th><th>Tel</th><th>Status</th><th>Obs</th><th></th>
+          <th>CPF / ID</th><th>Tel</th><th>Status</th><th>Obs</th>
+          <th>Vínculo</th><th>Valor Diário R$</th><th>Almoço R$</th><th>Janta R$</th>
+          <th>B.H. R$</th><th>Extra Not. R$</th><th>Premiação R$</th>
+          <th></th>
         </tr></thead>
         <tbody id="tbody-func"></tbody>
       </table>
@@ -1060,6 +1081,69 @@
       <div id="resumo-frota" class="frota-grid" style="margin-top:8px"></div>
     </div>
 
+    <!-- CUSTO OPERACIONAL -->
+    <div class="custo-section">
+      <div class="section-title">💰 Custo Operacional</div>
+      <div class="custo-kpi-row">
+        <div class="custo-kpi">
+          <div class="custo-kpi-label">Custo Total Equipe</div>
+          <div class="custo-kpi-value red" id="rc-equipe">R$ 0,00</div>
+          <div style="font-size:10px;color:var(--muted)" id="rc-equipe-sub">—</div>
+        </div>
+        <div class="custo-kpi">
+          <div class="custo-kpi-label">Custo Total Frota</div>
+          <div class="custo-kpi-value red" id="rc-frota">R$ 0,00</div>
+          <div style="font-size:10px;color:var(--muted)" id="rc-frota-sub">—</div>
+        </div>
+        <div class="custo-kpi">
+          <div class="custo-kpi-label">Custo Total Operação</div>
+          <div class="custo-kpi-value red" id="rc-total">R$ 0,00</div>
+        </div>
+        <div class="custo-kpi">
+          <div class="custo-kpi-label">FAT Prog. Natal 2026</div>
+          <div class="custo-kpi-value green" id="rc-fat-nat">R$ 0,00</div>
+        </div>
+        <div class="custo-kpi">
+          <div class="custo-kpi-label">Resultado Líquido</div>
+          <div class="custo-kpi-value" id="rc-resultado">R$ 0,00</div>
+          <div style="font-size:10px;color:var(--muted)" id="rc-margem">—</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+        <!-- Tabela equipe -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">👥 EQUIPE — Detalhe por Funcionário</div>
+          <div class="tbl-wrap" style="max-height:280px;overflow-y:auto">
+            <table class="custo-tbl">
+              <thead><tr>
+                <th>Nome</th><th>Função</th><th>Vínculo</th>
+                <th class="num">Diária</th><th class="num">Almoço</th><th class="num">Janta</th>
+                <th class="num">B.H.</th><th class="num">Ext.Not.</th><th class="num">Prêmio</th>
+                <th class="num">Total</th>
+              </tr></thead>
+              <tbody id="tbody-custo-func"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Tabela frota -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">🚛 FROTA — Detalhe por VDA</div>
+          <div class="tbl-wrap" style="max-height:280px;overflow-y:auto">
+            <table class="custo-tbl">
+              <thead><tr>
+                <th>VDA</th><th>Modalidade</th>
+                <th class="num">Diária</th><th class="num">Combustível</th>
+                <th class="num">Pedágio</th><th class="num">Outros</th>
+                <th class="num">Total</th>
+              </tr></thead>
+              <tbody id="tbody-custo-vda"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div style="margin-top:20px">
       <div class="section-title">💾 Gestão de Dados</div>
       <div class="e26-toolbar">
@@ -1200,17 +1284,17 @@
      VDAs DEFAULT (frota com baú)
   ========================================================= */
   const VDAS_DEFAULT = [
-    ['01','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['02','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['03','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['46','','Truck 1','14000','Baú Refrigerado','','','','Ativo',''],
-    ['47','','Truck 1','14000','Baú Refrigerado','','','','Ativo',''],
-    ['70','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['80','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['81','','Toco','8800','Baú Refrigerado','','','','Ativo',''],
-    ['90','','Truck 2','16000','Baú Refrigerado','','','','Ativo',''],
-    ['94','','Truck 2','16000','Baú Refrigerado','','','','Ativo',''],
-    ['Acello','','Comodato','4000','Acello (Terceiro)','','','','Terceiro',''],
+    ['01','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['02','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['03','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['46','','Truck 1','14000','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['47','','Truck 1','14000','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['70','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['80','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['81','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['90','','Truck 2','16000','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['94','','Truck 2','16000','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'],
+    ['Acello','','Comodato','4000','Acello (Terceiro)','','','','Terceiro','','terceiro','0','0','0','0'],
   ];
 
   /* =========================================================
@@ -1221,13 +1305,17 @@
     vdas26: [
       {t:'text'},{t:'text'},{t:'select',opts:['Toco','Truck 1','Truck 2','Acello','VUC','Utilitário','Outro']},
       {t:'number'},{t:'text'},{t:'text'},{t:'text'},{t:'text'},
-      {t:'select',opts:['Ativo','Manutenção','Reserva','Inativo']},{t:'text'}
+      {t:'select',opts:['Ativo','Manutenção','Reserva','Inativo']},{t:'text'},
+      {t:'select',opts:['próprio','terceiro','comodato']},
+      {t:'number'},{t:'number'},{t:'number'},{t:'number'}
     ],
     funcs26: [
       {t:'text'},{t:'select',opts:['Motorista','Ajudante','Supervisor','Operador Câmara','Administrativo']},
       {t:'select',opts:['1° Turno','2° Turno','Diurno','Noturno','Escala']},
       {t:'text'},{t:'text'},{t:'text'},
-      {t:'select',opts:['Ativo','Férias','Afastado','Inativo']},{t:'text'}
+      {t:'select',opts:['Ativo','Férias','Afastado','Inativo']},{t:'text'},
+      {t:'select',opts:['próprio','terceiro']},
+      {t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'}
     ],
     clientes26: [
       {t:'text'},{t:'text'},
@@ -1286,8 +1374,8 @@
   };
 
   /* blank templates */
-  const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo',''];
-  const funcBlank    = ['','Motorista','1° Turno','','','','Ativo',''];
+  const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'];
+  const funcBlank    = ['','Motorista','1° Turno','','','','Ativo','','próprio','0','0','0','0','0','0'];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
   const rotaBlank    = ['','','20 KG','0','0','','Venda','','','','0','0','','Programado',''];
   const cargaBlank   = ['','','','','0','0','0','0','','','',''];
@@ -1302,8 +1390,8 @@
     // Converte objeto Supabase → array posicional para o schema
     const schema = SCHEMA[dbKey];
     const COL_MAP = {
-      vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs'],
-      funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs'],
+      vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
+      funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
       natal26:   ['cliente','equip','produto','qtd_prog','preco_saca','','modalidade','vda','motorista','data_entrega','retorno','venda_real','','status','obs'],
@@ -1404,8 +1492,8 @@
      CONVERTE array posicional → objeto Supabase
   ========================================================= */
   const COL_NAMES = {
-    vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs'],
-    funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs'],
+    vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
+    funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
     clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
     produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
     natal26:   ['cliente','equip','produto','qtd_prog','preco_saca',null,'modalidade','vda','motorista','data_entrega','retorno','venda_real',null,'status','obs'],
@@ -1425,7 +1513,9 @@
       // Converte numéricos
       if (['qtd_prog','preco_saca','retorno','venda_real','qtd_padrao','s5','s10','s20','s40',
            'cap_bau_kg','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello',
-           'preco_consig','preco_manif','qtd_sacas'].includes(c)) {
+           'preco_consig','preco_manif','qtd_sacas',
+           'valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao',
+           'custo_diario','custo_combustivel','custo_pedagio','custo_outros'].includes(c)) {
         v = parseF(v) || 0;
       }
       // Datas vazias → null
@@ -1571,15 +1661,143 @@
         const motor  = isObj ? r.motorista  : r[5];
         const status = isObj ? r.status     : r[8];
         if (!vda || status === 'Inativo') return;
+        const isObj = !Array.isArray(r);
+        const modal   = isObj ? (r.modalidade||'') : (r[10]||'');
+        const cTotal  = isObj && r.custo_total_vda ? parseF(r.custo_total_vda)
+          : (parseF(isObj?r.custo_diario:r[11]) + parseF(isObj?r.custo_combustivel:r[12]) + parseF(isObj?r.custo_pedagio:r[13]) + parseF(isObj?r.custo_outros:r[14]));
         const card = document.createElement('div');
         card.className = 'frota-card';
         card.innerHTML = `<div class="frota-vda">VDA ${vda}</div>
           <div class="frota-fn" style="color:var(--accent)">${tipo} · ${Number(cap||0).toLocaleString('pt-BR')} kg</div>
           <div class="frota-fn">${motor || 'Motorista não definido'}</div>
+          ${modal ? `<div style="font-size:10px;color:var(--muted)">${modal}</div>` : ''}
+          ${cTotal > 0 ? `<div style="font-size:11px;color:var(--red);font-weight:600">${fmtR(cTotal)}</div>` : ''}
           <div style="font-size:10px;color:${status==='Ativo'?'var(--green)':'var(--yellow)'}">● ${status||'—'}</div>`;
         fg.appendChild(card);
       });
     }
+    // ── custo equipe ──────────────────────────────────────
+    const funcData = await loadDB('funcs26');
+    const tbCF = document.getElementById('tbody-custo-func');
+    if (tbCF) {
+      tbCF.innerHTML = '';
+      let totalEquipe = 0;
+      let countFunc = 0;
+      funcData.forEach(r => {
+        const isObj = !Array.isArray(r);
+        const nome     = isObj ? r.nome          : r[0];
+        const funcao   = isObj ? r.funcao        : r[1];
+        const vinculo  = isObj ? (r.tipo_vinculo || 'próprio') : (r[8] || 'próprio');
+        const diaria   = parseF(isObj ? r.valor_diario  : r[9]);
+        const almoco   = parseF(isObj ? r.almoco        : r[10]);
+        const janta    = parseF(isObj ? r.janta         : r[11]);
+        const bh       = parseF(isObj ? r.bh_valor      : r[12]);
+        const extNot   = parseF(isObj ? r.extra_noturno : r[13]);
+        const premio   = parseF(isObj ? r.premiacao     : r[14]);
+        // usa custo calculado pelo Supabase se disponível, senão soma manual
+        const totalFn  = isObj && r.custo_total_func
+          ? parseF(r.custo_total_func)
+          : diaria + almoco + janta + bh + extNot + premio;
+        if (!nome) return;
+        totalEquipe += totalFn;
+        countFunc++;
+        const tr = document.createElement('tr');
+        [nome, funcao, vinculo,
+         fmtR(diaria), fmtR(almoco), fmtR(janta),
+         fmtR(bh), fmtR(extNot), fmtR(premio), fmtR(totalFn)
+        ].forEach((v, i) => {
+          const td = document.createElement('td');
+          td.textContent = v;
+          if (i >= 3) td.className = 'num';
+          if (i === 9) { td.style.fontWeight = '700'; td.style.color = 'var(--accent)'; }
+          tr.appendChild(td);
+        });
+        tbCF.appendChild(tr);
+      });
+      // total row
+      if (countFunc > 0) {
+        const tr = document.createElement('tr');
+        tr.className = 'total-row';
+        ['TOTAL', '', `${countFunc} func.`, '', '', '', '', '', '', fmtR(totalEquipe)].forEach((v, i) => {
+          const td = document.createElement('td');
+          td.textContent = v;
+          if (i >= 3) td.className = 'num';
+          tr.appendChild(td);
+        });
+        tbCF.appendChild(tr);
+      }
+      setEl('rc-equipe', fmtR(totalEquipe));
+      setEl('rc-equipe-sub', `${countFunc} funcionário${countFunc !== 1 ? 's' : ''}`);
+
+      // ── custo frota ──────────────────────────────────────
+      const tbCV = document.getElementById('tbody-custo-vda');
+      if (tbCV) {
+        tbCV.innerHTML = '';
+        let totalFrota = 0;
+        let countVda = 0;
+        vdaData.forEach(r => {
+          const isObj2 = !Array.isArray(r);
+          const vda2      = isObj2 ? r.vda            : r[0];
+          const modal     = isObj2 ? (r.modalidade || 'próprio') : (r[10] || 'próprio');
+          const cDiaria   = parseF(isObj2 ? r.custo_diario       : r[11]);
+          const cCombust  = parseF(isObj2 ? r.custo_combustivel  : r[12]);
+          const cPedagio  = parseF(isObj2 ? r.custo_pedagio      : r[13]);
+          const cOutros   = parseF(isObj2 ? r.custo_outros       : r[14]);
+          const st2       = isObj2 ? r.status : r[8];
+          if (!vda2 || st2 === 'Inativo') return;
+          const totalVda  = isObj2 && r.custo_total_vda
+            ? parseF(r.custo_total_vda)
+            : cDiaria + cCombust + cPedagio + cOutros;
+          totalFrota += totalVda;
+          countVda++;
+          const tr = document.createElement('tr');
+          [`VDA ${vda2}`, modal,
+           fmtR(cDiaria), fmtR(cCombust), fmtR(cPedagio), fmtR(cOutros), fmtR(totalVda)
+          ].forEach((v, i) => {
+            const td = document.createElement('td');
+            td.textContent = v;
+            if (i >= 2) td.className = 'num';
+            if (i === 6) { td.style.fontWeight = '700'; td.style.color = 'var(--accent)'; }
+            tr.appendChild(td);
+          });
+          tbCV.appendChild(tr);
+        });
+        if (countVda > 0) {
+          const tr = document.createElement('tr');
+          tr.className = 'total-row';
+          ['TOTAL', `${countVda} VDAs`, '', '', '', '', fmtR(totalFrota)].forEach((v, i) => {
+            const td = document.createElement('td');
+            td.textContent = v;
+            if (i >= 2) td.className = 'num';
+            tr.appendChild(td);
+          });
+          tbCV.appendChild(tr);
+        }
+        setEl('rc-frota', fmtR(totalFrota));
+        setEl('rc-frota-sub', `${countVda} VDA${countVda !== 1 ? 's' : ''} ativas`);
+
+        // totais globais
+        const custoTotal = totalEquipe + totalFrota;
+        setEl('rc-total', fmtR(custoTotal));
+        // busca FAT Natal
+        const natData = await loadDB('natal26');
+        let fatNat = 0;
+        natData.forEach(row => {
+          const isObj3 = !Array.isArray(row);
+          fatNat += parseF(isObj3 ? row.qtd_prog : row[3]) * parseF(isObj3 ? row.preco_saca : row[4]);
+        });
+        setEl('rc-fat-nat', fmtR(fatNat));
+        const resultado = fatNat - custoTotal;
+        const elRes = document.getElementById('rc-resultado');
+        if (elRes) {
+          elRes.textContent = fmtR(resultado);
+          elRes.className = 'custo-kpi-value ' + (resultado >= 0 ? 'green' : 'red');
+        }
+        const margem = fatNat > 0 ? (resultado / fatNat * 100).toFixed(1) : 0;
+        setEl('rc-margem', `Margem: ${margem}%`);
+      }
+    }
+
     calcKpis26('nat');
     calcKpis26('an');
   }
@@ -1740,7 +1958,7 @@
 
     // Busca clientes no Supabase
     try {
-      const r = await fetch(`${SB_URL}/rest/v1/clients?select=id,name,lat,lng,route,district,loans,segment,status&lat=neq.null&limit=2000`, {
+      const r = await fetch(`${SB_URL}/rest/v1/clients?select=id,name,lat,lng,route,district,loans,segment,status&lat=not.is.null&lng=not.is.null&limit=2000`, {
         headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
