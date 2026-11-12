@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Operação Natal & Ano Novo — Amazon Indústria de Gelo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin=""/>
 <style>
   :root {
     --bg: #0f1117;
@@ -215,6 +220,30 @@
   /* info box */
   .info-box { background:rgba(79,142,247,.07); border:1px solid rgba(79,142,247,.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:14px; }
   .info-box strong { display:block; margin-bottom:3px; }
+
+  /* ===== MAPA DE ROTAS ===== */
+  #map-container { position:relative; }
+  #map26 { width:100%; height:580px; border-radius:12px; border:1px solid var(--border); overflow:hidden; }
+  .map-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .map-toolbar select, .map-toolbar input[type=text] {
+    background:var(--surface2); color:var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:6px 10px; font-size:12px; outline:none; cursor:pointer;
+  }
+  .map-toolbar select:focus, .map-toolbar input[type=text]:focus { border-color:var(--accent); }
+  .map-legend { display:flex; gap:12px; flex-wrap:wrap; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-top:10px; }
+  .leg-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .leg-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  #map-stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .map-stat { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; }
+  .map-stat span { font-weight:700; color:var(--accent); }
+  /* Leaflet popup dark theme */
+  .leaflet-popup-content-wrapper { background:var(--surface) !important; color:var(--text) !important; border:1px solid var(--border) !important; border-radius:8px !important; box-shadow:0 4px 20px rgba(0,0,0,.5) !important; }
+  .leaflet-popup-tip { background:var(--surface) !important; }
+  .leaflet-popup-content { margin:10px 14px !important; font-size:12px !important; line-height:1.6 !important; }
+  .pop-name { font-weight:700; font-size:13px; color:var(--accent); margin-bottom:4px; }
+  .pop-row { color:var(--muted); }
+  .pop-row strong { color:var(--text); }
+  .pop-comod { margin-top:6px; padding:4px 8px; background:rgba(245,200,66,.12); border-radius:4px; font-size:11px; color:var(--yellow); }
 </style>
 </head>
 <body>
@@ -769,7 +798,7 @@
 <div class="tab-content" id="tab6">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
     <div style="font-size:22px;font-weight:800;color:#a78bfa">Operação 2026 <span class="year-badge">AO VIVO</span></div>
-    <div style="font-size:12px;color:var(--muted);margin-top:2px">Todos os dados são editáveis e salvos localmente no navegador</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">Dados editáveis e sincronizados com o banco Supabase ☁️ — compartilhado entre todos os computadores</div>
     <span id="globalSaveStatus" class="save-status">✓ Salvo</span>
   </div>
 
@@ -782,6 +811,7 @@
     <button class="subtab-btn" onclick="switchSubtab('st-natal26')">🎄 Natal 2026</button>
     <button class="subtab-btn" onclick="switchSubtab('st-anonovo26')">🎆 Ano Novo 2026</button>
     <button class="subtab-btn" onclick="switchSubtab('st-resumo26')">📊 Resumo Geral</button>
+    <button class="subtab-btn" onclick="switchSubtab('st-mapa26'); initMapa26()">🗺️ Mapa de Rotas</button>
   </div>
 
   <!-- ── VDAs / FROTA ── -->
@@ -1040,7 +1070,49 @@
       </div>
     </div>
   </div>
-</div><!-- /tab6 -->
+
+  <!-- ── MAPA DE ROTAS ── -->
+  <div class="subtab-panel" id="st-mapa26">
+    <div class="section-title">🗺️ Distribuição de Clientes por VDA / Rota</div>
+
+    <div id="map-stats">
+      <div class="map-stat">Total clientes: <span id="ms-total">—</span></div>
+      <div class="map-stat">Com coordenadas: <span id="ms-coords">—</span></div>
+      <div class="map-stat">Com comodato: <span id="ms-comod">—</span></div>
+      <div class="map-stat">Exibindo: <span id="ms-show">—</span></div>
+    </div>
+
+    <div class="map-toolbar">
+      <label style="font-size:12px;color:var(--muted)">Filtrar rota:</label>
+      <select id="map-filter-rota" onchange="applyMapFilter()">
+        <option value="">Todas as rotas</option>
+      </select>
+      <label style="font-size:12px;color:var(--muted)">Comodato:</label>
+      <select id="map-filter-comod" onchange="applyMapFilter()">
+        <option value="">Todos</option>
+        <option value="sim">Com comodato</option>
+        <option value="nao">Sem comodato</option>
+      </select>
+      <label style="font-size:12px;color:var(--muted)">Status:</label>
+      <select id="map-filter-status" onchange="applyMapFilter()">
+        <option value="">Todos</option>
+        <option value="active">Ativo</option>
+        <option value="inactive">Inativo</option>
+      </select>
+      <input type="text" id="map-search" placeholder="🔍 Buscar cliente..." oninput="applyMapFilter()" style="min-width:180px"/>
+      <button class="btn btn-save btn-sm" onclick="initMapa26(true)">🔄 Recarregar</button>
+    </div>
+
+    <div id="map-container">
+      <div id="map26"></div>
+    </div>
+
+    <div class="map-legend" id="map-legend">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-right:4px">LEGENDA:</div>
+    </div>
+  </div>
+
+</div><!-- /tab5 -->
 
 <script>
   /* =========================================================
@@ -1608,6 +1680,169 @@
       });
     });
   });
+
+  /* =========================================================
+     MAPA DE ROTAS — Leaflet + Supabase public.clients
+  ========================================================= */
+  let _map26 = null;         // instância Leaflet
+  let _mapLayer = null;      // MarkerClusterGroup atual
+  let _mapClients = [];      // todos clientes carregados
+  let _mapLoaded = false;    // flag para não recarregar desnecessário
+
+  // Paleta de cores por rota/VDA
+  const ROTA_COLORS = [
+    '#4f8ef7','#34c47c','#f5c842','#f26b6b','#f59c3c',
+    '#a78bfa','#38bdf8','#fb7185','#4ade80','#fbbf24',
+    '#e879f9','#22d3ee','#f97316','#84cc16','#ec4899',
+  ];
+  const _rotaColorMap = {};
+  let _rotaColorIdx = 0;
+  function getRotaColor(rota) {
+    if (!rota) return '#8b90a8';
+    if (!_rotaColorMap[rota]) {
+      _rotaColorMap[rota] = ROTA_COLORS[_rotaColorIdx % ROTA_COLORS.length];
+      _rotaColorIdx++;
+    }
+    return _rotaColorMap[rota];
+  }
+
+  function makeCircleIcon(color, hasComod) {
+    const outer = hasComod ? `<circle cx="12" cy="12" r="10" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="4 2"/>` : '';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      ${outer}
+      <circle cx="12" cy="12" r="7" fill="${color}" opacity="0.9"/>
+      ${hasComod ? `<circle cx="12" cy="12" r="3.5" fill="#fff" opacity="0.9"/>` : ''}
+    </svg>`;
+    return L.divIcon({
+      className: '',
+      html: svg,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -14],
+    });
+  }
+
+  async function initMapa26(force) {
+    // Inicializa mapa Leaflet apenas uma vez
+    if (!_map26) {
+      _map26 = L.map('map26', {
+        center: [-3.117, -60.025],
+        zoom: 11,
+        zoomControl: true,
+      });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        subdomains: 'abcd', maxZoom: 19,
+      }).addTo(_map26);
+    }
+
+    if (_mapLoaded && !force) return;
+
+    // Busca clientes no Supabase
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/clients?select=id,name,lat,lng,route,district,loans,segment,status&lat=neq.null&limit=2000`, {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _mapClients = await r.json();
+      _mapLoaded = true;
+    } catch(e) {
+      alert('Erro ao carregar clientes do Supabase: ' + e.message);
+      return;
+    }
+
+    // Preenche filtro de rotas
+    const rotas = [...new Set(_mapClients.map(c => c.route).filter(Boolean))].sort();
+    const selRota = document.getElementById('map-filter-rota');
+    // limpa opções antigas (mantém "Todas")
+    while (selRota.options.length > 1) selRota.remove(1);
+    rotas.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r; o.textContent = 'Rota ' + r;
+      selRota.appendChild(o);
+    });
+
+    // Pré-calcula mapa de cores para todas rotas
+    rotas.forEach(r => getRotaColor(r));
+
+    // Atualiza estatísticas globais
+    document.getElementById('ms-total').textContent = _mapClients.length;
+    document.getElementById('ms-coords').textContent = _mapClients.filter(c => c.lat && c.lng).length;
+    document.getElementById('ms-comod').textContent = _mapClients.filter(c => c.loans).length;
+
+    // Renderiza mapa com todos os clientes
+    applyMapFilter();
+
+    // Atualiza legenda
+    renderMapLegend(rotas);
+
+    // Ajusta viewport para Manaus
+    _map26.invalidateSize();
+  }
+
+  function applyMapFilter() {
+    if (!_mapClients.length) return;
+
+    const fRota   = document.getElementById('map-filter-rota').value;
+    const fComod  = document.getElementById('map-filter-comod').value;
+    const fStatus = document.getElementById('map-filter-status').value;
+    const fSearch = (document.getElementById('map-search').value || '').toLowerCase();
+
+    const filtered = _mapClients.filter(c => {
+      if (!c.lat || !c.lng) return false;
+      if (fRota   && c.route  !== fRota)                   return false;
+      if (fComod === 'sim' && !c.loans)                    return false;
+      if (fComod === 'nao' && c.loans)                     return false;
+      if (fStatus && c.status !== fStatus)                 return false;
+      if (fSearch && !(c.name || '').toLowerCase().includes(fSearch)) return false;
+      return true;
+    });
+
+    // Remove camada anterior
+    if (_mapLayer) { _map26.removeLayer(_mapLayer); }
+    _mapLayer = L.markerClusterGroup({
+      maxClusterRadius: 40,
+      iconCreateFunction: function(cluster) {
+        const count = cluster.getChildCount();
+        const size  = count > 100 ? 44 : count > 20 ? 36 : 28;
+        return L.divIcon({
+          html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(79,142,247,.85);border:2px solid #4f8ef7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">${count}</div>`,
+          className: '', iconSize: [size, size], iconAnchor: [size/2, size/2],
+        });
+      },
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+    });
+
+    filtered.forEach(c => {
+      const color   = getRotaColor(c.route);
+      const hasComod = !!c.loans;
+      const marker  = L.marker([c.lat, c.lng], { icon: makeCircleIcon(color, hasComod) });
+      const popup   = `
+        <div class="pop-name">${c.name || '—'}</div>
+        <div class="pop-row">🗺️ Rota: <strong>${c.route || '—'}</strong></div>
+        <div class="pop-row">📍 Bairro: <strong>${c.district || '—'}</strong></div>
+        <div class="pop-row">🏪 Segmento: <strong>${c.segment || '—'}</strong></div>
+        <div class="pop-row">📌 Status: <strong>${c.status || '—'}</strong></div>
+        ${hasComod ? `<div class="pop-comod">🧊 Comodato: ${c.loans}</div>` : ''}
+      `;
+      marker.bindPopup(popup, { maxWidth: 260, minWidth: 200 });
+      _mapLayer.addLayer(marker);
+    });
+
+    _map26.addLayer(_mapLayer);
+    document.getElementById('ms-show').textContent = filtered.length;
+  }
+
+  function renderMapLegend(rotas) {
+    const leg = document.getElementById('map-legend');
+    leg.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-right:4px">ROTAS:</div>';
+    rotas.slice(0, 15).forEach(r => {
+      const color = getRotaColor(r);
+      leg.innerHTML += `<div class="leg-item"><div class="leg-dot" style="background:${color}"></div>Rota ${r}</div>`;
+    });
+    leg.innerHTML += `<div class="leg-item" style="margin-left:12px"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="none" stroke="var(--yellow)" stroke-width="1.5" stroke-dasharray="3 1.5"/><circle cx="7" cy="7" r="4" fill="var(--yellow)" opacity=".7"/><circle cx="7" cy="7" r="2" fill="#fff" opacity=".9"/></svg> Com comodato</div>`;
+  }
 </script>
 </body>
 </html>
