@@ -977,10 +977,12 @@
     <div class="tbl-wrap">
       <table id="tbl-func">
         <thead><tr>
-          <th>Nome</th><th>Função</th><th>Turno</th><th>VDA Fixo</th>
+          <th>Nome</th><th>Função</th><th>VDA Fixo</th>
           <th>CPF / ID</th><th>Tel</th><th>Status</th><th>Obs</th>
-          <th>Vínculo</th><th>Valor Diário R$</th><th>Almoço R$</th><th>Janta R$</th>
-          <th>B.H. R$</th><th>Extra Not. R$</th><th>Premiação R$</th>
+          <th>Vínculo</th><th>Diária R$</th><th>Almoço</th><th>Janta</th>
+          <th>Início</th><th>Fim</th>
+          <th>Hrs Trab.</th><th>B.H.</th><th>Hrs Extra</th>
+          <th>R$/hora</th><th>Total Extra</th><th>Gratificação R$</th><th>Custo Total</th>
           <th></th>
         </tr></thead>
         <tbody id="tbody-func"></tbody>
@@ -1254,8 +1256,8 @@
               <thead><tr>
                 <th>Nome</th><th>Função</th><th>Vínculo</th>
                 <th class="num">Diária</th><th class="num">Almoço</th><th class="num">Janta</th>
-                <th class="num">B.H.</th><th class="num">Ext.Not.</th><th class="num">Prêmio</th>
-                <th class="num">Total</th>
+                <th class="num">Hrs Extra</th><th class="num">Total Extra</th>
+                <th class="num">Gratif.</th><th class="num">Total</th>
               </tr></thead>
               <tbody id="tbody-custo-func"></tbody>
             </table>
@@ -1568,12 +1570,22 @@
       {t:'number'},{t:'number'},{t:'number'},{t:'number'}
     ],
     funcs26: [
-      {t:'text'},{t:'select',opts:['Motorista','Ajudante','Supervisor','Operador Câmara','Administrativo']},
-      {t:'select',opts:['1° Turno','2° Turno','Diurno','Noturno','Escala']},
+      // 0:nome  1:funcao  2:vda_fixo  3:cpf_id  4:tel
+      {t:'text'},
+      {t:'select',opts:['Motorista','Ajudante','Supervisor','Operador Câmara','Administrativo']},
       {t:'text'},{t:'text'},{t:'text'},
-      {t:'select',opts:['Ativo','Férias','Afastado','Inativo']},{t:'text'},
+      // 5:status  6:obs  7:tipo_vinculo
+      {t:'select',opts:['Ativo','Férias','Afastado','Inativo']},
+      {t:'text'},
       {t:'select',opts:['próprio','terceiro']},
-      {t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'},{t:'number'}
+      // 8:valor_diario  9:almoco(calc=R$30 fixo)  10:janta(calc=R$22 se fim≥19h)
+      {t:'number'},{t:'calc'},{t:'calc'},
+      // 11:hora_inicio  12:hora_fim
+      {t:'time'},{t:'time'},
+      // 13:hrs_trabalhadas(calc)  14:bh_hrs(calc)  15:hrs_extra(calc)
+      {t:'calc'},{t:'calc'},{t:'calc'},
+      // 16:vl_hora_extra  17:total_extra(calc)  18:gratificacao  19:custo_total(calc)
+      {t:'number'},{t:'calc'},{t:'number'},{t:'calc'}
     ],
     clientes26: [
       {t:'text'},{t:'text'},
@@ -1651,7 +1663,10 @@
 
   /* blank templates */
   const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'];
-  const funcBlank    = ['','Motorista','1° Turno','','','','Ativo','','próprio','0','0','0','0','0','0'];
+  // funcs26: 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
+  //          8:valor_diario 9:almoco(c) 10:janta(c) 11:hora_inicio 12:hora_fim
+  //          13:hrs(c) 14:bh(c) 15:extra(c) 16:vl_hora_extra 17:total_extra(c) 18:gratificacao 19:custo(c)
+  const funcBlank    = ['','Motorista','','','','Ativo','','próprio','0','','','','','','','','0','','0',''];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
   // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), liquidacao, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
   const rotaBlank    = ['801','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
@@ -1668,7 +1683,7 @@
     const schema = SCHEMA[dbKey];
     const COL_MAP = {
       vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
-      funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
+      funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
       natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','liquidacao','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
@@ -1690,7 +1705,10 @@
     data.forEach((row, ri) => {
       // Se vier do Supabase (objeto), converte para array
       const rowArr = Array.isArray(row) ? row : rowToArray(dbKey, row);
-      tbody.appendChild(buildRow(tblId, dbKey, schema, rowArr, ri));
+      const tr = buildRow(tblId, dbKey, schema, rowArr, ri);
+      tbody.appendChild(tr);
+      // dispara cálculos ao carregar funcs26
+      if (dbKey === 'funcs26') recalcRow(tr, dbKey);
     });
   }
 
@@ -1735,14 +1753,24 @@
         td.style.fontWeight = '600';
         td.textContent = val || '—';
         td.dataset.calc = '1';
+      } else if (col.t === 'time') {
+        const inp = document.createElement('input');
+        inp.type = 'time';
+        inp.value = val || '';
+        inp.style.cssText = 'background:transparent;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;font-size:12px;width:90px';
+        inp.oninput = () => recalcRow(tr, dbKey);
+        td.appendChild(inp);
       } else {
         td.contentEditable = 'true';
         td.textContent = val;
         td.spellcheck = false;
         if (col.t === 'number') td.style.textAlign = 'right';
         if (col.t === 'date') td.style.color = 'var(--accent)';
-        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26)
+        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26) e funcs26
         if (col.t === 'number' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
+          td.oninput = () => recalcRow(tr, dbKey);
+        }
+        if (col.t === 'number' && dbKey === 'funcs26') {
           td.oninput = () => recalcRow(tr, dbKey);
         }
       }
@@ -1801,7 +1829,9 @@
         }
         const sel = td.querySelector('select:not(.ponto-rota-sel):not(.ponto-dropdown *)');
         const pontoSel = td.querySelector('.ponto-rota-sel');
+        const timeInp = td.querySelector('input[type="time"]');
         if (pontoSel) { row.push(pontoSel.value); return; }
+        if (timeInp) { row.push(timeInp.value); return; }
         row.push(sel ? sel.value : td.textContent.trim());
       });
       rows.push(row);
@@ -1814,7 +1844,11 @@
   ========================================================= */
   const COL_NAMES = {
     vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
-    funcs26:   ['nome','funcao','turno','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao'],
+    // 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
+    // 8:valor_diario 9:almoco(calc) 10:janta(calc) 11:hora_inicio 12:hora_fim
+    // 13:hrs_trab(calc) 14:bh_hrs(calc) 15:hrs_extra(calc)
+    // 16:vl_hora_extra 17:total_extra(calc) 18:gratificacao 19:custo_total(calc)
+    funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario',null,null,'hora_inicio','hora_fim',null,null,null,'vl_hora_extra',null,'gratificacao',null],
     clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
     produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
     // 0:ponto 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco_saca 6:fat(calc) 7:peso(calc)
@@ -1839,7 +1873,7 @@
       if (['qtd_prog','preco_saca','retorno','venda_real','qtd_padrao','s5','s10','s20','s40',
            'cap_bau_kg','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello',
            'preco_consig','preco_manif','qtd_sacas',
-           'valor_diario','almoco','janta','bh_valor','extra_noturno','premiacao',
+           'valor_diario','vl_hora_extra','gratificacao',
            'custo_diario','custo_combustivel','custo_pedagio','custo_outros'].includes(c)) {
         v = parseF(v) || 0;
       }
@@ -1877,6 +1911,11 @@
     const tbody = document.getElementById(TBODY_MAP[tblId]);
     if (!tbody) return;
     const schema = SCHEMA[dbKey];
+    // funcs26: delega para recalcRow por linha
+    if (dbKey === 'funcs26') {
+      tbody.querySelectorAll('tr').forEach(tr => recalcRow(tr, dbKey));
+      return;
+    }
     tbody.querySelectorAll('tr').forEach(tr => {
       const cells = tr.querySelectorAll('td:not(:last-child)');
       // Montagem da Operação (22 cols):
@@ -2067,7 +2106,42 @@
   /* =========================================================
      RECALC UMA ÚNICA LINHA (natal26 / anonovo26)
   ========================================================= */
+  function horaToDecimal(hhmm) {
+    if (!hhmm) return 0;
+    const parts = hhmm.split(':').map(Number);
+    return (parts[0] || 0) + (parts[1] || 0) / 60;
+  }
+
   function recalcRow(tr, dbKey) {
+    // ── funcs26: horas trabalhadas, banco de horas, extras ──
+    if (dbKey === 'funcs26') {
+      const cells = tr.querySelectorAll('td:not(:last-child)');
+      const valorDiario  = parseF(cells[8]?.textContent);
+      const horaIni      = cells[11]?.querySelector('input[type="time"]')?.value || '';
+      const horaFim      = cells[12]?.querySelector('input[type="time"]')?.value || '';
+      const vlHoraExtra  = parseF(cells[16]?.textContent);
+      const gratif       = parseF(cells[18]?.textContent);
+
+      const fimDec = horaToDecimal(horaFim);
+      const iniDec = horaToDecimal(horaIni) || 7;
+
+      const hrsTrab   = fimDec > 0 ? (fimDec - iniDec) : 0;
+      const bhHrs     = (fimDec > 17 && fimDec < 19) ? (fimDec - 17) : 0;
+      const hrsExtra  = fimDec >= 19 ? (fimDec - 17) : 0;
+      const almoco    = valorDiario > 0 ? 30 : 0; // R$30 fixo se tem diária
+      const janta     = fimDec >= 19 ? 22 : 0;
+      const totalExtra = hrsExtra * vlHoraExtra;
+      const custoTotal = valorDiario + almoco + janta + totalExtra + gratif;
+
+      if (cells[9]?.dataset.calc)  cells[9].textContent  = valorDiario > 0 ? 'R$ 30,00' : '—';
+      if (cells[10]?.dataset.calc) cells[10].textContent = janta > 0 ? fmtR(janta) : '—';
+      if (cells[13]?.dataset.calc) cells[13].textContent = hrsTrab > 0 ? hrsTrab.toFixed(1) + 'h' : '—';
+      if (cells[14]?.dataset.calc) cells[14].textContent = bhHrs > 0 ? bhHrs.toFixed(1) + 'h B.H.' : '—';
+      if (cells[15]?.dataset.calc) cells[15].textContent = hrsExtra > 0 ? hrsExtra.toFixed(1) + 'h' : '—';
+      if (cells[17]?.dataset.calc) cells[17].textContent = totalExtra > 0 ? fmtR(totalExtra) : '—';
+      if (cells[19]?.dataset.calc) cells[19].textContent = custoTotal > 0 ? fmtR(custoTotal) : '—';
+      return;
+    }
     if (dbKey !== 'natal26' && dbKey !== 'anonovo26') return;
     const cells = tr.querySelectorAll('td:not(:last-child)');
     const qtd      = parseF(cells[4]?.textContent);
@@ -2201,26 +2275,29 @@
       let countFunc = 0;
       funcData.forEach(r => {
         const isObj = !Array.isArray(r);
-        const nome     = isObj ? r.nome          : r[0];
-        const funcao   = isObj ? r.funcao        : r[1];
-        const vinculo  = isObj ? (r.tipo_vinculo || 'próprio') : (r[8] || 'próprio');
-        const diaria   = parseF(isObj ? r.valor_diario  : r[9]);
-        const almoco   = parseF(isObj ? r.almoco        : r[10]);
-        const janta    = parseF(isObj ? r.janta         : r[11]);
-        const bh       = parseF(isObj ? r.bh_valor      : r[12]);
-        const extNot   = parseF(isObj ? r.extra_noturno : r[13]);
-        const premio   = parseF(isObj ? r.premiacao     : r[14]);
-        // usa custo calculado pelo Supabase se disponível, senão soma manual
-        const totalFn  = isObj && r.custo_total_func
-          ? parseF(r.custo_total_func)
-          : diaria + almoco + janta + bh + extNot + premio;
+        const nome        = isObj ? r.nome            : r[0];
+        const funcao      = isObj ? r.funcao          : r[1];
+        const vinculo     = isObj ? (r.tipo_vinculo || 'próprio') : (r[7] || 'próprio');
+        const diaria      = parseF(isObj ? r.valor_diario   : r[8]);
+        const horaFimRaw  = isObj ? (r.hora_fim || '')     : (r[12] || '');
+        const fimDec      = horaToDecimal(horaFimRaw);
+        const hrsExtra    = fimDec >= 19 ? (fimDec - 17) : 0;
+        const vlHoraExtra = parseF(isObj ? r.vl_hora_extra  : r[16]);
+        const gratif      = parseF(isObj ? r.gratificacao   : r[18]);
+        const almoco      = diaria > 0 ? 30 : 0;
+        const janta       = fimDec >= 19 ? 22 : 0;
+        const totalExtra  = hrsExtra * vlHoraExtra;
+        const totalFn     = diaria + almoco + janta + totalExtra + gratif;
         if (!nome) return;
         totalEquipe += totalFn;
         countFunc++;
         const tr = document.createElement('tr');
         [nome, funcao, vinculo,
-         fmtR(diaria), fmtR(almoco), fmtR(janta),
-         fmtR(bh), fmtR(extNot), fmtR(premio), fmtR(totalFn)
+         fmtR(diaria), fmtR(almoco), janta > 0 ? fmtR(janta) : '—',
+         hrsExtra > 0 ? hrsExtra.toFixed(1) + 'h' : '—',
+         totalExtra > 0 ? fmtR(totalExtra) : '—',
+         gratif > 0 ? fmtR(gratif) : '—',
+         fmtR(totalFn)
         ].forEach((v, i) => {
           const td = document.createElement('td');
           td.textContent = v;
