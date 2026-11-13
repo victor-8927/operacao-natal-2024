@@ -471,6 +471,69 @@
   .info-box { background:rgba(79,142,247,.07); border:1px solid rgba(79,142,247,.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--accent); margin-bottom:14px; }
   .info-box strong { display:block; margin-bottom:3px; }
 
+  /* ===== PAINEL MANIFESTOS (cards mãe + filhos) ===== */
+  .manifest-toolbar { display:flex; gap:10px; align-items:center; padding:10px 0 14px; flex-wrap:wrap; }
+  .manifest-colunas { display:flex; flex-direction:column; gap:14px; }
+
+  /* Card mãe */
+  .mcard-mae { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:border-color .2s; }
+  .mcard-mae:hover { border-color:rgba(79,142,247,.4); }
+  .mcard-mae-header { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; user-select:none; }
+  .mcard-mae-header:hover { background:var(--surface2); }
+  .mcard-mae-toggle { font-size:12px; color:var(--muted); transition:transform .2s; flex-shrink:0; }
+  .mcard-mae.expanded .mcard-mae-toggle { transform:rotate(90deg); }
+  .mcard-mae-title { font-size:13px; font-weight:700; color:var(--text); flex:1; }
+  .mcard-mae-oc   { font-size:11px; color:var(--accent); background:rgba(79,142,247,.12); padding:2px 8px; border-radius:10px; font-weight:600; }
+  .mcard-mae-data { font-size:11px; color:var(--muted); }
+  .mcard-mae-stats { display:flex; gap:12px; margin-left:auto; }
+  .mcard-mae-stat  { display:flex; flex-direction:column; align-items:flex-end; }
+  .mcard-mae-stat-val { font-size:12px; font-weight:700; color:var(--text); }
+  .mcard-mae-stat-lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .mcard-mae-st { font-size:10px; font-weight:700; border-radius:5px; padding:2px 7px; flex-shrink:0; }
+  .mcard-mae-st.planejado { background:rgba(245,200,66,.15); color:#f5c842; }
+  .mcard-mae-st.faturado  { background:rgba(52,196,124,.15); color:var(--green); }
+  .mcard-mae-st.fechado   { background:rgba(170,170,170,.12); color:var(--muted); }
+  .mcard-mae-actions { display:flex; gap:4px; flex-shrink:0; }
+  .mcard-mae-actions button { background:none; border:none; cursor:pointer; font-size:14px; padding:3px 5px; border-radius:4px; opacity:.7; }
+  .mcard-mae-actions button:hover { opacity:1; background:var(--surface2); }
+
+  /* Corpo expandido (cargas filhas) */
+  .mcard-filhos-wrap { display:none; border-top:1px solid var(--border); }
+  .mcard-mae.expanded .mcard-filhos-wrap { display:block; }
+  .mcard-filhos-header { display:grid; padding:6px 16px; background:var(--surface2); font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .mcard-filho { display:grid; align-items:center; gap:8px; padding:10px 16px; border-top:1px solid rgba(255,255,255,.04); }
+  .mcard-filho:hover { background:var(--surface2); }
+  /* grade: [cor] [info] [OC Consignada] [retornos] [obs] [ações] */
+  .mcard-filho { grid-template-columns: 4px 1fr 150px auto 160px 28px; }
+  .mcard-filho-bar { width:4px; border-radius:2px; height:36px; background:var(--accent); flex-shrink:0; }
+  .mcard-filho-info { display:flex; flex-direction:column; gap:2px; }
+  .mcard-filho-vda  { font-size:12px; font-weight:700; color:var(--text); }
+  .mcard-filho-mot  { font-size:10px; color:var(--muted); }
+  .mcard-filho-oc   { font-size:11px; }
+  .mcard-filho-oc input { background:var(--surface2); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:11px; padding:3px 7px; outline:none; width:100%; }
+  .mcard-filho-oc input:focus { border-color:var(--accent); }
+  .mcard-filho-ret  { display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--muted); }
+  .mcard-filho-ret-row { display:flex; gap:6px; align-items:center; }
+  .mcard-filho-ret-row span { min-width:28px; }
+  .mcard-filho-ret-row input { width:48px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-size:11px; padding:2px 5px; text-align:center; outline:none; }
+  .mcard-filho-ret-row input:focus { border-color:#f5c842; }
+  .mcard-filho-obs  { font-size:11px; color:var(--muted); font-style:italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mcard-filho-del  { background:none; border:none; cursor:pointer; font-size:13px; opacity:.5; padding:3px; border-radius:4px; }
+  .mcard-filho-del:hover { opacity:1; background:rgba(255,80,80,.12); }
+
+  /* Adicionar carga ao manifesto */
+  .mcard-add-carga { padding:10px 16px 12px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .mcard-add-carga select { background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:11px; padding:4px 8px; outline:none; flex:1; min-width:160px; }
+  .mcard-add-carga select:focus { border-color:var(--accent); }
+  .mcard-add-carga button { font-size:11px; padding:4px 10px; }
+
+  /* OC field label */
+  .mcard-filho-oc-lbl { font-size:9px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+
+  /* Vazio */
+  .mcard-vazio { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+  .mcard-vazio-icon { font-size:36px; display:block; margin-bottom:8px; opacity:.4; }
+
   /* ===== MAPA DE ROTAS ===== */
   #map-container { position:relative; }
   #map26 { width:100%; height:580px; border-radius:12px; border:1px solid var(--border); overflow:hidden; }
@@ -1265,6 +1328,7 @@
       <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-escala',this)">📦 Escalonamento de Equipes</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-comodato',this)">🤝 Comodatos / 3°</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-prog',this); renderProgPanel('nat')">📅 Programações</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-manifest',this); renderManifestPanel('nat')">📋 Manifestos</button>
     </div>
 
     <!-- ── MONTAGEM DA OPERAÇÃO ── -->
@@ -1342,6 +1406,17 @@
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
       </div>
     </div>
+
+    <!-- ── MANIFESTOS (Natal 2026) ── -->
+    <div class="inner-tab-panel" id="it-nat-manifest">
+      <div class="manifest-toolbar">
+        <button class="btn btn-save" onclick="renderManifestPanel('nat')">🔄 Atualizar</button>
+        <span style="font-size:11px;color:var(--muted)">Cards mãe = manifesto · Cards filhos = cargas vinculadas</span>
+      </div>
+      <div id="manifest-panel-nat" class="manifest-colunas">
+        <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar os manifestos.</div>
+      </div>
+    </div>
   </div>
 
   <!-- ── ANO NOVO 2026 ── -->
@@ -1362,6 +1437,7 @@
       <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-escala',this)">📦 Escalonamento de Equipes</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-comodato',this)">🤝 Comodatos / 3°</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-prog',this); renderProgPanel('an')">📅 Programações</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-manifest',this); renderManifestPanel('an')">📋 Manifestos</button>
     </div>
 
     <!-- ── MONTAGEM DA OPERAÇÃO ── -->
@@ -1437,6 +1513,17 @@
       </div>
       <div id="prog-panel-an" class="prog-colunas">
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
+      </div>
+    </div>
+
+    <!-- ── MANIFESTOS (Ano Novo 2026) ── -->
+    <div class="inner-tab-panel" id="it-an-manifest">
+      <div class="manifest-toolbar">
+        <button class="btn btn-save" onclick="renderManifestPanel('an')">🔄 Atualizar</button>
+        <span style="font-size:11px;color:var(--muted)">Cards mãe = manifesto · Cards filhos = cargas vinculadas</span>
+      </div>
+      <div id="manifest-panel-an" class="manifest-colunas">
+        <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar os manifestos.</div>
       </div>
     </div>
   </div>
@@ -4015,6 +4102,235 @@
         await renderEscala(which);
       };
     }
+  }
+
+  /* =========================================================
+     MANIFESTOS — PAINEL CARDS MÃE + FILHOS
+  ========================================================= */
+
+  // Cache de cargas vinculadas: { [manifesto_id]: [...cargas] }
+  let _manifestoCargas = {};
+
+  /**
+   * Carrega op26_manifesto_cargas + join op26_carga_natal para um manifesto
+   */
+  async function loadManifestCargas(manifestoId) {
+    try {
+      const rows = await sbFetch(
+        `op26_manifesto_cargas?manifesto_id=eq.${manifestoId}&select=*,op26_carga_natal(id,vda,motorista,num_oc,qtd_prog,fat_real,status)&order=id`
+      );
+      return rows || [];
+    } catch(e) { return []; }
+  }
+
+  /**
+   * Renderiza o painel completo de manifestos (cards mãe + filhos expandíveis)
+   */
+  async function renderManifestPanel(which) {
+    const panelId = 'manifest-panel-' + which;
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+
+    panel.innerHTML = '<div class="prog-vazio">⏳ Carregando manifestos...</div>';
+
+    // Garante que manifestos estão carregados
+    if (!_manifestosState[which] || !_manifestosState[which].length) {
+      await loadManifestosDB(which);
+    }
+
+    const manifestos = _manifestosState[which] || [];
+    if (!manifestos.length) {
+      panel.innerHTML = `<div class="mcard-vazio"><span class="mcard-vazio-icon">📋</span>Nenhum manifesto criado ainda.<br><small>Acesse o Escalonamento de Equipes e clique em "📋 Manifesto" em qualquer rota.</small></div>`;
+      return;
+    }
+
+    // Carrega cargas filhas de todos os manifestos em paralelo
+    const cargasMap = {};
+    await Promise.all(manifestos.map(async m => {
+      cargasMap[m.id] = await loadManifestCargas(m.id);
+    }));
+
+    // Carrega todas as cargas disponíveis do período para o seletor
+    const dbKey = which === 'nat' ? 'natal26' : 'anonovo26';
+    const todasCargas = (await loadDB(dbKey)) || [];
+
+    // Agrupa manifestos por data
+    const porData = {};
+    manifestos.forEach(m => {
+      const d = m.data || 'sem-data';
+      if (!porData[d]) porData[d] = [];
+      porData[d].push(m);
+    });
+
+    const datasOrdenadas = Object.keys(porData).sort();
+
+    let html = '';
+    datasOrdenadas.forEach(data => {
+      const dataLabel = OP_DATES.find(d => d.val === data)?.label || data;
+      html += `<div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:0 2px">${dataLabel}</div>`;
+
+      porData[data].forEach(m => {
+        const filhos = cargasMap[m.id] || [];
+        const stClass = m.status || 'planejado';
+        const stLabel = { planejado:'Planejado', faturado:'Faturado', fechado:'Fechado' }[m.status] || m.status || '—';
+
+        // Totais do manifesto
+        const totalSacas = (m.kg5_planejado||0)+(m.kg10_planejado||0)+(m.kg20_planejado||0)+(m.kg40_planejado||0);
+        const totalRet   = filhos.reduce((s,f) => s+(f.retorno_s5||0)+(f.retorno_s10||0)+(f.retorno_s20||0)+(f.retorno_s40||0), 0);
+
+        // Cargas disponíveis para vincular (que ainda não estão neste manifesto)
+        const vinculadosIds = new Set(filhos.map(f => f.carga_id));
+        const disponiveis = todasCargas.filter(c => !vinculadosIds.has(c.id) && c.id);
+        const optDisp = disponiveis.map(c => {
+          const vda = c.vda || '?';
+          const mot = c.motorista || '';
+          const qtd = c.qtd_prog || 0;
+          return `<option value="${c.id}">VDA ${vda} — ${mot} (${qtd} sacas)</option>`;
+        }).join('');
+
+        // Renderiza filhos
+        let filhosHtml = '';
+        if (filhos.length) {
+          filhosHtml = filhos.map(f => {
+            const c = f.op26_carga_natal || {};
+            const vda = c.vda || '?';
+            const mot = c.motorista || '—';
+            const qtd = c.qtd_prog || 0;
+            return `
+            <div class="mcard-filho" id="mf-filho-${f.id}">
+              <div class="mcard-filho-bar"></div>
+              <div class="mcard-filho-info">
+                <div class="mcard-filho-vda">VDA ${vda}</div>
+                <div class="mcard-filho-mot">${mot} · ${qtd} sacas</div>
+              </div>
+              <div class="mcard-filho-oc">
+                <div class="mcard-filho-oc-lbl">OC Consignada</div>
+                <input type="text" value="${f.oc_consignada||''}" placeholder="Ex: OC-00001"
+                  onblur="saveManifestoCarga(${f.id},'oc_consignada',this.value,'${which}')"
+                  onkeydown="if(event.key==='Enter')this.blur()">
+              </div>
+              <div class="mcard-filho-ret">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Retorno</div>
+                <div class="mcard-filho-ret-row">
+                  <span>5kg</span><input type="number" min="0" value="${f.retorno_s5||0}"
+                    onblur="saveManifestoCarga(${f.id},'retorno_s5',+this.value,'${which}')"
+                    onkeydown="if(event.key==='Enter')this.blur()">
+                  <span>10kg</span><input type="number" min="0" value="${f.retorno_s10||0}"
+                    onblur="saveManifestoCarga(${f.id},'retorno_s10',+this.value,'${which}')"
+                    onkeydown="if(event.key==='Enter')this.blur()">
+                  <span>20kg</span><input type="number" min="0" value="${f.retorno_s20||0}"
+                    onblur="saveManifestoCarga(${f.id},'retorno_s20',+this.value,'${which}')"
+                    onkeydown="if(event.key==='Enter')this.blur()">
+                  <span>40kg</span><input type="number" min="0" value="${f.retorno_s40||0}"
+                    onblur="saveManifestoCarga(${f.id},'retorno_s40',+this.value,'${which}')"
+                    onkeydown="if(event.key==='Enter')this.blur()">
+                </div>
+              </div>
+              <div class="mcard-filho-obs" title="${(f.obs||'')}">
+                ${f.obs ? `💬 ${f.obs}` : '<span style="opacity:.4">sem obs</span>'}
+              </div>
+              <button class="mcard-filho-del" title="Desvincular carga" onclick="desvincularCarga(${f.id},${m.id},'${which}')">✕</button>
+            </div>`;
+          }).join('');
+        } else {
+          filhosHtml = `<div style="padding:12px 16px;font-size:11px;color:var(--muted);font-style:italic">Nenhuma carga vinculada. Use o seletor abaixo para vincular.</div>`;
+        }
+
+        html += `
+        <div class="mcard-mae" id="mcard-${m.id}">
+          <div class="mcard-mae-header" onclick="toggleManifestCard(${m.id})">
+            <span class="mcard-mae-toggle">▶</span>
+            <div class="mcard-mae-title">Rota ${m.rota_num}</div>
+            ${m.num_oc ? `<span class="mcard-mae-oc">OC ${m.num_oc}</span>` : ''}
+            <span class="mcard-mae-data">${dataLabel}</span>
+            <div class="mcard-mae-stats">
+              <div class="mcard-mae-stat">
+                <span class="mcard-mae-stat-val">${totalSacas}</span>
+                <span class="mcard-mae-stat-lbl">sacas</span>
+              </div>
+              <div class="mcard-mae-stat">
+                <span class="mcard-mae-stat-val">${filhos.length}</span>
+                <span class="mcard-mae-stat-lbl">cargas</span>
+              </div>
+              ${totalRet ? `<div class="mcard-mae-stat">
+                <span class="mcard-mae-stat-val" style="color:#f5c842">${totalRet}</span>
+                <span class="mcard-mae-stat-lbl">retorno</span>
+              </div>` : ''}
+            </div>
+            <span class="mcard-mae-st ${stClass}">${stLabel}</span>
+            <div class="mcard-mae-actions">
+              <button title="Editar manifesto" onclick="event.stopPropagation(); editManifesto(${m.id},'${which}','${m.rota_num}')">✏️</button>
+              <button title="Excluir manifesto" onclick="event.stopPropagation(); deleteManifesto(${m.id},'${which}','${m.rota_num}')">🗑</button>
+            </div>
+          </div>
+          <div class="mcard-filhos-wrap" id="mcard-filhos-${m.id}">
+            ${filhosHtml}
+            <div class="mcard-add-carga">
+              <select id="sel-carga-${m.id}">
+                <option value="">— Vincular carga ao manifesto —</option>
+                ${optDisp}
+              </select>
+              <button class="btn btn-add" style="font-size:11px;padding:4px 10px" onclick="vincularCarga(${m.id},'${which}')">+ Vincular</button>
+            </div>
+          </div>
+        </div>`;
+      });
+    });
+
+    panel.innerHTML = html;
+  }
+
+  /** Toggle expand/collapse do card mãe */
+  function toggleManifestCard(id) {
+    const card = document.getElementById('mcard-' + id);
+    if (card) card.classList.toggle('expanded');
+  }
+
+  /** Vincula uma carga ao manifesto via op26_manifesto_cargas */
+  async function vincularCarga(manifestoId, which) {
+    const sel = document.getElementById('sel-carga-' + manifestoId);
+    if (!sel || !sel.value) return;
+    const cargaId = parseInt(sel.value);
+
+    try {
+      const r = await sbFetch('op26_manifesto_cargas', {
+        method: 'POST',
+        body: JSON.stringify({ manifesto_id: manifestoId, carga_id: cargaId })
+      });
+      if (r === null) { alert('Erro ao vincular carga.'); return; }
+    } catch(e) { alert('Erro de rede: ' + e.message); return; }
+
+    // Re-renderiza o painel
+    await renderManifestPanel(which);
+    // Expande o card novamente
+    setTimeout(() => {
+      const card = document.getElementById('mcard-' + manifestoId);
+      if (card && !card.classList.contains('expanded')) card.classList.add('expanded');
+    }, 50);
+  }
+
+  /** Desvincula uma carga do manifesto */
+  async function desvincularCarga(vinculoId, manifestoId, which) {
+    if (!confirm('Desvincular esta carga do manifesto?')) return;
+    try {
+      await sbFetch(`op26_manifesto_cargas?id=eq.${vinculoId}`, { method: 'DELETE' });
+    } catch(e) {}
+
+    await renderManifestPanel(which);
+    setTimeout(() => {
+      const card = document.getElementById('mcard-' + manifestoId);
+      if (card && !card.classList.contains('expanded')) card.classList.add('expanded');
+    }, 50);
+  }
+
+  /** Salva campo individual de um vínculo (oc_consignada ou retorno) */
+  async function saveManifestoCarga(vinculoId, campo, valor, which) {
+    try {
+      await sbFetch(`op26_manifesto_cargas?id=eq.${vinculoId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ [campo]: valor })
+      });
+    } catch(e) { console.warn('saveManifestoCarga net', e); }
   }
 
   /* =========================================================
