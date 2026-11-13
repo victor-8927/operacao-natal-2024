@@ -1001,10 +1001,11 @@
     <div class="tbl-wrap">
       <table id="tbl-vda">
         <thead><tr>
-          <th>VDA #</th><th>Placa</th><th>Tipo</th><th>Cap. Baú (kg)</th>
-          <th>Carroceria</th><th>Motorista Fixo</th><th>Ajudante 1</th><th>Ajudante 2</th>
+          <th>VDA #</th><th>Placa</th><th>Tipo</th><th>Pallets</th><th>Peso Op. (kg)</th>
+          <th>Carroceria</th>
           <th>Status</th><th>Obs</th>
-          <th>Modalidade</th><th>Diária R$</th><th>Combustível R$</th><th>Pedágio R$</th><th>Outros R$</th>
+          <th>Modalidade</th><th>KM Rodado</th><th>Diesel R$/L</th><th>Manutenção R$</th><th>Diesel R$</th>
+          <th>Diária R$</th><th>Pedágio R$</th><th>Outros R$</th>
           <th></th>
         </tr></thead>
         <tbody id="tbody-vda"></tbody>
@@ -1699,11 +1700,18 @@
   ========================================================= */
   const SCHEMA = {
     vdas26: [
-      {t:'text'},{t:'text'},{t:'select',opts:['Toco','Truck 1','Truck 2','Acello','VUC','Utilitário','Outro']},
-      {t:'number'},{t:'text'},{t:'text'},{t:'text'},{t:'text'},
+      // 0:vda  1:placa  2:tipo
+      {t:'text'},{t:'text'},
+      {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Outro']},
+      // 3:cap_pallets  4:peso_op_kg  5:carroceria
+      {t:'number'},{t:'number'},{t:'text'},
+      // 6:status  7:obs  8:modalidade
       {t:'select',opts:['Ativo','Manutenção','Reserva','Inativo']},{t:'text'},
       {t:'select',opts:['próprio','terceiro','comodato']},
-      {t:'number'},{t:'number'},{t:'number'},{t:'number'}
+      // 9:km_atual  10:preco_diesel  11:manutencao(calc)  12:diesel(calc)
+      {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
+      // 13:custo_diario  14:custo_pedagio  15:custo_outros
+      {t:'number'},{t:'number'},{t:'number'}
     ],
     funcs26: [
       // 0:nome  1:funcao  2:vda_fixo  3:cpf_id  4:tel
@@ -1798,7 +1806,7 @@
   };
 
   /* blank templates */
-  const vdaBlank     = ['','','Toco','8800','Baú Refrigerado','','','','Ativo','','próprio','0','0','0','0'];
+  const vdaBlank     = ['','','Toco','0','0','Baú Refrigerado','Ativo','','próprio','0','6.50','','','0','0','0'];
   // funcs26: 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
   //          8:valor_diario 9:almoco(c) 10:janta(c) 11:hora_inicio 12:hora_fim
   //          13:hrs(c) 14:bh(c) 15:extra(c) 16:vl_hora_extra 17:total_extra(c) 18:gratificacao 19:custo(c)
@@ -1818,7 +1826,7 @@
     // Converte objeto Supabase → array posicional para o schema
     const schema = SCHEMA[dbKey];
     const COL_MAP = {
-      vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
+      vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel','','','custo_diario','custo_pedagio','custo_outros'],
       funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
@@ -1843,8 +1851,8 @@
       const rowArr = Array.isArray(row) ? row : rowToArray(dbKey, row);
       const tr = buildRow(tblId, dbKey, schema, rowArr, ri);
       tbody.appendChild(tr);
-      // dispara cálculos ao carregar funcs26
-      if (dbKey === 'funcs26') recalcRow(tr, dbKey);
+      // dispara cálculos ao carregar funcs26 e vdas26
+      if (dbKey === 'funcs26' || dbKey === 'vdas26') recalcRow(tr, dbKey);
     });
   }
 
@@ -1881,6 +1889,10 @@
         if (ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
           sel.onchange = () => recalcRow(tr, dbKey);
         }
+        // col2 (Tipo veículo) vdas26 → recalc diesel ao mudar tipo
+        if (ci === 2 && dbKey === 'vdas26') {
+          sel.onchange = () => recalcRow(tr, dbKey);
+        }
         td.appendChild(sel);
       } else if (col.t === 'calc') {
         const hasVal = val && val !== '—' && val !== '';
@@ -1901,11 +1913,14 @@
         td.spellcheck = false;
         if (col.t === 'number') td.style.textAlign = 'right';
         if (col.t === 'date') td.style.color = 'var(--accent)';
-        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26) e funcs26
+        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26), funcs26 e vdas26
         if (col.t === 'number' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
           td.oninput = () => recalcRow(tr, dbKey);
         }
         if (col.t === 'number' && dbKey === 'funcs26') {
+          td.oninput = () => recalcRow(tr, dbKey);
+        }
+        if (col.t === 'number' && dbKey === 'vdas26') {
           td.oninput = () => recalcRow(tr, dbKey);
         }
       }
@@ -1983,7 +1998,10 @@
      CONVERTE array posicional → objeto Supabase
   ========================================================= */
   const COL_NAMES = {
-    vdas26:    ['vda','placa','tipo','cap_bau_kg','carroceria','motorista','ajudante1','ajudante2','status','obs','modalidade','custo_diario','custo_combustivel','custo_pedagio','custo_outros'],
+    // 0:vda 1:placa 2:tipo 3:cap_pallets 4:peso_op_kg 5:carroceria
+    // 6:status 7:obs 8:modalidade 9:km_atual 10:preco_diesel
+    // 11:manutencao(calc) 12:diesel(calc) 13:custo_diario 14:custo_pedagio 15:custo_outros
+    vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel',null,null,'custo_diario','custo_pedagio','custo_outros'],
     // 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
     // 8:valor_diario 9:almoco(calc) 10:janta(calc) 11:hora_inicio 12:hora_fim
     // 13:hrs_trab(calc) 14:bh_hrs(calc) 15:hrs_extra(calc)
@@ -2288,6 +2306,27 @@
       setCalc(cells[15], hrsExtra > 0 ? hrsExtra.toFixed(1) + 'h' : null);
       setCalc(cells[17], totalExtra > 0 ? fmtR(totalExtra) : null);
       setCalc(cells[19], custoTotal > 0 ? fmtR(custoTotal) : null);
+      return;
+    }
+    // ── vdas26: manutenção e diesel ──
+    if (dbKey === 'vdas26') {
+      const cells = tr.querySelectorAll('td:not(:last-child)');
+      // schema: 0:vda 1:placa 2:tipo 3:cap_pallets 4:peso_op_kg 5:carroceria
+      //         6:status 7:obs 8:modalidade 9:km_atual 10:preco_diesel
+      //         11:manutencao(calc) 12:diesel(calc) 13:custo_diario 14:custo_pedagio 15:custo_outros
+      const tipo       = (cells[2]?.querySelector('select')?.value || cells[2]?.textContent || '').trim();
+      const km         = parseF(cells[9]?.textContent);
+      const precoDiesel = parseF(cells[10]?.textContent);
+
+      // consumo km/L por tipo
+      const consumoMap = { 'Truck': 2.8, 'Toco': 3.0, 'Acello': 6.0 };
+      const consumo    = consumoMap[tipo] || 3.0; // default Toco
+
+      const manutencao = km * 2.67;
+      const diesel     = precoDiesel > 0 && consumo > 0 ? km * precoDiesel / consumo : 0;
+
+      if (cells[11]?.dataset.calc) cells[11].textContent = km > 0 ? fmtR(manutencao) : '—';
+      if (cells[12]?.dataset.calc) cells[12].textContent = km > 0 && precoDiesel > 0 ? fmtR(diesel) : '—';
       return;
     }
     if (dbKey !== 'natal26' && dbKey !== 'anonovo26') return;
