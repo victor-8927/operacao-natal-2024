@@ -385,6 +385,42 @@
   .zona-select { background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:5px 8px; outline:none; width:100%; }
   .escala-save-row { display:flex; align-items:center; gap:10px; margin-top:16px; }
 
+  /* ── PAINEL DE PROGRAMAÇÕES ── */
+  .prog-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .prog-filtro { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+  .prog-filtro select { background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:4px 8px; outline:none; }
+  .prog-colunas { display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; }
+  .prog-col { min-width:240px; max-width:280px; flex-shrink:0; }
+  .prog-col-header { background:var(--surface2); border:1px solid var(--border); border-radius:10px 10px 0 0; padding:9px 12px; display:flex; align-items:center; justify-content:space-between; }
+  .prog-col-data { font-size:13px; font-weight:800; color:var(--text); }
+  .prog-col-cnt { font-size:11px; background:rgba(79,142,247,.2); color:#4f8ef7; border-radius:20px; padding:1px 8px; font-weight:700; }
+  .prog-col-cards { border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; padding:8px; display:flex; flex-direction:column; gap:8px; min-height:60px; }
+  .prog-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; position:relative; }
+  .prog-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; margin-bottom:7px; }
+  .prog-card-cliente { font-size:12px; font-weight:700; color:var(--text); line-height:1.3; flex:1; }
+  .prog-card-status { display:inline-block; padding:2px 7px; border-radius:10px; font-size:10px; font-weight:700; white-space:nowrap; }
+  .prog-card-info { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .prog-card-pill { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:12px; font-size:10px; font-weight:600; background:var(--surface); border:1px solid var(--border); color:var(--muted); }
+  .prog-card-pill.vol { color:#a78bfa; border-color:rgba(167,139,250,.3); background:rgba(167,139,250,.08); }
+  .prog-card-pill.fat { color:#34c47c; border-color:rgba(52,196,124,.3); background:rgba(52,196,124,.08); }
+  .prog-card-pill.vei { color:#38bdf8; border-color:rgba(56,189,248,.3); background:rgba(56,189,248,.08); }
+  .prog-card-data-row { display:flex; align-items:center; gap:6px; }
+  .prog-card-data-label { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+  .prog-card-data-inp { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12px; padding:4px 7px; outline:none; }
+  .prog-card-data-inp:focus { border-color:var(--accent); }
+  .prog-semdata { text-align:center; padding:18px 10px; color:var(--muted); font-size:12px; }
+  .prog-col-semdata { min-width:200px; max-width:240px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .prog-col-semdata-inner { background:var(--surface2); border:1px dashed var(--border); border-radius:10px; padding:18px 16px; text-align:center; }
+  .prog-col-semdata-num { font-size:28px; font-weight:800; color:#f5c842; }
+  .prog-col-semdata-label { font-size:11px; color:var(--muted); margin-top:4px; }
+  .prog-vazio { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+  /* status colors */
+  .prog-st-prog { background:rgba(245,200,66,.15); color:#f5c842; }
+  .prog-st-campo { background:rgba(56,189,248,.15); color:#38bdf8; }
+  .prog-st-aguard { background:rgba(167,139,250,.15); color:#a78bfa; }
+  .prog-st-enc { background:rgba(52,196,124,.15); color:#34c47c; }
+  .prog-st-outro { background:rgba(142,144,168,.12); color:var(--muted); }
+
   /* OC badge no card */
   .oc-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:10px; border:1px solid var(--accent); background:rgba(79,142,247,.12); color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.03em; }
   .oc-badge.oc-empty { border-color:var(--border); background:transparent; color:var(--muted); font-weight:400; }
@@ -1228,6 +1264,7 @@
       <button class="inner-tab-btn active" onclick="switchInnerTab('nat','it-nat-montagem',this)">📋 Montagem da Operação</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-escala',this)">📦 Escalonamento de Equipes</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-comodato',this)">🤝 Comodatos / 3°</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('nat','it-nat-prog',this); renderProgPanel('nat')">📅 Programações</button>
     </div>
 
     <!-- ── MONTAGEM DA OPERAÇÃO ── -->
@@ -1284,6 +1321,27 @@
         </table>
       </div>
     </div>
+
+    <!-- ── PROGRAMAÇÕES (Natal 2026) ── -->
+    <div class="inner-tab-panel" id="it-nat-prog">
+      <div class="prog-toolbar">
+        <button class="btn btn-save" onclick="renderProgPanel('nat')">🔄 Atualizar</button>
+        <div class="prog-filtro">
+          <span>Filtrar status:</span>
+          <select id="prog-filtro-nat" onchange="renderProgPanel('nat')">
+            <option value="">Todos</option>
+            <option value="Programado">Programado</option>
+            <option value="Em Campo">Em Campo</option>
+            <option value="Aguard. Nota">Aguard. Nota</option>
+            <option value="Encerrado">Encerrado</option>
+          </select>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
+      </div>
+      <div id="prog-panel-nat" class="prog-colunas">
+        <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
+      </div>
+    </div>
   </div>
 
   <!-- ── ANO NOVO 2026 ── -->
@@ -1303,6 +1361,7 @@
       <button class="inner-tab-btn active" onclick="switchInnerTab('an','it-an-montagem',this)">📋 Montagem da Operação</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-escala',this)">📦 Escalonamento de Equipes</button>
       <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-comodato',this)">🤝 Comodatos / 3°</button>
+      <button class="inner-tab-btn" onclick="switchInnerTab('an','it-an-prog',this); renderProgPanel('an')">📅 Programações</button>
     </div>
 
     <!-- ── MONTAGEM DA OPERAÇÃO ── -->
@@ -1357,6 +1416,27 @@
           </tr></thead>
           <tbody id="tbody-com-an"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ── PROGRAMAÇÕES (Ano Novo 2026) ── -->
+    <div class="inner-tab-panel" id="it-an-prog">
+      <div class="prog-toolbar">
+        <button class="btn btn-save" onclick="renderProgPanel('an')">🔄 Atualizar</button>
+        <div class="prog-filtro">
+          <span>Filtrar status:</span>
+          <select id="prog-filtro-an" onchange="renderProgPanel('an')">
+            <option value="">Todos</option>
+            <option value="Programado">Programado</option>
+            <option value="Em Campo">Em Campo</option>
+            <option value="Aguard. Nota">Aguard. Nota</option>
+            <option value="Encerrado">Encerrado</option>
+          </select>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
+      </div>
+      <div id="prog-panel-an" class="prog-colunas">
+        <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
       </div>
     </div>
   </div>
@@ -3466,6 +3546,178 @@
     });
 
     _escalaState[which] = state;
+  }
+
+  /* =========================================================
+     PAINEL DE PROGRAMAÇÕES
+  ========================================================= */
+  async function renderProgPanel(which) {
+    const dbKey   = which === 'nat' ? 'natal26' : 'anonovo26';
+    const panelId = 'prog-panel-' + which;
+    const filtroId = 'prog-filtro-' + which;
+    const panel   = document.getElementById(panelId);
+    if (!panel) return;
+
+    panel.innerHTML = '<div class="prog-vazio">⏳ Carregando...</div>';
+
+    // Pega dados (aguarda se necessário)
+    const rows = await loadDB(dbKey);
+    if (!rows || !rows.length) {
+      panel.innerHTML = '<div class="prog-vazio">Nenhum dado encontrado. Verifique a conexão.</div>';
+      return;
+    }
+
+    // Aplica filtro de status
+    const filtroEl = document.getElementById(filtroId);
+    const filtroVal = filtroEl ? filtroEl.value : '';
+
+    const filtered = filtroVal
+      ? rows.filter(r => (r.status || '') === filtroVal)
+      : rows;
+
+    if (!filtered.length) {
+      panel.innerHTML = '<div class="prog-vazio">Nenhum ponto com status "' + filtroVal + '".</div>';
+      return;
+    }
+
+    // Agrupa por data_operacao, depois por cliente
+    const grupos = {}; // { data: { cliente: { qtd, fat, tipo_veiculo, status, rows[] } } }
+    filtered.forEach(r => {
+      const data = r.data_operacao || '';
+      const cli  = r.cliente || '(sem cliente)';
+      if (!grupos[data]) grupos[data] = {};
+      if (!grupos[data][cli]) grupos[data][cli] = { qtd: 0, fat: 0, tipo_veiculo: r.tipo_veiculo || '', status: r.status || '', rows: [] };
+      grupos[data][cli].qtd += parseFloat(r.qtd_prog || 0);
+      grupos[data][cli].fat += parseFloat(r.fat_real || 0);
+      if (r.tipo_veiculo) grupos[data][cli].tipo_veiculo = r.tipo_veiculo;
+      if (r.status) grupos[data][cli].status = r.status;
+      grupos[data][cli].rows.push(r);
+    });
+
+    // Ordena datas: sem data por último
+    const datas = Object.keys(grupos).sort((a, b) => {
+      if (!a) return 1; if (!b) return -1;
+      return a.localeCompare(b);
+    });
+
+    function statusClass(st) {
+      if (!st) return 'prog-st-outro';
+      const s = st.toLowerCase();
+      if (s.includes('programado'))  return 'prog-st-prog';
+      if (s.includes('campo'))       return 'prog-st-campo';
+      if (s.includes('aguard'))      return 'prog-st-aguard';
+      if (s.includes('encerrado'))   return 'prog-st-enc';
+      return 'prog-st-outro';
+    }
+
+    function fmtData(d) {
+      if (!d) return 'Sem Data';
+      const p = d.split('-');
+      if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+      return d;
+    }
+
+    function fmtFat(v) {
+      if (!v || v === 0) return '—';
+      return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // Monta HTML das colunas
+    let html = '';
+    datas.forEach(data => {
+      const clientes = grupos[data];
+      const nClientes = Object.keys(clientes).length;
+      html += `<div class="prog-col">
+        <div class="prog-col-header">
+          <span class="prog-col-data">${fmtData(data)}</span>
+          <span class="prog-col-cnt">${nClientes} ponto${nClientes !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="prog-col-cards">`;
+
+      Object.keys(clientes).forEach(cli => {
+        const info = clientes[cli];
+        const stCls = statusClass(info.status);
+        // Monta o valor do input formatado como YYYY-MM-DD para type=date
+        const dataVal = data || '';
+        html += `<div class="prog-card">
+          <div class="prog-card-top">
+            <span class="prog-card-cliente">${cli}</span>
+            <span class="prog-card-status ${stCls}">${info.status || 'N/D'}</span>
+          </div>
+          <div class="prog-card-info">
+            ${info.tipo_veiculo ? `<span class="prog-card-pill vei">🚛 ${info.tipo_veiculo}</span>` : ''}
+            ${info.qtd > 0 ? `<span class="prog-card-pill vol">${info.qtd.toLocaleString('pt-BR')} sc</span>` : ''}
+            ${info.fat > 0 ? `<span class="prog-card-pill fat">${fmtFat(info.fat)}</span>` : ''}
+          </div>
+          <div class="prog-card-data-row">
+            <span class="prog-card-data-label">Entrega:</span>
+            <input type="date" class="prog-card-data-inp"
+              data-dbkey="${dbKey}"
+              data-cliente="${cli.replace(/"/g,'&quot;')}"
+              value="${dataVal}"
+              onchange="progUpdateData(this,'${dbKey}','${cli.replace(/'/g,"\\'")}')">
+          </div>
+        </div>`;
+      });
+
+      if (nClientes === 0) {
+        html += '<div class="prog-semdata">Vazio</div>';
+      }
+
+      html += '</div></div>';
+    });
+
+    if (!html) {
+      html = '<div class="prog-vazio">Nenhum dado encontrado.</div>';
+    }
+
+    panel.innerHTML = html;
+  }
+
+  // Atualiza data_operacao a partir do painel de programações
+  async function progUpdateData(inp, dbKey, cliente) {
+    const novaData = inp.value; // YYYY-MM-DD ou ''
+
+    // Encontra todas as masterTr correspondentes ao cliente e dbKey
+    const tbodyId = dbKey === 'natal26' ? 'tbody-nat26' : 'tbody-an26';
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+
+    // masterTr: mTds[1] = ponto/cliente, mTds[7] = data
+    const masterRows = tbody.querySelectorAll('tr.ponto-master');
+    let found = 0;
+    masterRows.forEach(tr => {
+      if (tr._dbKey !== dbKey) return;
+      const mTds = tr.querySelectorAll('td');
+      if (!mTds || mTds.length < 8) return;
+      // Cliente pode estar em _pontoVal ou _pontoInfo do td[1]
+      const td1 = mTds[1];
+      // Compara pelo valor completo armazenado em _pontoVal (ex: "#15292 NOME")
+      const rawVal = td1?._pontoVal || td1?.textContent || '';
+      // Ou pelo nome do _pontoInfo se disponível
+      const infoNome = td1?._pontoInfo?.nome ? ('#' + (td1._pontoInfo.codigo_erp||'') + ' ' + td1._pontoInfo.nome) : '';
+      const matchVal = infoNome || rawVal;
+      if (matchVal.trim() === cliente || rawVal.trim() === cliente) {
+        mTds[7].textContent = novaData;
+        found++;
+      }
+    });
+
+    if (found > 0) {
+      triggerAutoSave(dbKey);
+    } else {
+      // Fallback: atualiza direto no cache e salva
+      const rows = await loadDB(dbKey);
+      if (rows) {
+        rows.forEach(r => {
+          if ((r.cliente || '') === cliente) {
+            r.data_operacao = novaData;
+          }
+        });
+        await saveDB(dbKey, rows);
+        triggerAutoSave(dbKey);
+      }
+    }
   }
 
   /* =========================================================
