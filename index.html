@@ -2093,16 +2093,16 @@
     // 0: Gelo (select)
     const tdGelo = document.createElement('td');
     const selGelo = makeItemSel(ITEM_GELO_OPTS, gelo);
-    selGelo.onchange = () => recalcItemRow(itr, masterTr);
+    selGelo.onchange = () => { recalcItemRow(itr, masterTr); if(masterTr._dbKey) triggerAutoSave(masterTr._dbKey); };
     tdGelo.appendChild(selGelo);
 
     // 1: Qtd
     const tdQtd = makeItemNum(qtd, 'Quantidade sacas');
-    tdQtd.oninput = () => recalcItemRow(itr, masterTr);
+    tdQtd.oninput = () => { recalcItemRow(itr, masterTr); if(masterTr._dbKey) triggerAutoSave(masterTr._dbKey); };
 
     // 2: Preço
     const tdPreco = makeItemNum(preco, 'R$/saca');
-    tdPreco.oninput = () => recalcItemRow(itr, masterTr);
+    tdPreco.oninput = () => { recalcItemRow(itr, masterTr); if(masterTr._dbKey) triggerAutoSave(masterTr._dbKey); };
 
     // 3: FAT R$ (calc)
     const tdFat = document.createElement('td');
@@ -2149,7 +2149,7 @@
     const btnDel = document.createElement('button');
     btnDel.className = 'btn-del-item';
     btnDel.textContent = '✕';
-    btnDel.onclick = () => { itr.remove(); recalcMasterTotals(masterTr); };
+    btnDel.onclick = () => { itr.remove(); recalcMasterTotals(masterTr); if(masterTr._dbKey) triggerAutoSave(masterTr._dbKey); };
     tdDel.appendChild(btnDel);
 
     [tdGelo,tdQtd,tdPreco,tdFat,tdPeso,tdLiquidac,tdAluguel,
@@ -2169,6 +2169,7 @@
     // 19:data 20:status 21:obs
     const masterTr = document.createElement('tr');
     masterTr.className = 'ponto-master';
+    masterTr._dbKey = dbKey;
 
     // 0: ▶ expand button
     const tdExp = document.createElement('td');
@@ -2192,6 +2193,7 @@
       ['Toco','Truck','Container','Acello','VUC','Utilitário','Câmara Fria','Outro'],
       row[1] || 'Toco'
     );
+    selVeiculo.onchange = () => triggerAutoSave(dbKey);
     tdVeiculo.appendChild(selVeiculo);
     masterTr.appendChild(tdVeiculo);
 
@@ -2203,6 +2205,7 @@
     );
     selTipoOp.onchange = () => {
       renderPontoCell(tdPonto, dbKey, selTipoOp.value, tdPonto._pontoVal || '');
+      triggerAutoSave(dbKey);
     };
     tdTipoOp.appendChild(selTipoOp);
     masterTr.appendChild(tdTipoOp);
@@ -2222,6 +2225,7 @@
     tdData.style.color = 'var(--accent)';
     tdData.style.minWidth = '90px';
     tdData.textContent = row[19] || '';
+    tdData.oninput = () => triggerAutoSave(dbKey);
     masterTr.appendChild(tdData);
 
     // 8: Status
@@ -2230,6 +2234,7 @@
       ['Programado','Em rota','Concluído','Cancelado','Parcial'],
       row[20] || 'Programado'
     );
+    selStatus.onchange = () => triggerAutoSave(dbKey);
     tdStatus.appendChild(selStatus);
     masterTr.appendChild(tdStatus);
 
@@ -2239,6 +2244,7 @@
     tdObs.spellcheck = false;
     tdObs.style.minWidth = '100px';
     tdObs.textContent = row[21] || '';
+    tdObs.oninput = () => triggerAutoSave(dbKey);
     masterTr.appendChild(tdObs);
 
     // 10: Ações (excluir ponto inteiro)
@@ -2251,6 +2257,7 @@
     btnDel.onclick = () => {
       masterTr._itemsRow?.remove();
       masterTr.remove();
+      triggerAutoSave(dbKey);
     };
     tdAcoes.appendChild(btnDel);
     masterTr.appendChild(tdAcoes);
@@ -2300,6 +2307,7 @@
       const blankItem = ['20 KG','0','0','0','0','Venda','0','0','0','0'];
       const newItr = buildItemRow(blankItem, masterTr);
       tbody.appendChild(newItr);
+      triggerAutoSave(dbKey);
     };
 
     inner.appendChild(subTable);
@@ -2399,6 +2407,7 @@
       const masterTr = buildPontoRow(tblId, dbKey, blank);
       tbody.appendChild(masterTr);
       tbody.appendChild(masterTr._itemsRow);
+      triggerAutoSave(dbKey);
     } else {
       tbody.appendChild(buildRow(tblId, dbKey, schema, blank, tbody.rows.length));
     }
@@ -2654,6 +2663,7 @@
 
       inp.oninput = () => {
         td._pontoVal = inp.value;
+        if(td._pontoDbKey) triggerAutoSave(td._pontoDbKey);
         clearTimeout(_timer);
         const q = inp.value.trim();
         if (q.length < 2) { dd.classList.remove('open'); return; }
@@ -3919,6 +3929,19 @@
     await renderEscala('an');
 
     updateResumo();
+  }
+
+  // ── AUTO-SAVE (debounce 4s) para natal26 e anonovo26 ──
+  const _autoSaveTimers = {};
+  function triggerAutoSave(dbKey) {
+    if (dbKey !== 'natal26' && dbKey !== 'anonovo26') return;
+    clearTimeout(_autoSaveTimers[dbKey]);
+    _autoSaveTimers[dbKey] = setTimeout(async () => {
+      const tblId = dbKey === 'natal26' ? 'tbl-nat26' : 'tbl-an26';
+      console.log('[autoSave] salvando', dbKey);
+      await saveTable(tblId, dbKey);
+      if (dbKey === 'natal26') calcKpis26('nat'); else calcKpis26('an');
+    }, 4000);
   }
 
   // Inicializa ao carregar a página
