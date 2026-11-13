@@ -1083,6 +1083,88 @@
         <tbody id="tbody-prod"></tbody>
       </table>
     </div>
+
+    <!-- ══════════════════════════════════════════════════
+         CALCULADORA DE CUBAGEM / LOTAÇÃO
+    ══════════════════════════════════════════════════ -->
+    <div style="margin-top:32px">
+      <div class="section-title">🧮 Calculadora de Lotação</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:22px 24px;max-width:660px">
+
+        <!-- VDA -->
+        <div style="margin-bottom:18px">
+          <label style="display:block;font-size:.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">VDA</label>
+          <select id="cc-vda" onchange="ccOnVdaChange()"
+            style="width:100%;padding:9px 13px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.93rem;cursor:pointer">
+            <option value="">— Selecione o VDA —</option>
+          </select>
+          <div id="cc-vda-info" style="margin-top:7px;font-size:.8rem;color:var(--text2);min-height:16px"></div>
+        </div>
+
+        <!-- Quantidades -->
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:.78rem;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Quantidade de Sacos por Produto</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:5px">🧊 5 kg &nbsp;<span style="font-size:.74rem;opacity:.6">(6 kg bruto/saco)</span></label>
+              <input id="cc-q5"  type="number" min="0" value="0"
+                style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.93rem;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:5px">🧊 10 kg &nbsp;<span style="font-size:.74rem;opacity:.6">(11 kg bruto/saco)</span></label>
+              <input id="cc-q10" type="number" min="0" value="0"
+                style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.93rem;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:5px">🧊 20 kg &nbsp;<span style="font-size:.74rem;opacity:.6">(23 kg bruto/saco)</span></label>
+              <input id="cc-q20" type="number" min="0" value="0"
+                style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.93rem;box-sizing:border-box">
+            </div>
+            <div>
+              <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:5px">🧊 40 kg &nbsp;<span style="font-size:.74rem;opacity:.6">(45 kg bruto/saco)</span></label>
+              <input id="cc-q40" type="number" min="0" value="0"
+                style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.93rem;box-sizing:border-box">
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão -->
+        <button onclick="calcCubagem()"
+          style="width:100%;padding:11px;background:rgba(167,139,250,.18);border:1px solid rgba(167,139,250,.4);border-radius:8px;color:#a78bfa;font-size:.93rem;font-weight:600;cursor:pointer;transition:background .15s"
+          onmouseover="this.style.background='rgba(167,139,250,.3)'"
+          onmouseout="this.style.background='rgba(167,139,250,.18)'">
+          📐 Calcular Lotação
+        </button>
+
+        <!-- Resultado -->
+        <div id="cc-resultado" style="margin-top:18px;display:none">
+          <div id="cc-badge" style="border-radius:10px;padding:15px 20px;margin-bottom:14px">
+            <div id="cc-badge-title" style="font-size:1.05rem;font-weight:700;margin-bottom:5px"></div>
+            <div id="cc-badge-sub" style="font-size:.84rem;line-height:1.5;opacity:.9"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.84rem">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+              <div style="color:var(--text2);margin-bottom:3px">Pallets necessários</div>
+              <div id="cc-info-pallets" style="font-weight:600;color:var(--text)"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+              <div style="color:var(--text2);margin-bottom:3px">Peso bruto total</div>
+              <div id="cc-info-peso" style="font-weight:600;color:var(--text)"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+              <div style="color:var(--text2);margin-bottom:3px">Total de sacos</div>
+              <div id="cc-info-sacos" style="font-weight:600;color:var(--text)"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+              <div style="color:var(--text2);margin-bottom:3px">Limite autorizado</div>
+              <div id="cc-info-cap" style="font-weight:600;color:var(--text)"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- ── NATAL 2026 ── -->
@@ -3159,6 +3241,124 @@
   }
 
   /* =========================================================
+     CALCULADORA DE CUBAGEM / LOTAÇÃO
+  ========================================================= */
+
+  // Cache dos dados de cubagem carregados do banco
+  let _ccVdas = [];       // [{vda, tipo_veiculo, ...cubagem}]
+  let _ccLoaded = false;
+
+  // Pesos brutos por produto (banco op26_produtos)
+  const CC_PESO_BRUTO = { 5: 6, 10: 11, 20: 23, 40: 45 };
+
+  async function ccLoadData() {
+    if (_ccLoaded) return;
+    // Carrega VDAs com join de cubagem
+    const vdas = await sbFetch('op26_vdas?select=vda,tipo,cap_kg_max&order=vda');
+    const cubagem = await sbFetch('op26_vda_cubagem?select=tipo_veiculo,cap_pallets,cap_kg_autorizado,limite_sacos_total,unid_pallet_5kg,unid_pallet_10kg,unid_pallet_20kg,unid_pallet_40kg');
+    if (!vdas || !cubagem) return;
+
+    const cubMap = {};
+    cubagem.forEach(c => { cubMap[c.tipo_veiculo] = c; });
+
+    _ccVdas = vdas.map(v => ({ ...v, cubagem: cubMap[v.tipo] || null }));
+    _ccLoaded = true;
+
+    // Popula select
+    const sel = document.getElementById('cc-vda');
+    sel.innerHTML = '<option value="">— Selecione o VDA —</option>';
+    _ccVdas.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `VDA ${v.vda} — ${v.tipo || ''}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function ccOnVdaChange() {
+    await ccLoadData();
+    const sel = document.getElementById('cc-vda');
+    const info = document.getElementById('cc-vda-info');
+    const idx = sel.value;
+    if (idx === '') { info.textContent = ''; return; }
+    const v = _ccVdas[idx];
+    if (!v || !v.cubagem) { info.textContent = 'Dados de cubagem não encontrados para este VDA.'; return; }
+    const c = v.cubagem;
+    info.textContent = `${c.tipo_veiculo} · ${c.cap_pallets} pallets · ${c.cap_kg_autorizado.toLocaleString('pt-BR')} kg autorizados · limite ${c.limite_sacos_total} sacos`;
+    // Oculta resultado anterior
+    document.getElementById('cc-resultado').style.display = 'none';
+  }
+
+  async function calcCubagem() {
+    await ccLoadData();
+    const sel = document.getElementById('cc-vda');
+    const idx = sel.value;
+    if (idx === '') { alert('Selecione um VDA primeiro.'); return; }
+
+    const v = _ccVdas[idx];
+    if (!v || !v.cubagem) { alert('Dados de cubagem não disponíveis para este VDA.'); return; }
+    const c = v.cubagem;
+
+    const q5  = parseInt(document.getElementById('cc-q5').value)  || 0;
+    const q10 = parseInt(document.getElementById('cc-q10').value) || 0;
+    const q20 = parseInt(document.getElementById('cc-q20').value) || 0;
+    const q40 = parseInt(document.getElementById('cc-q40').value) || 0;
+    const totalSacos = q5 + q10 + q20 + q40;
+
+    if (totalSacos === 0) { alert('Informe a quantidade de pelo menos um produto.'); return; }
+
+    // Pallets necessários (ceil por produto)
+    const pal5  = q5  > 0 ? Math.ceil(q5  / c.unid_pallet_5kg)  : 0;
+    const pal10 = q10 > 0 ? Math.ceil(q10 / c.unid_pallet_10kg) : 0;
+    const pal20 = q20 > 0 ? Math.ceil(q20 / c.unid_pallet_20kg) : 0;
+    const pal40 = q40 > 0 ? Math.ceil(q40 / c.unid_pallet_40kg) : 0;
+    const totalPallets = pal5 + pal10 + pal20 + pal40;
+
+    // Peso bruto total
+    const pesoBruto = (q5 * CC_PESO_BRUTO[5]) + (q10 * CC_PESO_BRUTO[10]) +
+                      (q20 * CC_PESO_BRUTO[20]) + (q40 * CC_PESO_BRUTO[40]);
+
+    // Determina badge
+    const cabePallets = totalPallets <= c.cap_pallets;
+    const cabePeso    = pesoBruto <= c.cap_kg_autorizado;
+    const cabeSacos   = totalSacos <= c.limite_sacos_total;
+
+    let badge, bgColor, titulo, subtitulo;
+
+    if (cabePallets && cabePeso) {
+      badge = '✅'; bgColor = 'rgba(52,196,124,.15)';
+      titulo = '✅ 100% PALETIZADO — CARGA RESOLVE';
+      subtitulo = `${totalPallets} pallets encaixam nos ${c.cap_pallets} disponíveis e o peso está dentro do limite autorizado.`;
+    } else if (!cabePallets && cabeSacos && cabePeso) {
+      badge = '🟡'; bgColor = 'rgba(245,200,66,.15)';
+      titulo = '🟡 PALLETS + BATIDO — CARGA RESOLVE COM RESSALVA';
+      const overflow = totalSacos - (c.cap_pallets * Math.min(c.unid_pallet_5kg, c.unid_pallet_10kg, c.unid_pallet_20kg, c.unid_pallet_40kg));
+      subtitulo = `Pallets necessários (${totalPallets}) excedem o disponível (${c.cap_pallets}), mas o total de sacos (${totalSacos}) cabe dentro do limite (${c.limite_sacos_total}) e o peso está OK.`;
+    } else {
+      badge = '🔴'; bgColor = 'rgba(242,107,107,.15)';
+      titulo = '🔴 NÃO RESOLVE — CARGA EXCEDE CAPACIDADE';
+      const motivos = [];
+      if (!cabePeso)   motivos.push(`peso excede em ${(pesoBruto - c.cap_kg_autorizado).toLocaleString('pt-BR')} kg`);
+      if (!cabeSacos)  motivos.push(`${totalSacos - c.limite_sacos_total} sacos acima do limite`);
+      if (!cabePallets && !cabeSacos) motivos.push(`${totalPallets - c.cap_pallets} pallets acima do disponível`);
+      subtitulo = motivos.join(' · ');
+    }
+
+    // Renderiza resultado
+    const resDiv = document.getElementById('cc-resultado');
+    const badgeDiv = document.getElementById('cc-badge');
+    badgeDiv.style.background = bgColor;
+    badgeDiv.style.border = '1px solid ' + bgColor.replace('.15)', '.4)');
+    document.getElementById('cc-badge-title').textContent = titulo;
+    document.getElementById('cc-badge-sub').textContent   = subtitulo;
+    document.getElementById('cc-info-pallets').textContent = `${totalPallets} / ${c.cap_pallets} disponíveis`;
+    document.getElementById('cc-info-peso').textContent    = `${pesoBruto.toLocaleString('pt-BR')} / ${c.cap_kg_autorizado.toLocaleString('pt-BR')} kg`;
+    document.getElementById('cc-info-sacos').textContent   = `${totalSacos} sacos`;
+    document.getElementById('cc-info-cap').textContent     = `${c.limite_sacos_total} sacos · ${c.cap_kg_autorizado.toLocaleString('pt-BR')} kg`;
+    resDiv.style.display = 'block';
+  }
+
+  /* =========================================================
      INIT — carrega todas as tabelas do Supabase
   ========================================================= */
   async function initAll26() {
@@ -3185,6 +3385,9 @@
       prods = await loadDB('produtos26');
     }
     renderTable('tbl-prod', 'produtos26', prods);
+
+    // Calculadora de cubagem — pré-carrega VDAs no select
+    ccLoadData().catch(e => console.warn('ccLoadData:', e));
 
     // Operações Natal
     renderTable('tbl-nat26',  'natal26',    await loadDB('natal26'));
