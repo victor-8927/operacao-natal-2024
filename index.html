@@ -1423,6 +1423,18 @@
 
   <!-- ── MAPA DE ROTAS ── -->
   <div class="subtab-panel" id="st-mapa26">
+    <!-- Toggle entre os dois modos de mapa -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <button id="btn-mapa-clientes" class="btn btn-save btn-sm"
+        style="background:rgba(167,139,250,.25);border-color:#a78bfa;color:#a78bfa"
+        onclick="switchMapaMode('clientes')">📍 Clientes por Rota</button>
+      <button id="btn-mapa-zonas" class="btn btn-sm"
+        style="background:var(--surface2);border-color:var(--border);color:var(--muted)"
+        onclick="switchMapaMode('zonas')">🗺️ Mapa de Zonas da Operação</button>
+    </div>
+
+    <!-- PAINEL CLIENTES -->
+    <div id="mapa-painel-clientes">
     <div class="section-title">🗺️ Distribuição de Clientes por VDA / Rota</div>
 
     <div id="map-stats">
@@ -1460,6 +1472,46 @@
     <div class="map-legend" id="map-legend">
       <div style="font-size:11px;font-weight:700;color:var(--muted);margin-right:4px">LEGENDA:</div>
     </div>
+    </div><!-- /mapa-painel-clientes -->
+
+    <!-- PAINEL ZONAS -->
+    <div id="mapa-painel-zonas" style="display:none">
+      <div class="section-title">🗺️ Mapa de Zonas da Operação — Natal/Ano Novo 2026</div>
+
+      <!-- Legenda das zonas -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);border-radius:8px;padding:6px 12px">
+          <div style="width:14px;height:14px;border-radius:3px;background:#6366f1;opacity:0.85"></div>
+          <div style="font-size:12px;font-weight:700;color:#a5b4fc">🧊 GELO 20KG</div>
+          <div style="font-size:11px;color:var(--muted)">— 801 (Nordeste &amp; Sudeste) · 803 (Centro Norte &amp; Centro Sul) · 821 (Noroeste &amp; Suroeste)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.4);border-radius:8px;padding:6px 12px">
+          <div style="width:14px;height:14px;border-radius:3px;background:#f97316;opacity:0.85"></div>
+          <div style="font-size:12px;font-weight:700;color:#fb923c">🫙 GELO PEQUENOS</div>
+          <div style="font-size:11px;color:var(--muted)">— 802 (Leste) · 804 (Norte) · 805 (Oeste) · 822 (Sul)</div>
+        </div>
+      </div>
+
+      <!-- Detalhe por rota -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="zonas-rota-chips">
+        <div style="font-size:11px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.5);border-radius:6px;padding:3px 10px;color:#c4b5fd">🧊 <b>801</b> Nordeste &amp; Sudeste</div>
+        <div style="font-size:11px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.5);border-radius:6px;padding:3px 10px;color:#c4b5fd">🧊 <b>803</b> Centro Norte &amp; Centro Sul</div>
+        <div style="font-size:11px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.5);border-radius:6px;padding:3px 10px;color:#c4b5fd">🧊 <b>821</b> Noroeste &amp; Suroeste</div>
+        <div style="font-size:11px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.5);border-radius:6px;padding:3px 10px;color:#fdba74">🫙 <b>802</b> Leste</div>
+        <div style="font-size:11px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.5);border-radius:6px;padding:3px 10px;color:#fdba74">🫙 <b>804</b> Norte</div>
+        <div style="font-size:11px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.5);border-radius:6px;padding:3px 10px;color:#fdba74">🫙 <b>805</b> Oeste</div>
+        <div style="font-size:11px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.5);border-radius:6px;padding:3px 10px;color:#fdba74">🫙 <b>822</b> Sul</div>
+      </div>
+
+      <div id="map-zonas-container" style="width:100%;height:520px;border-radius:12px;overflow:hidden;border:1px solid var(--border)">
+        <div id="map-zonas" style="width:100%;height:100%"></div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">
+        📍 Fábrica: R. Comendador Gutemberg Barbosa, 59 — Ponta Negra, Manaus-AM
+      </div>
+    </div><!-- /mapa-painel-zonas -->
+
   </div>
 
 </div><!-- /tab5 -->
@@ -3474,6 +3526,140 @@
       });
     });
   });
+
+  /* =========================================================
+     TOGGLE ENTRE MODOS DE MAPA
+  ========================================================= */
+  function switchMapaMode(mode) {
+    const pCli  = document.getElementById('mapa-painel-clientes');
+    const pZona = document.getElementById('mapa-painel-zonas');
+    const bCli  = document.getElementById('btn-mapa-clientes');
+    const bZona = document.getElementById('btn-mapa-zonas');
+    if (mode === 'zonas') {
+      pCli.style.display  = 'none';
+      pZona.style.display = 'block';
+      bCli.style.background  = 'var(--surface2)'; bCli.style.borderColor  = 'var(--border)'; bCli.style.color  = 'var(--muted)';
+      bZona.style.background = 'rgba(167,139,250,.25)'; bZona.style.borderColor = '#a78bfa'; bZona.style.color = '#a78bfa';
+      initMapaZonas();
+    } else {
+      pCli.style.display  = 'block';
+      pZona.style.display = 'none';
+      bZona.style.background = 'var(--surface2)'; bZona.style.borderColor = 'var(--border)'; bZona.style.color = 'var(--muted)';
+      bCli.style.background  = 'rgba(167,139,250,.25)'; bCli.style.borderColor  = '#a78bfa'; bCli.style.color  = '#a78bfa';
+      if (_map26) setTimeout(() => _map26.invalidateSize(), 100);
+    }
+  }
+
+  /* =========================================================
+     MAPA DE ZONAS — polígonos Gelo 20kg vs Gelo Pequenos
+  ========================================================= */
+  let _mapZonas = null;
+  let _mapZonasInit = false;
+
+  function initMapaZonas() {
+    if (_mapZonasInit) { setTimeout(() => _mapZonas && _mapZonas.invalidateSize(), 100); return; }
+    _mapZonasInit = true;
+
+    _mapZonas = L.map('map-zonas', {
+      center: [-3.093, -60.076],
+      zoom: 11,
+      zoomControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO',
+      subdomains: 'abcd', maxZoom: 19,
+    }).addTo(_mapZonas);
+
+    // ── Polígonos de zonas de Manaus (aproximados por zona administrativa) ──
+    // GRUPO A — Gelo 20kg: 801 (Nordeste+Sudeste), 803 (CentroNorte+CentroSul), 821 (Noroeste+Suroeste)
+    const colorA = '#6366f1';
+    const colorB = '#f97316';
+
+    // Zona Leste (802 — Gelo Pequenos)
+    L.polygon([
+      [-3.025, -59.955], [-3.055, -59.930], [-3.100, -59.930],
+      [-3.155, -59.945], [-3.175, -59.980], [-3.165, -60.010],
+      [-3.135, -60.025], [-3.090, -60.010], [-3.055, -59.985],
+    ], { color: colorB, fillColor: colorB, fillOpacity: 0.22, weight: 2, dashArray: '4 3' })
+      .addTo(_mapZonas).bindPopup('<b>🫙 Rota 802 — Gelo Pequenos</b><br>Zona Leste');
+
+    // Zona Norte (804 — Gelo Pequenos)
+    L.polygon([
+      [-2.940, -60.080], [-2.940, -60.010], [-2.955, -59.960],
+      [-3.010, -59.950], [-3.025, -59.955], [-3.055, -59.985],
+      [-3.055, -60.040], [-3.025, -60.070], [-2.985, -60.085],
+    ], { color: colorB, fillColor: colorB, fillOpacity: 0.22, weight: 2, dashArray: '4 3' })
+      .addTo(_mapZonas).bindPopup('<b>🫙 Rota 804 — Gelo Pequenos</b><br>Zona Norte');
+
+    // Zona Oeste (805 — Gelo Pequenos)
+    L.polygon([
+      [-3.085, -60.200], [-3.060, -60.165], [-3.055, -60.100],
+      [-3.065, -60.070], [-3.093, -60.076], [-3.120, -60.080],
+      [-3.135, -60.100], [-3.130, -60.155], [-3.110, -60.195],
+    ], { color: colorB, fillColor: colorB, fillOpacity: 0.22, weight: 2, dashArray: '4 3' })
+      .addTo(_mapZonas).bindPopup('<b>🫙 Rota 805 — Gelo Pequenos</b><br>Zona Oeste / Ponta Negra');
+
+    // Zona Sul (822 — Gelo Pequenos)
+    L.polygon([
+      [-3.135, -60.025], [-3.165, -60.010], [-3.175, -59.980],
+      [-3.195, -59.980], [-3.215, -60.010], [-3.210, -60.055],
+      [-3.185, -60.080], [-3.155, -60.085], [-3.135, -60.070],
+    ], { color: colorB, fillColor: colorB, fillOpacity: 0.22, weight: 2, dashArray: '4 3' })
+      .addTo(_mapZonas).bindPopup('<b>🫙 Rota 822 — Gelo Pequenos</b><br>Zona Sul');
+
+    // Zona Nordeste + Sudeste (801 — Gelo 20kg)
+    L.polygon([
+      [-3.010, -59.950], [-2.955, -59.960], [-2.940, -60.010],
+      [-2.940, -60.080], [-2.960, -60.100], [-3.025, -60.070],
+      [-3.055, -60.040], [-3.055, -59.985], [-3.025, -59.955],
+    ], { color: colorA, fillColor: colorA, fillOpacity: 0.25, weight: 2 })
+      .addTo(_mapZonas).bindPopup('<b>🧊 Rota 801 — Gelo 20kg</b><br>Nordeste &amp; Sudeste');
+
+    // Zona CentroNorte + CentroSul (803 — Gelo 20kg)
+    L.polygon([
+      [-3.055, -60.040], [-3.025, -60.070], [-2.985, -60.085],
+      [-2.960, -60.100], [-2.980, -60.130], [-3.020, -60.140],
+      [-3.055, -60.100], [-3.065, -60.070], [-3.055, -60.040],
+    ], { color: colorA, fillColor: colorA, fillOpacity: 0.25, weight: 2 })
+      .addTo(_mapZonas).bindPopup('<b>🧊 Rota 803 — Gelo 20kg</b><br>Centro Norte &amp; Centro Sul');
+
+    // Zona Noroeste + Suroeste (821 — Gelo 20kg)
+    L.polygon([
+      [-3.020, -60.140], [-2.980, -60.130], [-2.960, -60.100],
+      [-2.940, -60.080], [-2.940, -60.160], [-2.960, -60.200],
+      [-3.000, -60.210], [-3.040, -60.195], [-3.055, -60.165],
+      [-3.055, -60.100],
+    ], { color: colorA, fillColor: colorA, fillOpacity: 0.25, weight: 2 })
+      .addTo(_mapZonas).bindPopup('<b>🧊 Rota 821 — Gelo 20kg</b><br>Noroeste &amp; Suroeste');
+
+    // ── Marcador da Fábrica (Ponta Negra) ──
+    const factoryIcon = L.divIcon({
+      html: '<div style="background:#facc15;border:2px solid #000;border-radius:50%;width:16px;height:16px;box-shadow:0 0 8px #facc15"></div>',
+      iconSize: [16, 16], iconAnchor: [8, 8],
+    });
+    L.marker([-3.0936, -60.0758], { icon: factoryIcon })
+      .addTo(_mapZonas)
+      .bindPopup('<b>🏭 Fábrica — Ponta Negra</b><br>R. Comendador Gutemberg Barbosa, 59')
+      .openPopup();
+
+    // ── Legenda no mapa ──
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = () => {
+      const d = L.DomUtil.create('div');
+      d.style.cssText = 'background:rgba(15,15,20,.85);border:1px solid #333;border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0;line-height:1.8';
+      d.innerHTML = `
+        <div style="font-weight:700;margin-bottom:4px;color:#a78bfa">LEGENDA</div>
+        <div><span style="display:inline-block;width:12px;height:12px;background:#6366f1;border-radius:2px;margin-right:6px;vertical-align:middle"></span>🧊 Gelo 20kg (801·803·821)</div>
+        <div><span style="display:inline-block;width:12px;height:12px;background:#f97316;border-radius:2px;margin-right:6px;vertical-align:middle"></span>🫙 Gelo Pequenos (802·804·805·822)</div>
+        <div style="margin-top:4px"><span style="display:inline-block;width:10px;height:10px;background:#facc15;border-radius:50%;margin-right:6px;vertical-align:middle"></span>🏭 Fábrica Ponta Negra</div>
+      `;
+      return d;
+    };
+    legend.addTo(_mapZonas);
+
+    setTimeout(() => _mapZonas.invalidateSize(), 150);
+  }
 
   /* =========================================================
      MAPA DE ROTAS — Leaflet + Supabase public.clients
