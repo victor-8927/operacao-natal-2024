@@ -1005,7 +1005,7 @@
           <th>Carroceria</th>
           <th>Status</th><th>Obs</th>
           <th>Modalidade</th><th>KM Rodado</th><th>Diesel R$/L</th><th>Manutenção R$</th><th>Diesel R$</th>
-          <th>Diária R$</th><th>Pedágio R$</th><th>Outros R$</th>
+          <th>Despesas R$</th>
           <th></th>
         </tr></thead>
         <tbody id="tbody-vda"></tbody>
@@ -1710,8 +1710,8 @@
       {t:'select',opts:['próprio','terceiro','comodato']},
       // 9:km_atual  10:preco_diesel  11:manutencao(calc)  12:diesel(calc)
       {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
-      // 13:custo_diario  14:custo_pedagio  15:custo_outros
-      {t:'number'},{t:'number'},{t:'number'}
+      // 13:despesas
+      {t:'number'}
     ],
     funcs26: [
       // 0:nome  1:funcao  2:vda_fixo  3:cpf_id  4:tel
@@ -1806,7 +1806,7 @@
   };
 
   /* blank templates */
-  const vdaBlank     = ['','','Toco','0','0','Baú Refrigerado','Ativo','','próprio','0','6.50','','','0','0','0'];
+  const vdaBlank     = ['','','Toco','0','0','Baú Refrigerado','Ativo','','próprio','0','6.50','','','0'];
   // funcs26: 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
   //          8:valor_diario 9:almoco(c) 10:janta(c) 11:hora_inicio 12:hora_fim
   //          13:hrs(c) 14:bh(c) 15:extra(c) 16:vl_hora_extra 17:total_extra(c) 18:gratificacao 19:custo(c)
@@ -1826,7 +1826,7 @@
     // Converte objeto Supabase → array posicional para o schema
     const schema = SCHEMA[dbKey];
     const COL_MAP = {
-      vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel','','','custo_diario','custo_pedagio','custo_outros'],
+      vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel','','','custo_outros'],
       funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
@@ -2000,8 +2000,8 @@
   const COL_NAMES = {
     // 0:vda 1:placa 2:tipo 3:cap_pallets 4:peso_op_kg 5:carroceria
     // 6:status 7:obs 8:modalidade 9:km_atual 10:preco_diesel
-    // 11:manutencao(calc) 12:diesel(calc) 13:custo_diario 14:custo_pedagio 15:custo_outros
-    vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel',null,null,'custo_diario','custo_pedagio','custo_outros'],
+    // 11:manutencao(calc) 12:diesel(calc) 13:despesas
+    vdas26:    ['vda','placa','tipo','cap_pallets','peso_op_kg','carroceria','status','obs','modalidade','km_atual','preco_diesel',null,null,'custo_outros'],
     // 0:nome 1:funcao 2:vda_fixo 3:cpf_id 4:tel 5:status 6:obs 7:tipo_vinculo
     // 8:valor_diario 9:almoco(calc) 10:janta(calc) 11:hora_inicio 12:hora_fim
     // 13:hrs_trab(calc) 14:bh_hrs(calc) 15:hrs_extra(calc)
