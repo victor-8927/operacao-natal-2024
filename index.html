@@ -2637,13 +2637,13 @@
 
   // Configuração das rotas: id, label, maxCargas
   const ROTAS_CONFIG = [
-    { id:'801', label:'Rota 801', maxCargas:4, zona:'Zona Sul' },
-    { id:'802', label:'Rota 802', maxCargas:2, zona:'Zona Leste' },
-    { id:'803', label:'Rota 803', maxCargas:4, zona:'Zona Norte' },
-    { id:'804', label:'Rota 804', maxCargas:2, zona:'Zona Oeste' },
-    { id:'805', label:'Rota 805', maxCargas:2, zona:'Zona Norte' },
-    { id:'821', label:'Rota 821', maxCargas:4, zona:'Interior' },
-    { id:'822', label:'Rota 822', maxCargas:2, zona:'Zona Sul' },
+    { id:'801', label:'Rota 801', maxCargas:4, zona:'Nordeste & Sudeste' },
+    { id:'802', label:'Rota 802', maxCargas:2, zona:'Leste' },
+    { id:'803', label:'Rota 803', maxCargas:4, zona:'Centro Norte & Centro Sul' },
+    { id:'804', label:'Rota 804', maxCargas:2, zona:'Norte' },
+    { id:'805', label:'Rota 805', maxCargas:2, zona:'Oeste' },
+    { id:'821', label:'Rota 821', maxCargas:4, zona:'Noroeste & Suroeste' },
+    { id:'822', label:'Rota 822', maxCargas:2, zona:'Sul' },
     { id:'apoio', label:'Apoio', maxCargas:4, zona:'Apoio' },
   ];
 
@@ -2728,7 +2728,7 @@
       `<option value="${v}" ${v===card.vda?'selected':''}>${v||'— Selecionar VDA —'}</option>`
     ).join('');
 
-    const zonaOpts = ['','Norte','Sul','Leste','Oeste','Centro','Interior','Apoio'].map(z =>
+    const zonaOpts = ['','Norte','Sul','Leste','Oeste','Nordeste & Sudeste','Centro Norte & Centro Sul','Noroeste & Suroeste','Apoio'].map(z =>
       `<option value="${z}" ${z===card.zona?'selected':''}>${z||'— Zona —'}</option>`
     ).join('');
 
