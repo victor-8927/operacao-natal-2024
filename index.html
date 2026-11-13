@@ -2358,7 +2358,13 @@
 
   function parseF(s) {
     if (!s || s === '—') return 0;
-    return parseFloat(String(s).replace(/R\$|\.|\s/g,'').replace(',','.')) || 0;
+    // Remove R$, espaços e pontos de milhar (ponto seguido de exatamente 3 dígitos)
+    // Preserva ponto decimal (ex: "6.5" não vira "65")
+    const str = String(s)
+      .replace(/R\$|\s/g, '')          // remove R$ e espaços
+      .replace(/\.(?=\d{3}(?:[.,]|$))/g, '') // remove pontos de milhar apenas
+      .replace(',', '.');              // vírgula decimal → ponto
+    return parseFloat(str) || 0;
   }
   function fmtR(v) {
     return 'R$' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
