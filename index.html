@@ -494,6 +494,10 @@
   .mcard-mae-st.faturado  { background:rgba(52,196,124,.15); color:var(--green); }
   .mcard-mae-st.parcial   { background:rgba(100,160,255,.15); color:#64a0ff; }
   .mcard-mae-st.fechado   { background:rgba(170,170,170,.12); color:var(--muted); }
+  .seq-badge { font-size:9px; font-weight:700; background:rgba(245,200,60,.18); color:#f5c842; border-radius:4px; padding:1px 6px; margin-left:4px; vertical-align:middle; }
+  .mcard-filho-turno { display:flex; flex-direction:column; gap:3px; min-width:160px; }
+  .mcard-filho-turno select { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; }
+  .mcard-filho-turno select:focus { outline:none; border-color:var(--accent); }
   .mcard-mae-actions { display:flex; gap:4px; flex-shrink:0; }
   .mcard-mae-actions button { background:none; border:none; cursor:pointer; font-size:14px; padding:3px 5px; border-radius:4px; opacity:.7; }
   .mcard-mae-actions button:hover { opacity:1; background:var(--surface2); }
@@ -505,7 +509,7 @@
   .mcard-filho { display:grid; align-items:center; gap:8px; padding:10px 16px; border-top:1px solid rgba(255,255,255,.04); }
   .mcard-filho:hover { background:var(--surface2); }
   /* grade: [cor] [info] [OC Consignada] [retornos] [obs] [ações] */
-  .mcard-filho { grid-template-columns: 4px 1fr 150px auto 160px 28px; }
+  .mcard-filho { grid-template-columns: 4px 1fr 170px 160px auto; }
   .mcard-filho-bar { width:4px; border-radius:2px; height:36px; background:var(--accent); flex-shrink:0; }
   .mcard-filho-info { display:flex; flex-direction:column; gap:2px; }
   .mcard-filho-vda  { font-size:12px; font-weight:700; color:var(--text); }
@@ -3816,10 +3820,10 @@
 
   // Datas de operação
   const OP_DATES = [
-    { val: '2024-12-23', label: '23/12/2024 (Natal)' },
-    { val: '2024-12-24', label: '24/12/2024 (Véspera Natal)' },
-    { val: '2024-12-30', label: '30/12/2024 (Pré Réveillon)' },
-    { val: '2024-12-31', label: '31/12/2024 (Réveillon)' },
+    { val: '2026-12-23', label: '23/12/2026 (Natal)' },
+    { val: '2026-12-24', label: '24/12/2026 (Véspera Natal)' },
+    { val: '2026-12-30', label: '30/12/2026 (Pré Réveillon)' },
+    { val: '2026-12-31', label: '31/12/2026 (Réveillon)' },
   ];
 
   // Mapa rota → tipos de saco (baseado na config da operação)
@@ -3836,8 +3840,8 @@
         ...m,
         rota_num: m.op26_rotas?.numero || String(m.rota_id)
       }));
-      _manifestosState.nat = mapped.filter(m => m.data === '2024-12-23' || m.data === '2024-12-24');
-      _manifestosState.an  = mapped.filter(m => m.data === '2024-12-30' || m.data === '2024-12-31');
+      _manifestosState.nat = mapped.filter(m => m.data === '2026-12-23' || m.data === '2026-12-24');
+      _manifestosState.an  = mapped.filter(m => m.data === '2026-12-30' || m.data === '2026-12-31');
     } catch(e) { console.warn('loadManifestosDB:', e); }
   }
 
@@ -4091,7 +4095,7 @@
     let cargas;
     try {
       cargas = await sbFetch(
-        'op26_carga_natal?select=id,vda,motorista,ajudante1,ajudante2,ajudante3,rota,zona,s5,s10,s20,s40,peso_total_kg,cap_bau_kg,num_oc,obs&order=rota,vda'
+        'op26_carga_natal?select=id,vda,motorista,ajudante1,ajudante2,ajudante3,rota,zona,s5,s10,s20,s40,peso_total_kg,cap_bau_kg,num_oc,hora_saida,seq_carga,obs&order=rota,seq_carga,vda'
       );
     } catch(e) { cargas = []; }
 
@@ -4161,16 +4165,36 @@
 
         const ajudantes = [c.ajudante1, c.ajudante2, c.ajudante3].filter(Boolean).join(', ');
 
+        // Turno label a partir de hora_saida
+        const TURNOS = [
+          { val: '', label: '— Turno —' },
+          { val: '2T-23', label: '2° T / Dia 23 · 14:00–22:40' },
+          { val: '3T-23', label: '3° T / Dia 23 · 22:40–06:00' },
+          { val: '1T-24', label: '1° T / Dia 24 · 06:00–14:00' },
+          { val: '2T-24', label: '2° T / Dia 24 · 14:00–22:40 (prob.)' },
+        ];
+        const turnoAtual = c.hora_saida || '';
+        const turnoOpts = TURNOS.map(t =>
+          `<option value="${t.val}"${turnoAtual===t.val?' selected':''}>${t.label}</option>`
+        ).join('');
+        const seqBadge = c.seq_carga ? `<span class="seq-badge">Carga ${c.seq_carga}ª</span>` : '';
+
         return `
         <div class="mcard-filho" id="mf-carga-${c.id}">
           <div class="mcard-filho-bar"></div>
           <div class="mcard-filho-info">
-            <div class="mcard-filho-vda">VDA ${c.vda || '?'}</div>
+            <div class="mcard-filho-vda">VDA ${c.vda || '?'} ${seqBadge}</div>
             <div class="mcard-filho-mot">${c.motorista || '—'}${ajudantes ? ` · <span style="opacity:.6">${ajudantes}</span>` : ''}</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px">
               ${sacasLabel}
               ${pesoFi ? ` · <span style="color:${pctColor}">${pesoFi.toLocaleString('pt-BR')} kg${capFi ? ` (${pctFi}%)` : ''}</span>` : ''}
             </div>
+          </div>
+          <div class="mcard-filho-turno">
+            <div class="mcard-filho-oc-lbl">Turno de Saída</div>
+            <select onchange="saveCargaField(${c.id},'hora_saida',this.value,'${which}')">
+              ${turnoOpts}
+            </select>
           </div>
           <div class="mcard-filho-oc">
             <div class="mcard-filho-oc-lbl">OC Consignada</div>
