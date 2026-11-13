@@ -1516,10 +1516,18 @@
 
   async function cliLoadAll() {
     if (_cliCache) return _cliCache;
-    const url = 'https://wziprddrflgpzankofad.supabase.co/rest/v1/gelocrim_clientes?select=codigo_erp,nome,endereco,rota,zona&order=nome&limit=1000';
+    const url = 'https://wziprddrflgpzankofad.supabase.co/rest/v1/clients?select=codparc,name,address,route,district&order=name&limit=2000';
     const h   = { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NDMyNjMsImV4cCI6MjA5NDExOTI2M30.hWrdRYH6M6Voii8uo3MmJB8BKNZOOWRhjls7DFg4pcs', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NDMyNjMsImV4cCI6MjA5NDExOTI2M30.hWrdRYH6M6Voii8uo3MmJB8BKNZOOWRhjls7DFg4pcs' };
     const res = await fetch(url, { headers: h });
-    _cliCache = await res.json();
+    const rows = await res.json();
+    // normaliza para o formato interno (codigo_erp/nome) usado em todo o autocomplete
+    _cliCache = rows.map(c => ({
+      codigo_erp: c.codparc,
+      nome: c.name,
+      endereco: c.address || c.district || '',
+      rota: c.route || '',
+      zona: c.district || ''
+    }));
     return _cliCache;
   }
 
@@ -1797,7 +1805,7 @@
   const funcBlank    = ['','Motorista','','','','Ativo','','próprio','0','','','','','','','','0','','0',''];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
   // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), liquidacao, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
-  const rotaBlank    = ['801','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
+  const rotaBlank    = ['','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
   const cargaBlank   = ['','','','','0','0','0','0','','','',''];
   const comodatoBlank= ['','','0','20 KG','0','','','',''];
 
@@ -1956,8 +1964,8 @@
           row.push(td._pontoVal || '');
           return;
         }
-        const sel = td.querySelector('select:not(.ponto-rota-sel):not(.ponto-dropdown *)');
-        const pontoSel = td.querySelector('.ponto-rota-sel');
+        const sel = td.querySelector('select:not(.ponto-dropdown *)');
+        const pontoSel = null; // ponto-rota-sel removido — campo sempre usa autocomplete
         const timeInp = td.querySelector('input[type="time"]');
         if (pontoSel) { row.push(pontoSel.value); return; }
         if (timeInp) { row.push(timeInp.value); return; }
@@ -2101,10 +2109,8 @@
 
   /* =========================================================
      PONTO ESTRATÉGICO — célula inteligente
-     Modo Rota  → <select> 801/802/803/804/805/821/822
-     Modo Ponto → autocomplete de cliente (código + nome)
+     Todos os tipos de Op. → autocomplete de cliente (código + nome)
   ========================================================= */
-  const ROTAS_OPS = ['801','802','803','804','805','821','822'];
 
   function renderPontoCell(td, dbKey, tipoOp, savedVal) {
     td._pontoVal = savedVal;
@@ -2112,20 +2118,8 @@
     const wrap = document.createElement('div');
     wrap.className = 'ponto-cell';
 
-    if (tipoOp === 'Rota') {
-      // ── modo rota: select fixo
-      const sel = document.createElement('select');
-      sel.className = 'ponto-rota-sel';
-      ROTAS_OPS.forEach(r => {
-        const op = document.createElement('option');
-        op.value = r; op.textContent = 'Rota ' + r;
-        if (r === savedVal) op.selected = true;
-        sel.appendChild(op);
-      });
-      sel.onchange = () => { td._pontoVal = sel.value; };
-      wrap.appendChild(sel);
-    } else {
-      // ── modo ponto/câmara/pátio: autocomplete de cliente
+    {
+      // ── autocomplete de cliente para todos os tipos de operação
       const inp = document.createElement('input');
       inp.type = 'text';
       inp.className = 'ponto-input';
