@@ -492,6 +492,7 @@
   .mcard-mae-st { font-size:10px; font-weight:700; border-radius:5px; padding:2px 7px; flex-shrink:0; }
   .mcard-mae-st.planejado { background:rgba(245,200,66,.15); color:#f5c842; }
   .mcard-mae-st.faturado  { background:rgba(52,196,124,.15); color:var(--green); }
+  .mcard-mae-st.parcial   { background:rgba(100,160,255,.15); color:#64a0ff; }
   .mcard-mae-st.fechado   { background:rgba(170,170,170,.12); color:var(--muted); }
   .mcard-mae-actions { display:flex; gap:4px; flex-shrink:0; }
   .mcard-mae-actions button { background:none; border:none; cursor:pointer; font-size:14px; padding:3px 5px; border-radius:4px; opacity:.7; }
@@ -4070,189 +4071,147 @@
   }
 
   /* =========================================================
-     MANIFESTOS — PAINEL CARDS MÃE + FILHOS
+     MANIFESTOS — PAINEL POR ROTA (automático de op26_carga_natal)
+     Cargas são agrupadas diretamente por rota — sem vínculo manual.
+     Único input no dia 24: num_oc de cada carga.
   ========================================================= */
 
-  // Cache de cargas vinculadas: { [manifesto_id]: [...cargas] }
-  let _manifestoCargas = {};
-
   /**
-   * Carrega op26_manifesto_cargas + join op26_carga_natal para um manifesto
-   */
-  async function loadManifestCargas(manifestoId) {
-    try {
-      const rows = await sbFetch(
-        `op26_manifesto_cargas?manifesto_id=eq.${manifestoId}&select=*,op26_carga_natal(id,vda,motorista,rota,s5,s10,s20,s40,peso_total_kg,cap_bau_kg,num_oc)&order=id`
-      );
-      return rows || [];
-    } catch(e) { return []; }
-  }
-
-  /**
-   * Renderiza o painel completo de manifestos (cards mãe + filhos expandíveis)
+   * Renderiza o painel de manifestos agrupado por rota,
+   * direto de op26_carga_natal. Zero configuração manual.
    */
   async function renderManifestPanel(which) {
     const panelId = 'manifest-panel-' + which;
     const panel = document.getElementById(panelId);
     if (!panel) return;
 
-    panel.innerHTML = '<div class="prog-vazio">⏳ Carregando manifestos...</div>';
+    panel.innerHTML = '<div class="prog-vazio">⏳ Carregando...</div>';
 
-    // Garante que manifestos estão carregados
-    if (!_manifestosState[which] || !_manifestosState[which].length) {
-      await loadManifestosDB(which);
-    }
+    // Carrega todas as cargas + dados da rota
+    let cargas;
+    try {
+      cargas = await sbFetch(
+        'op26_carga_natal?select=id,vda,motorista,ajudante1,ajudante2,ajudante3,rota,zona,s5,s10,s20,s40,peso_total_kg,cap_bau_kg,num_oc,obs&order=rota,vda'
+      );
+    } catch(e) { cargas = []; }
 
-    const manifestos = _manifestosState[which] || [];
-    if (!manifestos.length) {
-      panel.innerHTML = `<div class="mcard-vazio"><span class="mcard-vazio-icon">📋</span>Nenhum manifesto criado ainda.<br><small>Acesse o Escalonamento de Equipes e clique em "📋 Manifesto" em qualquer rota.</small></div>`;
+    // Carrega rotas para enriquecer o nome
+    let rotas = [];
+    try { rotas = await sbFetch('op26_rotas?select=id,numero,nome,zona&order=numero'); } catch(e) {}
+    const rotaMap = {};
+    (rotas||[]).forEach(r => { rotaMap[r.numero] = r; });
+
+    if (!cargas || !cargas.length) {
+      panel.innerHTML = `<div class="mcard-vazio"><span class="mcard-vazio-icon">🚚</span>Nenhuma carga cadastrada ainda.<br><small>Acesse o Escalonamento de Equipes e cadastre as cargas por VDA.</small></div>`;
       return;
     }
 
-    // Carrega cargas filhas de todos os manifestos em paralelo
-    const cargasMap = {};
-    await Promise.all(manifestos.map(async m => {
-      cargasMap[m.id] = await loadManifestCargas(m.id);
-    }));
-
-    // Carrega todas as cargas disponíveis do período para o seletor
-    const dbKey = which === 'nat' ? 'natal26' : 'anonovo26';
-    const todasCargas = (await loadDB(dbKey)) || [];
-
-    // Agrupa manifestos por data
-    const porData = {};
-    manifestos.forEach(m => {
-      const d = m.data || 'sem-data';
-      if (!porData[d]) porData[d] = [];
-      porData[d].push(m);
+    // Agrupa cargas por rota
+    const porRota = {};
+    cargas.forEach(c => {
+      const r = c.rota || 'sem-rota';
+      if (!porRota[r]) porRota[r] = [];
+      porRota[r].push(c);
     });
 
-    const datasOrdenadas = Object.keys(porData).sort();
+    const rotasOrdenadas = Object.keys(porRota).sort();
 
     let html = '';
-    datasOrdenadas.forEach(data => {
-      const dataLabel = OP_DATES.find(d => d.val === data)?.label || data;
-      html += `<div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:0 2px">${dataLabel}</div>`;
+    rotasOrdenadas.forEach(rotaNum => {
+      const grupo = porRota[rotaNum];
+      const rInfo = rotaMap[rotaNum] || {};
+      const rotaNome = rInfo.nome || `Rota ${rotaNum}`;
+      const rotaId = `rota-${rotaNum}`;
 
-      porData[data].forEach(m => {
-        const filhos = cargasMap[m.id] || [];
-        const stClass = m.status || 'planejado';
-        const stLabel = { planejado:'Planejado', faturado:'Faturado', fechado:'Fechado' }[m.status] || m.status || '—';
+      // Totais agregados
+      const totalSacas = grupo.reduce((s,c) => s+(+c.s5||0)+(+c.s10||0)+(+c.s20||0)+(+c.s40||0), 0);
+      const totalPeso  = grupo.reduce((s,c) => s+(+c.peso_total_kg||0), 0);
+      const totalVdas  = grupo.length;
+      const ocFeitas   = grupo.filter(c => c.num_oc && c.num_oc.trim()).length;
 
-        // Totais do manifesto — agregados das cargas filhas
-        const sacasPlanejadas = (m.kg5_planejado||0)+(m.kg10_planejado||0)+(m.kg20_planejado||0)+(m.kg40_planejado||0);
-        const sacasCargas    = filhos.reduce((s,f) => { const c=f.op26_carga_natal||{}; return s+(+c.s5||0)+(+c.s10||0)+(+c.s20||0)+(+c.s40||0); }, 0);
-        const totalSacas     = filhos.length ? sacasCargas : sacasPlanejadas;
-        const totalRet       = filhos.reduce((s,f) => s+(f.retorno_s5||0)+(f.retorno_s10||0)+(f.retorno_s20||0)+(f.retorno_s40||0), 0);
-        const totalOcs       = filhos.filter(f => f.oc_consignada && f.oc_consignada.trim()).length;
+      // Breakdown de sacas por tamanho
+      const tot5  = grupo.reduce((s,c) => s+(+c.s5||0),  0);
+      const tot10 = grupo.reduce((s,c) => s+(+c.s10||0), 0);
+      const tot20 = grupo.reduce((s,c) => s+(+c.s20||0), 0);
+      const tot40 = grupo.reduce((s,c) => s+(+c.s40||0), 0);
+      const sacasBreakdown = [
+        tot20 ? `${tot20}×20kg` : '',
+        tot10 ? `${tot10}×10kg` : '',
+        tot5  ? `${tot5}×5kg`   : '',
+        tot40 ? `${tot40}×40kg` : ''
+      ].filter(Boolean).join(' + ');
 
-        // Cargas disponíveis para vincular (que ainda não estão neste manifesto)
-        const vinculadosIds = new Set(filhos.map(f => f.carga_id));
-        const disponiveis = todasCargas.filter(c => !vinculadosIds.has(c.id) && c.id);
-        const optDisp = disponiveis.map(c => {
-          const vda = c.vda || '?';
-          const mot = c.motorista || '';
-          const qtd = c.qtd_prog || 0;
-          return `<option value="${c.id}">VDA ${vda} — ${mot} (${qtd} sacas)</option>`;
-        }).join('');
+      // Status: todas com OC = faturado, alguma = parcial, nenhuma = planejado
+      const stClass = ocFeitas === totalVdas ? 'faturado' : ocFeitas > 0 ? 'parcial' : 'planejado';
+      const stLabel = ocFeitas === totalVdas ? 'Faturado' : ocFeitas > 0 ? `${ocFeitas}/${totalVdas} OCs` : 'Planejado';
 
-        // Renderiza filhos
-        let filhosHtml = '';
-        if (filhos.length) {
-          filhosHtml = filhos.map(f => {
-            const c = f.op26_carga_natal || {};
-            const vda  = c.vda || '?';
-            const mot  = c.motorista || '—';
-            const s5   = +c.s5  || 0;
-            const s10  = +c.s10 || 0;
-            const s20  = +c.s20 || 0;
-            const s40  = +c.s40 || 0;
-            const totalSacasFi = s5 + s10 + s20 + s40;
-            const pesoFi = +c.peso_total_kg || 0;
-            const sacasLabel = [s20?`${s20}×20kg`:'', s10?`${s10}×10kg`:'', s5?`${s5}×5kg`:'', s40?`${s40}×40kg`:''].filter(Boolean).join(' + ') || '—';
-            return `
-            <div class="mcard-filho" id="mf-filho-${f.id}">
-              <div class="mcard-filho-bar"></div>
-              <div class="mcard-filho-info">
-                <div class="mcard-filho-vda">VDA ${vda}</div>
-                <div class="mcard-filho-mot">${mot} · ${sacasLabel}${pesoFi ? ` · <span style="color:#f5c842">${pesoFi.toLocaleString('pt-BR')} kg</span>` : ''}</div>
-              </div>
-              <div class="mcard-filho-oc">
-                <div class="mcard-filho-oc-lbl">OC Consignada</div>
-                <input type="text" value="${f.oc_consignada||''}" placeholder="Ex: OC-00001"
-                  onblur="saveManifestoCarga(${f.id},'oc_consignada',this.value,'${which}')"
-                  onkeydown="if(event.key==='Enter')this.blur()">
-              </div>
-              <div class="mcard-filho-ret">
-                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Retorno</div>
-                <div class="mcard-filho-ret-row">
-                  <span>5kg</span><input type="number" min="0" value="${f.retorno_s5||0}"
-                    onblur="saveManifestoCarga(${f.id},'retorno_s5',+this.value,'${which}')"
-                    onkeydown="if(event.key==='Enter')this.blur()">
-                  <span>10kg</span><input type="number" min="0" value="${f.retorno_s10||0}"
-                    onblur="saveManifestoCarga(${f.id},'retorno_s10',+this.value,'${which}')"
-                    onkeydown="if(event.key==='Enter')this.blur()">
-                  <span>20kg</span><input type="number" min="0" value="${f.retorno_s20||0}"
-                    onblur="saveManifestoCarga(${f.id},'retorno_s20',+this.value,'${which}')"
-                    onkeydown="if(event.key==='Enter')this.blur()">
-                  <span>40kg</span><input type="number" min="0" value="${f.retorno_s40||0}"
-                    onblur="saveManifestoCarga(${f.id},'retorno_s40',+this.value,'${which}')"
-                    onkeydown="if(event.key==='Enter')this.blur()">
-                </div>
-              </div>
-              <div class="mcard-filho-obs" title="${(f.obs||'')}">
-                ${f.obs ? `💬 ${f.obs}` : '<span style="opacity:.4">sem obs</span>'}
-              </div>
-              <button class="mcard-filho-del" title="Desvincular carga" onclick="desvincularCarga(${f.id},${m.id},'${which}')">✕</button>
-            </div>`;
-          }).join('');
-        } else {
-          filhosHtml = `<div style="padding:12px 16px;font-size:11px;color:var(--muted);font-style:italic">Nenhuma carga vinculada. Use o seletor abaixo para vincular.</div>`;
-        }
+      // Cards filhos (uma linha por VDA/carga)
+      const filhosHtml = grupo.map(c => {
+        const sacasLabel = [
+          +c.s20 ? `${+c.s20}×20kg` : '',
+          +c.s10 ? `${+c.s10}×10kg` : '',
+          +c.s5  ? `${+c.s5}×5kg`   : '',
+          +c.s40 ? `${+c.s40}×40kg` : ''
+        ].filter(Boolean).join(' + ') || '—';
 
-        html += `
-        <div class="mcard-mae" id="mcard-${m.id}">
-          <div class="mcard-mae-header" onclick="toggleManifestCard(${m.id})">
-            <span class="mcard-mae-toggle">▶</span>
-            <div class="mcard-mae-title">Rota ${m.rota_num}</div>
-            ${m.num_oc ? `<span class="mcard-mae-oc">OC ${m.num_oc}</span>` : ''}
-            <span class="mcard-mae-data">${dataLabel}</span>
-            <div class="mcard-mae-stats">
-              <div class="mcard-mae-stat">
-                <span class="mcard-mae-stat-val">${totalSacas}</span>
-                <span class="mcard-mae-stat-lbl">${filhos.length ? 'sacas reais' : 'sacas plan.'}</span>
-              </div>
-              <div class="mcard-mae-stat">
-                <span class="mcard-mae-stat-val">${filhos.length}</span>
-                <span class="mcard-mae-stat-lbl">cargas</span>
-              </div>
-              ${totalOcs ? `<div class="mcard-mae-stat">
-                <span class="mcard-mae-stat-val" style="color:var(--green)">${totalOcs}/${filhos.length}</span>
-                <span class="mcard-mae-stat-lbl">OCs</span>
-              </div>` : ''}
-              ${totalRet ? `<div class="mcard-mae-stat">
-                <span class="mcard-mae-stat-val" style="color:#f5c842">${totalRet}</span>
-                <span class="mcard-mae-stat-lbl">retorno</span>
-              </div>` : ''}
-            </div>
-            <span class="mcard-mae-st ${stClass}">${stLabel}</span>
-            <div class="mcard-mae-actions">
-              <button title="Editar manifesto" onclick="event.stopPropagation(); editManifesto(${m.id},'${which}','${m.rota_num}')">✏️</button>
-              <button title="Excluir manifesto" onclick="event.stopPropagation(); deleteManifesto(${m.id},'${which}','${m.rota_num}')">🗑</button>
+        const pesoFi = +c.peso_total_kg || 0;
+        const capFi  = +c.cap_bau_kg || 0;
+        const pctFi  = capFi > 0 ? Math.round(pesoFi / capFi * 100) : 0;
+        const pctColor = pctFi >= 95 ? '#f5c842' : pctFi >= 80 ? 'var(--green)' : 'var(--muted)';
+
+        const ajudantes = [c.ajudante1, c.ajudante2, c.ajudante3].filter(Boolean).join(', ');
+
+        return `
+        <div class="mcard-filho" id="mf-carga-${c.id}">
+          <div class="mcard-filho-bar"></div>
+          <div class="mcard-filho-info">
+            <div class="mcard-filho-vda">VDA ${c.vda || '?'}</div>
+            <div class="mcard-filho-mot">${c.motorista || '—'}${ajudantes ? ` · <span style="opacity:.6">${ajudantes}</span>` : ''}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">
+              ${sacasLabel}
+              ${pesoFi ? ` · <span style="color:${pctColor}">${pesoFi.toLocaleString('pt-BR')} kg${capFi ? ` (${pctFi}%)` : ''}</span>` : ''}
             </div>
           </div>
-          <div class="mcard-filhos-wrap" id="mcard-filhos-${m.id}">
-            ${filhosHtml}
-            <div class="mcard-add-carga">
-              <select id="sel-carga-${m.id}">
-                <option value="">— Vincular carga ao manifesto —</option>
-                ${optDisp}
-              </select>
-              <button class="btn btn-add" style="font-size:11px;padding:4px 10px" onclick="vincularCarga(${m.id},'${which}')">+ Vincular</button>
-            </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">OC Consignada</div>
+            <input type="text" value="${c.num_oc||''}" placeholder="Ex: OC-00001"
+              onblur="saveCargaField(${c.id},'num_oc',this.value,'${which}')"
+              onkeydown="if(event.key==='Enter')this.blur()">
           </div>
+          ${c.obs ? `<div class="mcard-filho-obs" title="${c.obs}">💬 ${c.obs}</div>` : ''}
         </div>`;
-      });
+      }).join('');
+
+      html += `
+      <div class="mcard-mae" id="mcard-rota-${rotaNum}">
+        <div class="mcard-mae-header" onclick="toggleManifestCard('rota-${rotaNum}')">
+          <span class="mcard-mae-toggle">▶</span>
+          <div class="mcard-mae-title">${rotaNome}</div>
+          <div class="mcard-mae-stats">
+            <div class="mcard-mae-stat">
+              <span class="mcard-mae-stat-val">${totalVdas}</span>
+              <span class="mcard-mae-stat-lbl">carros</span>
+            </div>
+            <div class="mcard-mae-stat">
+              <span class="mcard-mae-stat-val">${totalSacas.toLocaleString('pt-BR')}</span>
+              <span class="mcard-mae-stat-lbl">sacas</span>
+            </div>
+            <div class="mcard-mae-stat">
+              <span class="mcard-mae-stat-val" style="color:#f5c842">${(totalPeso/1000).toFixed(1)} t</span>
+              <span class="mcard-mae-stat-lbl">peso</span>
+            </div>
+            ${ocFeitas > 0 ? `<div class="mcard-mae-stat">
+              <span class="mcard-mae-stat-val" style="color:var(--green)">${ocFeitas}/${totalVdas}</span>
+              <span class="mcard-mae-stat-lbl">OCs</span>
+            </div>` : ''}
+          </div>
+          <div style="font-size:9px;color:var(--muted);margin-left:4px;white-space:nowrap">${sacasBreakdown}</div>
+          <span class="mcard-mae-st ${stClass}">${stLabel}</span>
+        </div>
+        <div class="mcard-filhos-wrap" id="mcard-filhos-rota-${rotaNum}">
+          ${filhosHtml}
+        </div>
+      </div>`;
     });
 
     panel.innerHTML = html;
@@ -4264,51 +4223,19 @@
     if (card) card.classList.toggle('expanded');
   }
 
-  /** Vincula uma carga ao manifesto via op26_manifesto_cargas */
-  async function vincularCarga(manifestoId, which) {
-    const sel = document.getElementById('sel-carga-' + manifestoId);
-    if (!sel || !sel.value) return;
-    const cargaId = parseInt(sel.value);
-
+  /** Salva campo diretamente em op26_carga_natal (ex: num_oc) */
+  async function saveCargaField(cargaId, campo, valor, which) {
     try {
-      const r = await sbFetch('op26_manifesto_cargas', {
-        method: 'POST',
-        body: JSON.stringify({ manifesto_id: manifestoId, carga_id: cargaId })
-      });
-      if (r === null) { alert('Erro ao vincular carga.'); return; }
-    } catch(e) { alert('Erro de rede: ' + e.message); return; }
-
-    // Re-renderiza o painel
-    await renderManifestPanel(which);
-    // Expande o card novamente
-    setTimeout(() => {
-      const card = document.getElementById('mcard-' + manifestoId);
-      if (card && !card.classList.contains('expanded')) card.classList.add('expanded');
-    }, 50);
-  }
-
-  /** Desvincula uma carga do manifesto */
-  async function desvincularCarga(vinculoId, manifestoId, which) {
-    if (!confirm('Desvincular esta carga do manifesto?')) return;
-    try {
-      await sbFetch(`op26_manifesto_cargas?id=eq.${vinculoId}`, { method: 'DELETE' });
-    } catch(e) {}
-
-    await renderManifestPanel(which);
-    setTimeout(() => {
-      const card = document.getElementById('mcard-' + manifestoId);
-      if (card && !card.classList.contains('expanded')) card.classList.add('expanded');
-    }, 50);
-  }
-
-  /** Salva campo individual de um vínculo (oc_consignada ou retorno) */
-  async function saveManifestoCarga(vinculoId, campo, valor, which) {
-    try {
-      await sbFetch(`op26_manifesto_cargas?id=eq.${vinculoId}`, {
+      await sbFetch(`op26_carga_natal?id=eq.${cargaId}`, {
         method: 'PATCH',
         body: JSON.stringify({ [campo]: valor })
       });
-    } catch(e) { console.warn('saveManifestoCarga net', e); }
+    } catch(e) { console.warn('saveCargaField', e); }
+  }
+
+  // Manter compatibilidade com chamadas antigas (escalonamento usa saveManifestoCarga)
+  async function saveManifestoCarga(vinculoId, campo, valor, which) {
+    await saveCargaField(vinculoId, campo, valor, which);
   }
 
   /* =========================================================
