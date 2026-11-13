@@ -189,6 +189,48 @@
   .e26-toolbar .btn { padding:7px 16px; border-radius:7px; border:none; cursor:pointer; font-size:12px; font-weight:700; transition:all .15s; }
   .btn-add { background:rgba(52,196,124,.18); color:var(--green); border:1px solid rgba(52,196,124,.4); }
   .btn-add:hover { background:rgba(52,196,124,.32); }
+
+  /* ── ACCORDION PONTO (natal26 / anonovo26) ── */
+  tr.ponto-master td { background:var(--surface2); font-weight:600; }
+  tr.ponto-master:hover td { background:rgba(99,102,241,.08); }
+  .ponto-expand-btn {
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    font-size:14px; padding:2px 6px; transition:transform .2s;
+  }
+  .ponto-expand-btn.open { transform:rotate(90deg); color:var(--accent); }
+  tr.ponto-items-row td { padding:0 !important; }
+  tr.ponto-items-row.hidden { display:none; }
+  .items-inner {
+    padding:4px 8px 10px 36px;
+    background:rgba(10,10,15,.35);
+    border-left:3px solid rgba(99,102,241,.4);
+  }
+  .items-inner table { width:100%; border-collapse:collapse; font-size:11px; }
+  .items-inner th {
+    padding:4px 8px; text-align:left; color:var(--muted);
+    font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.4px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  .items-inner td {
+    padding:4px 8px; border-bottom:1px solid rgba(255,255,255,.04);
+    background:transparent !important;
+  }
+  .items-inner tr:last-child td { border-bottom:none; }
+  .btn-add-item {
+    background:rgba(99,102,241,.14); color:var(--accent);
+    border:1px dashed rgba(99,102,241,.4); border-radius:5px;
+    padding:3px 10px; font-size:11px; cursor:pointer; margin-top:6px;
+    transition:all .15s;
+  }
+  .btn-add-item:hover { background:rgba(99,102,241,.28); }
+  .btn-del-item {
+    background:rgba(242,107,107,.14); color:var(--red);
+    border:1px solid rgba(242,107,107,.3); border-radius:4px;
+    padding:1px 7px; font-size:11px; cursor:pointer;
+  }
+  .item-calc { color:var(--green); font-weight:600; }
+  .ponto-totals { color:var(--green); font-size:11px; white-space:nowrap; }
   .btn-save { background:rgba(79,142,247,.18); color:var(--accent); border:1px solid rgba(79,142,247,.4); }
   .btn-save:hover { background:rgba(79,142,247,.32); }
   .btn-del { background:rgba(242,107,107,.18); color:var(--red); border:1px solid rgba(242,107,107,.4); font-size:11px; padding:3px 8px; }
@@ -1198,11 +1240,10 @@
       <div class="tbl-wrap">
         <table id="tbl-nat26">
           <thead><tr>
-            <th style="position:sticky;left:0;z-index:2;background:var(--surface2);min-width:160px;max-width:200px">Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
-            <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
-            <th>Ord. Carga</th><th>Vlr Total</th><th>Vlr Aluguel</th>
-            <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
-            <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
+            <th style="width:24px"></th>
+            <th style="min-width:170px">Ponto Estratégico</th>
+            <th>Tipo Veículo</th><th>Tipo Op.</th>
+            <th>FAT Total</th><th>Peso Total</th><th>Liq. Total</th>
             <th>Data</th><th>Status</th><th>Obs</th><th></th>
           </tr></thead>
           <tbody id="tbody-nat26"></tbody>
@@ -1274,11 +1315,10 @@
       <div class="tbl-wrap">
         <table id="tbl-an26">
           <thead><tr>
-            <th style="position:sticky;left:0;z-index:2;background:var(--surface2);min-width:160px;max-width:200px">Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
-            <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
-            <th>Ord. Carga</th><th>Vlr Total</th><th>Vlr Aluguel</th>
-            <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
-            <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
+            <th style="width:24px"></th>
+            <th style="min-width:170px">Ponto Estratégico</th>
+            <th>Tipo Veículo</th><th>Tipo Op.</th>
+            <th>FAT Total</th><th>Peso Total</th><th>Liq. Total</th>
             <th>Data</th><th>Status</th><th>Obs</th><th></th>
           </tr></thead>
           <tbody id="tbody-an26"></tbody>
@@ -1898,36 +1938,397 @@
     const tbody = document.getElementById(TBODY_MAP[tblId]);
     if (!tbody) return;
     tbody.innerHTML = '';
+
+    // Para natal26/anonovo26: agrupar rows por cliente (col0/campo cliente)
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      // Converte tudo para array
+      const arrRows = data.map(row => Array.isArray(row) ? row : rowToArray(dbKey, row));
+      // Agrupa por cliente (col 0)
+      const grupos = new Map();
+      arrRows.forEach(row => {
+        const cliente = String(row[0] || '');
+        if (!grupos.has(cliente)) grupos.set(cliente, []);
+        grupos.get(cliente).push(row);
+      });
+      // Para cada grupo: cria um masterTr com buildPontoRow (primeira row do grupo)
+      // e adiciona itens extras como buildItemRow ao tbody do sub-table
+      grupos.forEach((rows, cliente) => {
+        const masterTr = buildPontoRow(tblId, dbKey, rows[0]);
+        tbody.appendChild(masterTr);
+        tbody.appendChild(masterTr._itemsRow);
+        // Adiciona itens adicionais do mesmo cliente (rows[1..n])
+        if (rows.length > 1) {
+          const subTbody = masterTr._itemsRow.querySelector('tbody');
+          rows.slice(1).forEach(extraRow => {
+            const itemData = [
+              String(extraRow[3] || '20 KG'),
+              String(extraRow[4] || '0'),
+              String(extraRow[5] || '0'),
+              String(extraRow[8] || '0'),
+              String(extraRow[10] || '0'),
+              String(extraRow[11] || 'Venda'),
+              String(extraRow[12] || '0'),
+              String(extraRow[13] || '0'),
+              String(extraRow[14] || '0'),
+              String(extraRow[16] || '0'),
+            ];
+            subTbody.appendChild(buildItemRow(itemData, masterTr));
+          });
+        }
+      });
+      return;
+    }
+
     data.forEach((row, ri) => {
-      // Se vier do Supabase (objeto), converte para array
       const rowArr = Array.isArray(row) ? row : rowToArray(dbKey, row);
       const tr = buildRow(tblId, dbKey, schema, rowArr, ri);
       tbody.appendChild(tr);
-      // dispara cálculos ao carregar funcs26 e vdas26
       if (dbKey === 'funcs26' || dbKey === 'vdas26') recalcRow(tr, dbKey);
     });
   }
 
+  /* =========================================================
+     ACCORDION PONTO — natal26 / anonovo26
+     Estrutura: tr.ponto-master (linha resumo) +
+                tr.ponto-items-row (sub-tabela de itens)
+     Cada "item" = { gelo, qtd, preco, liquidacao, aluguel,
+                     modalidade, retorno, troca, venda_real, fat_real }
+  ========================================================= */
+
+  const ITEM_GELO_OPTS  = ['5 KG','10 KG','20 KG','40 KG','Misto'];
+  const ITEM_MODAL_OPTS = ['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello'];
+  const PESO_MAP = {'5 KG':6,'10 KG':11,'20 KG':23,'40 KG':45,'Misto':23};
+
+  function makeItemSel(opts, val) {
+    const s = document.createElement('select');
+    s.className = 'cell-select';
+    opts.forEach(o => {
+      const op = document.createElement('option');
+      op.value = o; op.textContent = o;
+      if (o === val) op.selected = true;
+      s.appendChild(op);
+    });
+    return s;
+  }
+
+  function makeItemNum(val, placeholder) {
+    const td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.spellcheck = false;
+    td.textContent = val || '0';
+    td.style.textAlign = 'right';
+    td.style.minWidth = '52px';
+    if (placeholder) td.title = placeholder;
+    return td;
+  }
+
+  function recalcItemRow(itr, masterTr) {
+    const tds = itr.querySelectorAll('td');
+    // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:ord_carga 6:aluguel
+    // 7:modalidade 8:retorno 9:troca 10:venda_real 11:fat%(c) 12:fat_real 13:liq(c) 14:del
+    const gelo   = tds[0]?.querySelector('select')?.value || '20 KG';
+    const qtd    = parseF(tds[1]?.textContent);
+    const preco  = parseF(tds[2]?.textContent);
+    const liquidac = parseF(tds[5]?.textContent);
+    const aluguel  = parseF(tds[6]?.textContent);
+    const fatReal  = parseF(tds[12]?.textContent);
+
+    const kgUnit = PESO_MAP[gelo] || 23;
+    const fat    = qtd * preco;
+    const peso   = qtd * kgUnit;
+    const fatPct = fat > 0 ? (fatReal / fat * 100) : 0;
+    const totalRs= fatReal + aluguel;
+    const liq    = totalRs - liquidac;
+
+    if (tds[3]) { tds[3].textContent = fat > 0 ? fmtR(fat) : '—'; tds[3].className='item-calc'; }
+    if (tds[4]) { tds[4].textContent = peso > 0 ? peso.toLocaleString('pt-BR')+' kg' : '—'; tds[4].className='item-calc'; }
+    if (tds[11]){ tds[11].textContent = fat > 0 ? fatPct.toFixed(1)+'%' : '—'; tds[11].className='item-calc'; }
+    if (tds[13]){ tds[13].textContent = (totalRs>0||liquidac>0) ? fmtR(liq) : '—'; tds[13].className='item-calc'; }
+
+    // Atualiza totais na linha mestre
+    if (masterTr) recalcMasterTotals(masterTr);
+  }
+
+  function recalcMasterTotals(masterTr) {
+    const itemsRow = masterTr._itemsRow;
+    if (!itemsRow) return;
+    const itrs = itemsRow.querySelectorAll('tbody tr');
+    let fatTotal = 0, pesoTotal = 0, liqTotal = 0;
+    itrs.forEach(itr => {
+      const tds = itr.querySelectorAll('td');
+      const gelo = tds[0]?.querySelector('select')?.value || '20 KG';
+      const qtd  = parseF(tds[1]?.textContent);
+      const preco= parseF(tds[2]?.textContent);
+      const liquidac = parseF(tds[5]?.textContent);
+      const aluguel  = parseF(tds[6]?.textContent);
+      const fatReal  = parseF(tds[12]?.textContent);
+      const kgUnit = PESO_MAP[gelo] || 23;
+      const fat    = qtd * preco;
+      const peso   = qtd * kgUnit;
+      const totalRs= fatReal + aluguel;
+      const liq    = totalRs - liquidac;
+      fatTotal  += fat;
+      pesoTotal += peso;
+      liqTotal  += liq;
+    });
+    const mTds = masterTr.querySelectorAll('td');
+    // 0:▶ 1:ponto 2:veiculo 3:tipo_op 4:fat_total 5:peso_total 6:liq_total 7:data 8:status 9:obs 10:ações
+    if (mTds[4]) mTds[4].textContent = fatTotal > 0 ? fmtR(fatTotal) : '—';
+    if (mTds[5]) mTds[5].textContent = pesoTotal > 0 ? pesoTotal.toLocaleString('pt-BR')+' kg' : '—';
+    if (mTds[6]) mTds[6].textContent = liqTotal !== 0 ? fmtR(liqTotal) : '—';
+  }
+
+  function buildItemRow(itemData, masterTr) {
+    // itemData = [gelo, qtd, preco, liquidacao, aluguel, modalidade, retorno, troca, venda_real, fat_real]
+    const itr = document.createElement('tr');
+    const [gelo='20 KG', qtd='0', preco='0', liquidac='0', aluguel='0',
+           modal='Venda', retorno='0', troca='0', vendaReal='0', fatReal='0'] = itemData;
+
+    // 0: Gelo (select)
+    const tdGelo = document.createElement('td');
+    const selGelo = makeItemSel(ITEM_GELO_OPTS, gelo);
+    selGelo.onchange = () => recalcItemRow(itr, masterTr);
+    tdGelo.appendChild(selGelo);
+
+    // 1: Qtd
+    const tdQtd = makeItemNum(qtd, 'Quantidade sacas');
+    tdQtd.oninput = () => recalcItemRow(itr, masterTr);
+
+    // 2: Preço
+    const tdPreco = makeItemNum(preco, 'R$/saca');
+    tdPreco.oninput = () => recalcItemRow(itr, masterTr);
+
+    // 3: FAT R$ (calc)
+    const tdFat = document.createElement('td');
+    tdFat.className = 'item-calc';
+
+    // 4: Peso (calc)
+    const tdPeso = document.createElement('td');
+    tdPeso.className = 'item-calc';
+
+    // 5: Ord. Carga
+    const tdLiquidac = makeItemNum(liquidac, 'Ordem de Carga');
+    tdLiquidac.oninput = () => recalcItemRow(itr, masterTr);
+
+    // 6: Aluguel
+    const tdAluguel = makeItemNum(aluguel, 'Vlr Aluguel');
+    tdAluguel.oninput = () => recalcItemRow(itr, masterTr);
+
+    // 7: Modalidade (select)
+    const tdModal = document.createElement('td');
+    const selModal = makeItemSel(ITEM_MODAL_OPTS, modal);
+    tdModal.appendChild(selModal);
+
+    // 8: Retorno
+    const tdRetorno = makeItemNum(retorno, 'Sacas retornadas');
+    // 9: Troca
+    const tdTroca = makeItemNum(troca, 'Sacas trocadas');
+    // 10: Venda Real
+    const tdVendaReal = makeItemNum(vendaReal, 'Venda realizada');
+
+    // 11: FAT% (calc)
+    const tdFatPct = document.createElement('td');
+    tdFatPct.className = 'item-calc';
+
+    // 12: FAT Real R$
+    const tdFatReal = makeItemNum(fatReal, 'FAT Real R$');
+    tdFatReal.oninput = () => recalcItemRow(itr, masterTr);
+
+    // 13: Liq. (calc)
+    const tdLiq = document.createElement('td');
+    tdLiq.className = 'item-calc';
+
+    // 14: Excluir
+    const tdDel = document.createElement('td');
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn-del-item';
+    btnDel.textContent = '✕';
+    btnDel.onclick = () => { itr.remove(); recalcMasterTotals(masterTr); };
+    tdDel.appendChild(btnDel);
+
+    [tdGelo,tdQtd,tdPreco,tdFat,tdPeso,tdLiquidac,tdAluguel,
+     tdModal,tdRetorno,tdTroca,tdVendaReal,tdFatPct,tdFatReal,tdLiq,tdDel]
+      .forEach(td => itr.appendChild(td));
+
+    // dispara cálculo inicial
+    setTimeout(() => recalcItemRow(itr, masterTr), 0);
+    return itr;
+  }
+
+  function buildPontoRow(tblId, dbKey, row) {
+    // row = array 22 colunas conforme SCHEMA[natal26]
+    // 0:ponto 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco 6:fat(c) 7:peso(c)
+    // 8:liquidacao 9:vlr_total(c) 10:aluguel 11:modalidade 12:retorno
+    // 13:troca 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
+    // 19:data 20:status 21:obs
+    const masterTr = document.createElement('tr');
+    masterTr.className = 'ponto-master';
+
+    // 0: ▶ expand button
+    const tdExp = document.createElement('td');
+    const btnExp = document.createElement('button');
+    btnExp.className = 'ponto-expand-btn';
+    btnExp.textContent = '▶';
+    tdExp.appendChild(btnExp);
+    masterTr.appendChild(tdExp);
+
+    // 1: Ponto Estratégico (cell com autocomplete)
+    const tdPonto = document.createElement('td');
+    tdPonto.style.minWidth = '170px';
+    tdPonto._pontoDbKey = dbKey;
+    tdPonto._pontoVal   = String(row[0] || '');
+    tdPonto.dataset.pontoCell = '1';
+    masterTr.appendChild(tdPonto);
+
+    // 2: Tipo Veículo
+    const tdVeiculo = document.createElement('td');
+    const selVeiculo = makeItemSel(
+      ['Toco','Truck','Container','Acello','VUC','Utilitário','Câmara Fria','Outro'],
+      row[1] || 'Toco'
+    );
+    tdVeiculo.appendChild(selVeiculo);
+    masterTr.appendChild(tdVeiculo);
+
+    // 3: Tipo Op.
+    const tdTipoOp = document.createElement('td');
+    const selTipoOp = makeItemSel(
+      ['Rota','Ponto Estratégico','Câmara Comodato','Pátio'],
+      row[2] || 'Rota'
+    );
+    selTipoOp.onchange = () => {
+      renderPontoCell(tdPonto, dbKey, selTipoOp.value, tdPonto._pontoVal || '');
+    };
+    tdTipoOp.appendChild(selTipoOp);
+    masterTr.appendChild(tdTipoOp);
+
+    // 4-6: Totais calculados (FAT, Peso, Liq) — preenchidos por recalcMasterTotals
+    ['—','—','—'].forEach((v, i) => {
+      const td = document.createElement('td');
+      td.className = 'ponto-totals';
+      td.textContent = v;
+      masterTr.appendChild(td);
+    });
+
+    // 7: Data
+    const tdData = document.createElement('td');
+    tdData.contentEditable = 'true';
+    tdData.spellcheck = false;
+    tdData.style.color = 'var(--accent)';
+    tdData.style.minWidth = '90px';
+    tdData.textContent = row[19] || '';
+    masterTr.appendChild(tdData);
+
+    // 8: Status
+    const tdStatus = document.createElement('td');
+    const selStatus = makeItemSel(
+      ['Programado','Em rota','Concluído','Cancelado','Parcial'],
+      row[20] || 'Programado'
+    );
+    tdStatus.appendChild(selStatus);
+    masterTr.appendChild(tdStatus);
+
+    // 9: Obs
+    const tdObs = document.createElement('td');
+    tdObs.contentEditable = 'true';
+    tdObs.spellcheck = false;
+    tdObs.style.minWidth = '100px';
+    tdObs.textContent = row[21] || '';
+    masterTr.appendChild(tdObs);
+
+    // 10: Ações (excluir ponto inteiro)
+    const tdAcoes = document.createElement('td');
+    tdAcoes.style.whiteSpace = 'nowrap';
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn btn-del';
+    btnDel.textContent = '✕';
+    btnDel.title = 'Excluir ponto';
+    btnDel.onclick = () => {
+      masterTr._itemsRow?.remove();
+      masterTr.remove();
+    };
+    tdAcoes.appendChild(btnDel);
+    masterTr.appendChild(tdAcoes);
+
+    // ── Linha de itens (sub-tabela) ──
+    const itemsRow = document.createElement('tr');
+    itemsRow.className = 'ponto-items-row'; // começa visível
+    masterTr._itemsRow = itemsRow;
+
+    const tdInner = document.createElement('td');
+    tdInner.colSpan = 11;
+    const inner = document.createElement('div');
+    inner.className = 'items-inner';
+
+    const subTable = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr>
+      <th>Gelo</th><th>Qtd</th><th>R$/Saca</th><th>FAT R$</th><th>Peso</th>
+      <th>Ord.Carga</th><th>Aluguel</th><th>Modalidade</th>
+      <th>Retorno</th><th>Troca</th><th>Venda Real</th>
+      <th>FAT%</th><th>FAT Real</th><th>Liq.</th><th></th>
+    </tr>`;
+    const tbody = document.createElement('tbody');
+    subTable.appendChild(thead);
+    subTable.appendChild(tbody);
+
+    // Monta o primeiro item a partir dos dados da linha
+    const firstItem = [
+      String(row[3] || '20 KG'),  // gelo
+      String(row[4] || '0'),      // qtd
+      String(row[5] || '0'),      // preco
+      String(row[8] || '0'),      // liquidacao/ord_carga
+      String(row[10] || '0'),     // aluguel
+      String(row[11] || 'Venda'), // modalidade
+      String(row[12] || '0'),     // retorno
+      String(row[13] || '0'),     // troca
+      String(row[14] || '0'),     // venda_real
+      String(row[16] || '0'),     // fat_real
+    ];
+    tbody.appendChild(buildItemRow(firstItem, masterTr));
+
+    // Botão adicionar item
+    const btnAddItem = document.createElement('button');
+    btnAddItem.className = 'btn-add-item';
+    btnAddItem.textContent = '+ Adicionar produto';
+    btnAddItem.onclick = () => {
+      const blankItem = ['20 KG','0','0','0','0','Venda','0','0','0','0'];
+      const newItr = buildItemRow(blankItem, masterTr);
+      tbody.appendChild(newItr);
+    };
+
+    inner.appendChild(subTable);
+    inner.appendChild(btnAddItem);
+    tdInner.appendChild(inner);
+    itemsRow.appendChild(tdInner);
+
+    // Toggle expand
+    btnExp.onclick = () => {
+      const isOpen = btnExp.classList.toggle('open');
+      itemsRow.classList.toggle('hidden', !isOpen);
+    };
+    // Começa expandido
+    btnExp.classList.add('open');
+
+    // Renderiza célula ponto
+    renderPontoCell(tdPonto, dbKey, selTipoOp.value, tdPonto._pontoVal || '');
+
+    // Calcula totais iniciais após render
+    setTimeout(() => recalcMasterTotals(masterTr), 10);
+
+    return masterTr;
+  }
+
   function buildRow(tblId, dbKey, schema, row, ri) {
+    // Para natal26/anonovo26 usa o novo sistema de accordion
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      return buildPontoRow(tblId, dbKey, row);
+    }
+
     const tr = document.createElement('tr');
     schema.forEach((col, ci) => {
       const td = document.createElement('td');
       const val = (row[ci] !== undefined ? row[ci] : '');
-      if (col.t === 'ponto' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
-        td.style.padding = '4px 8px';
-        td.style.position = 'sticky';
-        td.style.left = '0';
-        td.style.zIndex = '1';
-        td.style.background = 'var(--surface)';
-        td.style.minWidth = '160px';
-        td.style.maxWidth = '200px';
-        // col2 = Tipo Op. (index 2) — lida após o loop, depois de tr montado
-        td._pontoDbKey = dbKey;
-        td._pontoVal   = val;
-        td._pontoTr    = tr;
-        // placeholder rendered after loop (needs col2 select)
-        td.dataset.pontoCell = '1';
-      } else if (col.t === 'select') {
+      if (col.t === 'select') {
         const sel = document.createElement('select');
         sel.className = 'cell-select';
         col.opts.forEach(o => {
@@ -1936,18 +2337,6 @@
           if (o === val) op.selected = true;
           sel.appendChild(op);
         });
-        // col2 (Tipo Op.) → atualiza célula ponto (col0) ao mudar
-        if (ci === 2 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
-          sel.onchange = () => {
-            const pontoTd = tr.querySelectorAll('td')[0];
-            if (pontoTd?.dataset.pontoCell) renderPontoCell(pontoTd, dbKey, sel.value, pontoTd._pontoVal || '');
-          };
-        }
-        // col3 (Gelo) → recalc (não sobrescreve outros handlers)
-        if (ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
-          sel.onchange = () => recalcRow(tr, dbKey);
-        }
-        // col2 (Tipo veículo) vdas26 → recalc diesel ao mudar tipo
         if (ci === 2 && dbKey === 'vdas26') {
           sel.onchange = () => recalcRow(tr, dbKey);
         }
@@ -1971,10 +2360,6 @@
         td.spellcheck = false;
         if (col.t === 'number') td.style.textAlign = 'right';
         if (col.t === 'date') td.style.color = 'var(--accent)';
-        // recalc ao vivo para tabelas de montagem (natal26 / anonovo26), funcs26 e vdas26
-        if (col.t === 'number' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
-          td.oninput = () => recalcRow(tr, dbKey);
-        }
         if (col.t === 'number' && dbKey === 'funcs26') {
           td.oninput = () => recalcRow(tr, dbKey);
         }
@@ -1982,54 +2367,11 @@
           td.oninput = () => recalcRow(tr, dbKey);
         }
       }
-      // recalc ao vivo para selects de gelo (col3) já tratado no bloco select acima
       tr.appendChild(td);
     });
-    // após loop: renderiza célula ponto (precisa do col2 select já no tr)
-    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
-      const pontoTd = tr.querySelectorAll('td')[0];
-      if (pontoTd?.dataset.pontoCell) {
-        const col2Sel = tr.querySelectorAll('td')[2]?.querySelector('select');
-        const tipoOp  = col2Sel?.value || row[2] || 'Rota';
-        renderPontoCell(pontoTd, dbKey, tipoOp, pontoTd._pontoVal || '');
-      }
-    }
-    // delete button + add-item button (natal26/anonovo26)
+    // delete button
     const tdDel = document.createElement('td');
     tdDel.style.whiteSpace = 'nowrap';
-    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
-      const btnAdd = document.createElement('button');
-      btnAdd.className = 'btn btn-add';
-      btnAdd.style.cssText = 'font-size:11px;padding:2px 7px;margin-right:4px';
-      btnAdd.textContent = '+';
-      btnAdd.title = 'Adicionar item ao mesmo ponto (produto diferente)';
-      btnAdd.onclick = () => {
-        // Clona a linha atual, reseta apenas gelo e qtd; mantém ponto/veiculo/tipo_op/data/status
-        const tds = tr.querySelectorAll('td');
-        const newRow = [...tds].slice(0, -1).map((td, ci) => {
-          if (ci === 3) return '20 KG';  // Gelo — reset
-          if (ci === 4) return '0';       // Qtd
-          if (ci === 8) return '0';       // Ord. Carga
-          if (ci === 10) return '0';      // Vlr Aluguel
-          if (ci === 13) return '0';      // Troca
-          if (ci === 14) return '0';      // Venda Real
-          if (ci === 16) return '0';      // Fat Real
-          // Pega valor atual da célula
-          const sel = td.querySelector('select');
-          if (sel) return sel.value;
-          const inp = td.querySelector('input');
-          if (inp) return inp.value;
-          return td._pontoVal || td.querySelector('input')?.value || td.textContent.trim();
-        });
-        const tblId2 = dbKey === 'natal26' ? 'tbl-nat26' : 'tbl-an26';
-        const schema2 = SCHEMA[dbKey];
-        const newTr = buildRow(tblId2, dbKey, schema2, newRow, 0);
-        tr.insertAdjacentElement('afterend', newTr);
-        // linha filha — destaque visual sutil
-        newTr.style.borderLeft = '3px solid #6366f1';
-      };
-      tdDel.appendChild(btnAdd);
-    }
     const btn = document.createElement('button');
     btn.className = 'btn btn-del';
     btn.textContent = '✕';
@@ -2047,27 +2389,87 @@
     const dbKey = TABLE_KEY_MAP[tblId];
     const schema = SCHEMA[dbKey];
     const tbody = document.getElementById(TBODY_MAP[tblId]);
-    tbody.appendChild(buildRow(tblId, dbKey, schema, blank, tbody.rows.length));
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      const masterTr = buildPontoRow(tblId, dbKey, blank);
+      tbody.appendChild(masterTr);
+      tbody.appendChild(masterTr._itemsRow);
+    } else {
+      tbody.appendChild(buildRow(tblId, dbKey, schema, blank, tbody.rows.length));
+    }
   }
 
   /* =========================================================
      READ TABLE → ARRAY
   ========================================================= */
   function readTable(tblId) {
+    const dbKey = TABLE_KEY_MAP[tblId];
     const tbody = document.getElementById(TBODY_MAP[tblId]);
     if (!tbody) return [];
     const rows = [];
+
+    // Para natal26/anonovo26: lê estrutura accordion
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      tbody.querySelectorAll('tr.ponto-master').forEach(masterTr => {
+        const mTds = masterTr.querySelectorAll('td');
+        // mTds: 0:▶ 1:ponto 2:veiculo 3:tipo_op 4:fat(c) 5:peso(c) 6:liq(c) 7:data 8:status 9:obs 10:ações
+        const getPontoVal = (td) => {
+          const info = td._pontoInfo;
+          if (info && info.codigo_erp) return String(info.codigo_erp);
+          const v = td._pontoVal || '';
+          const m = v.match(/^#?(\d+)/);
+          return m ? m[1] : v;
+        };
+        const cliente   = getPontoVal(mTds[1]);
+        const veiculo   = mTds[2]?.querySelector('select')?.value || 'Toco';
+        const tipoOp    = mTds[3]?.querySelector('select')?.value || 'Rota';
+        const data      = mTds[7]?.textContent.trim() || '';
+        const status    = mTds[8]?.querySelector('select')?.value || 'Programado';
+        const obs       = mTds[9]?.textContent.trim() || '';
+
+        // Lê cada item da sub-tabela
+        const itemsRow = masterTr._itemsRow;
+        if (!itemsRow) return;
+        const itrs = itemsRow.querySelectorAll('tbody tr');
+        if (itrs.length === 0) {
+          // Nenhum item — salva linha vazia
+          rows.push([cliente,veiculo,tipoOp,'20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','',data,status,obs]);
+          return;
+        }
+        itrs.forEach(itr => {
+          const tds = itr.querySelectorAll('td');
+          // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:ord_carga 6:aluguel
+          // 7:modalidade 8:retorno 9:troca 10:venda_real 11:fat%(c) 12:fat_real 13:liq(c) 14:del
+          const gelo      = tds[0]?.querySelector('select')?.value || '20 KG';
+          const qtd       = tds[1]?.textContent.trim() || '0';
+          const preco     = tds[2]?.textContent.trim() || '0';
+          const ordCarga  = tds[5]?.textContent.trim() || '0';
+          const aluguel   = tds[6]?.textContent.trim() || '0';
+          const modal     = tds[7]?.querySelector('select')?.value || 'Venda';
+          const retorno   = tds[8]?.textContent.trim() || '0';
+          const troca     = tds[9]?.textContent.trim() || '0';
+          const vendaReal = tds[10]?.textContent.trim() || '0';
+          const fatReal   = tds[12]?.textContent.trim() || '0';
+          // Monta array 22 colunas
+          // 0:cliente 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco 6:fat(c) 7:peso(c)
+          // 8:liquidacao 9:vlr_total(c) 10:aluguel 11:modal 12:retorno 13:troca
+          // 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
+          // 19:data 20:status 21:obs
+          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',ordCarga,'',aluguel,modal,retorno,troca,vendaReal,'',fatReal,'','',data,status,obs]);
+        });
+      });
+      return rows;
+    }
+
+    // Tabelas não-accordion
     tbody.querySelectorAll('tr').forEach(tr => {
       const cells = tr.querySelectorAll('td:not(:last-child)');
       const row = [];
       cells.forEach(td => {
-        // célula ponto estratégico: salva código ERP se disponível, senão _pontoVal
         if (td.dataset.pontoCell) {
           const info = td._pontoInfo;
           if (info && info.codigo_erp) {
             row.push(String(info.codigo_erp));
           } else {
-            // extrai código se formato "#15292 Nome"
             const v = td._pontoVal || '';
             const m = v.match(/^#?(\d+)/);
             row.push(m ? m[1] : v);
@@ -2075,9 +2477,7 @@
           return;
         }
         const sel = td.querySelector('select:not(.ponto-dropdown *)');
-        const pontoSel = null; // ponto-rota-sel removido — campo sempre usa autocomplete
         const timeInp = td.querySelector('input[type="time"]');
-        if (pontoSel) { row.push(pontoSel.value); return; }
         if (timeInp) { row.push(timeInp.value); return; }
         row.push(sel ? sel.value : td.textContent.trim());
       });
@@ -2166,36 +2566,19 @@
       tbody.querySelectorAll('tr').forEach(tr => recalcRow(tr, dbKey));
       return;
     }
+    // natal26/anonovo26: accordion — recalc cada item e totais do master
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      tbody.querySelectorAll('tr.ponto-master').forEach(masterTr => {
+        const itemsRow = masterTr._itemsRow;
+        if (!itemsRow) return;
+        itemsRow.querySelectorAll('tbody tr').forEach(itr => {
+          recalcItemRow(itr, masterTr);
+        });
+      });
+      return;
+    }
     tbody.querySelectorAll('tr').forEach(tr => {
       const cells = tr.querySelectorAll('td:not(:last-child)');
-      // Montagem da Operação (22 cols):
-      // col4=qtd, col5=preco, col3=gelo, col8=liquidacao, col10=aluguel, col16=fat_real
-      // col6=FAT R$, col7=Peso kg, col9=Vlr Total, col15=FAT%, col17=Total R$, col18=Liq.Venda
-      if (dbKey === 'natal26' || dbKey === 'anonovo26') {
-        const qtd      = parseF(cells[4]?.textContent);
-        const preco    = parseF(cells[5]?.textContent);
-        const gelo     = (cells[3]?.querySelector('select')?.value || cells[3]?.textContent || '').trim();
-        const liquidac = parseF(cells[8]?.textContent);
-        const aluguel  = parseF(cells[10]?.textContent);
-        const fatReal  = parseF(cells[16]?.textContent);
-
-        const pesoMap  = {'5 KG':6,'10 KG':11,'20 KG':23,'40 KG':45,'Misto':23};
-        const kgUnit   = pesoMap[gelo] || 23;
-
-        const fat      = qtd * preco;
-        const peso     = qtd * kgUnit;
-        const vlrTotal = fat + aluguel;
-        const fatPct   = fat > 0 ? (fatReal / fat * 100) : 0;
-        const totalRs  = fatReal + aluguel;
-        const liqVenda = totalRs - liquidac;
-
-        if (cells[6]?.dataset.calc)  cells[6].textContent  = fat > 0 ? fmtR(fat) : '—';
-        if (cells[7]?.dataset.calc)  cells[7].textContent  = peso > 0 ? peso.toLocaleString('pt-BR') + ' kg' : '—';
-        if (cells[9]?.dataset.calc)  cells[9].textContent  = vlrTotal > 0 ? fmtR(vlrTotal) : '—';
-        if (cells[15]?.dataset.calc) cells[15].textContent = fat > 0 ? fatPct.toFixed(1) + '%' : '—';
-        if (cells[17]?.dataset.calc) cells[17].textContent = totalRs > 0 ? fmtR(totalRs) : '—';
-        if (cells[18]?.dataset.calc) cells[18].textContent = (totalRs > 0 || liquidac > 0) ? fmtR(liqVenda) : '—';
-      }
       // carga tables: Peso Total = 5KG*6 + 10KG*11 + 20KG*23 + 40KG*45, Ocupação = peso/cap
       if (dbKey === 'cargaNat26' || dbKey === 'cargaAn26') {
         const s5  = parseF(cells[4]?.textContent);
@@ -2421,31 +2804,8 @@
       if (cells[12]?.dataset.calc) cells[12].textContent = km > 0 && precoDiesel > 0 ? fmtR(diesel) : '—';
       return;
     }
-    if (dbKey !== 'natal26' && dbKey !== 'anonovo26') return;
-    const cells = tr.querySelectorAll('td:not(:last-child)');
-    const qtd      = parseF(cells[4]?.textContent);
-    const preco    = parseF(cells[5]?.textContent);
-    const gelo     = (cells[3]?.querySelector('select')?.value || cells[3]?.textContent || '').trim();
-    const liquidac = parseF(cells[8]?.textContent);
-    const aluguel  = parseF(cells[10]?.textContent);
-    const fatReal  = parseF(cells[16]?.textContent);
-
-    const pesoMap  = {'5 KG':6,'10 KG':11,'20 KG':23,'40 KG':45,'Misto':23};
-    const kgUnit   = pesoMap[gelo] || 23;
-
-    const fat      = qtd * preco;
-    const peso     = qtd * kgUnit;
-    const vlrTotal = fat + aluguel;
-    const fatPct   = fat > 0 ? (fatReal / fat * 100) : 0;
-    const totalRs  = fatReal + aluguel;
-    const liqVenda = totalRs - liquidac;
-
-    if (cells[6]?.dataset.calc)  cells[6].textContent  = fat > 0 ? fmtR(fat) : '—';
-    if (cells[7]?.dataset.calc)  cells[7].textContent  = peso > 0 ? peso.toLocaleString('pt-BR') + ' kg' : '—';
-    if (cells[9]?.dataset.calc)  cells[9].textContent  = vlrTotal > 0 ? fmtR(vlrTotal) : '—';
-    if (cells[15]?.dataset.calc) cells[15].textContent = fat > 0 ? fatPct.toFixed(1) + '%' : '—';
-    if (cells[17]?.dataset.calc) cells[17].textContent = totalRs > 0 ? fmtR(totalRs) : '—';
-    if (cells[18]?.dataset.calc) cells[18].textContent = (totalRs > 0 || liquidac > 0) ? fmtR(liqVenda) : '—';
+    // natal26/anonovo26: accordion — recalc é feito por recalcItemRow/recalcMasterTotals
+    // não precisa fazer nada aqui para essas tabelas
   }
 
   function parseF(s) {
