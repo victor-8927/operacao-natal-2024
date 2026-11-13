@@ -4174,9 +4174,12 @@
         const stClass = m.status || 'planejado';
         const stLabel = { planejado:'Planejado', faturado:'Faturado', fechado:'Fechado' }[m.status] || m.status || '—';
 
-        // Totais do manifesto
-        const totalSacas = (m.kg5_planejado||0)+(m.kg10_planejado||0)+(m.kg20_planejado||0)+(m.kg40_planejado||0);
-        const totalRet   = filhos.reduce((s,f) => s+(f.retorno_s5||0)+(f.retorno_s10||0)+(f.retorno_s20||0)+(f.retorno_s40||0), 0);
+        // Totais do manifesto — agregados das cargas filhas
+        const sacasPlanejadas = (m.kg5_planejado||0)+(m.kg10_planejado||0)+(m.kg20_planejado||0)+(m.kg40_planejado||0);
+        const sacasCargas    = filhos.reduce((s,f) => s+((f.op26_carga_natal||{}).qtd_prog||0), 0);
+        const totalSacas     = filhos.length ? sacasCargas : sacasPlanejadas;
+        const totalRet       = filhos.reduce((s,f) => s+(f.retorno_s5||0)+(f.retorno_s10||0)+(f.retorno_s20||0)+(f.retorno_s40||0), 0);
+        const totalOcs       = filhos.filter(f => f.oc_consignada && f.oc_consignada.trim()).length;
 
         // Cargas disponíveis para vincular (que ainda não estão neste manifesto)
         const vinculadosIds = new Set(filhos.map(f => f.carga_id));
@@ -4246,12 +4249,16 @@
             <div class="mcard-mae-stats">
               <div class="mcard-mae-stat">
                 <span class="mcard-mae-stat-val">${totalSacas}</span>
-                <span class="mcard-mae-stat-lbl">sacas</span>
+                <span class="mcard-mae-stat-lbl">${filhos.length ? 'sacas reais' : 'sacas plan.'}</span>
               </div>
               <div class="mcard-mae-stat">
                 <span class="mcard-mae-stat-val">${filhos.length}</span>
                 <span class="mcard-mae-stat-lbl">cargas</span>
               </div>
+              ${totalOcs ? `<div class="mcard-mae-stat">
+                <span class="mcard-mae-stat-val" style="color:var(--green)">${totalOcs}/${filhos.length}</span>
+                <span class="mcard-mae-stat-lbl">OCs</span>
+              </div>` : ''}
               ${totalRet ? `<div class="mcard-mae-stat">
                 <span class="mcard-mae-stat-val" style="color:#f5c842">${totalRet}</span>
                 <span class="mcard-mae-stat-lbl">retorno</span>
