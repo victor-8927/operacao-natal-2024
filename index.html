@@ -4082,7 +4082,7 @@
   async function loadManifestCargas(manifestoId) {
     try {
       const rows = await sbFetch(
-        `op26_manifesto_cargas?manifesto_id=eq.${manifestoId}&select=*,op26_carga_natal(id,vda,motorista,num_oc,qtd_prog,fat_real,status)&order=id`
+        `op26_manifesto_cargas?manifesto_id=eq.${manifestoId}&select=*,op26_carga_natal(id,vda,motorista,rota,s5,s10,s20,s40,peso_total_kg,cap_bau_kg,num_oc)&order=id`
       );
       return rows || [];
     } catch(e) { return []; }
@@ -4141,7 +4141,7 @@
 
         // Totais do manifesto — agregados das cargas filhas
         const sacasPlanejadas = (m.kg5_planejado||0)+(m.kg10_planejado||0)+(m.kg20_planejado||0)+(m.kg40_planejado||0);
-        const sacasCargas    = filhos.reduce((s,f) => s+((f.op26_carga_natal||{}).qtd_prog||0), 0);
+        const sacasCargas    = filhos.reduce((s,f) => { const c=f.op26_carga_natal||{}; return s+(+c.s5||0)+(+c.s10||0)+(+c.s20||0)+(+c.s40||0); }, 0);
         const totalSacas     = filhos.length ? sacasCargas : sacasPlanejadas;
         const totalRet       = filhos.reduce((s,f) => s+(f.retorno_s5||0)+(f.retorno_s10||0)+(f.retorno_s20||0)+(f.retorno_s40||0), 0);
         const totalOcs       = filhos.filter(f => f.oc_consignada && f.oc_consignada.trim()).length;
@@ -4161,15 +4161,21 @@
         if (filhos.length) {
           filhosHtml = filhos.map(f => {
             const c = f.op26_carga_natal || {};
-            const vda = c.vda || '?';
-            const mot = c.motorista || '—';
-            const qtd = c.qtd_prog || 0;
+            const vda  = c.vda || '?';
+            const mot  = c.motorista || '—';
+            const s5   = +c.s5  || 0;
+            const s10  = +c.s10 || 0;
+            const s20  = +c.s20 || 0;
+            const s40  = +c.s40 || 0;
+            const totalSacasFi = s5 + s10 + s20 + s40;
+            const pesoFi = +c.peso_total_kg || 0;
+            const sacasLabel = [s20?`${s20}×20kg`:'', s10?`${s10}×10kg`:'', s5?`${s5}×5kg`:'', s40?`${s40}×40kg`:''].filter(Boolean).join(' + ') || '—';
             return `
             <div class="mcard-filho" id="mf-filho-${f.id}">
               <div class="mcard-filho-bar"></div>
               <div class="mcard-filho-info">
                 <div class="mcard-filho-vda">VDA ${vda}</div>
-                <div class="mcard-filho-mot">${mot} · ${qtd} sacas</div>
+                <div class="mcard-filho-mot">${mot} · ${sacasLabel}${pesoFi ? ` · <span style="color:#f5c842">${pesoFi.toLocaleString('pt-BR')} kg</span>` : ''}</div>
               </div>
               <div class="mcard-filho-oc">
                 <div class="mcard-filho-oc-lbl">OC Consignada</div>
