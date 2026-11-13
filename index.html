@@ -1753,10 +1753,16 @@
     const tbl = TABLE_MAP[key];
     if (!tbl) return;
     // Delete all + re-insert (upsert simples para dashboard sem auth)
-    await sbFetch(tbl + '?id=gte.0', { method: 'DELETE' });
+    const delRes = await sbFetch(tbl + '?id=gte.0', { method: 'DELETE' });
     if (arr.length === 0) { _cache[key] = []; return; }
+    console.log('[saveDB] inserting', arr.length, 'rows into', tbl, JSON.stringify(arr[0]));
     const result = await sbFetch(tbl, { method: 'POST', body: JSON.stringify(arr) });
-    _cache[key] = result || arr;
+    if (!result) {
+      alert('❌ Erro ao salvar ' + tbl + '. Verifique o console (F12) para detalhes.');
+      return;
+    }
+    _cache[key] = result;
+    console.log('[saveDB] saved OK', result.length, 'rows');
   }
 
   /* =========================================================
@@ -2524,11 +2530,12 @@
            'cap_bau_kg','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello',
            'preco_consig','preco_manif','qtd_sacas',
            'valor_diario','vl_hora_extra','gratificacao',
-           'custo_diario','custo_combustivel','custo_pedagio','custo_outros'].includes(c)) {
+           'custo_diario','custo_combustivel','custo_pedagio','custo_outros',
+           'liquidacao','valor_aluguel','fat_real','troca'].includes(c)) {
         v = parseF(v) || 0;
       }
       // Datas vazias → null
-      if (c === 'data_entrega') { v = v || null; }
+      if (c === 'data_entrega' || c === 'data_operacao') { v = v || null; }
       obj[c] = v;
     });
     return obj;
