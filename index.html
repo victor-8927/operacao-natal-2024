@@ -210,7 +210,7 @@
   select.cell-select {
     background:var(--surface2); color:var(--text); border:none;
     font-size:12px; padding:0 4px; border-radius:4px; cursor:pointer;
-    outline:none; width:100%;
+    outline:none; width:100%; min-width:120px;
   }
 
   /* ── cliente autocomplete ── */
@@ -1734,7 +1734,7 @@
     natal26: [
       // 0:ponto  1:tipo_veiculo  2:tipo_op  3:gelo
       {t:'ponto'},
-      {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
+      {t:'select',opts:['Toco','Truck','Container','Acello','VUC','Utilitário','Câmara Fria','Outro']},
       {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
       {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
       // 4:qtd  5:tabela_preco  6:fat_calc  7:peso_calc
@@ -1753,7 +1753,7 @@
     ],
     anonovo26: [
       {t:'ponto'},
-      {t:'select',opts:['Toco','Truck','Acello','VUC','Utilitário','Câmara Fria','Outro']},
+      {t:'select',opts:['Toco','Truck','Container','Acello','VUC','Utilitário','Câmara Fria','Outro']},
       {t:'select',opts:['Rota','Ponto Estratégico','Câmara Comodato','Pátio']},
       {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
       {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
@@ -1876,10 +1876,8 @@
             const pontoTd = tr.querySelectorAll('td')[0];
             if (pontoTd?.dataset.pontoCell) renderPontoCell(pontoTd, dbKey, sel.value, pontoTd._pontoVal || '');
           };
-        } else {
-          sel.onchange = () => {};
         }
-        // col3 (Gelo) → recalc
+        // col3 (Gelo) → recalc (não sobrescreve outros handlers)
         if (ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
           sel.onchange = () => recalcRow(tr, dbKey);
         }
@@ -1911,10 +1909,7 @@
           td.oninput = () => recalcRow(tr, dbKey);
         }
       }
-      // recalc ao vivo para selects de gelo (col3) em montagem
-      if (col.t === 'select' && ci === 3 && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
-        td.querySelector('select').onchange = () => recalcRow(tr, dbKey);
-      }
+      // recalc ao vivo para selects de gelo (col3) já tratado no bloco select acima
       tr.appendChild(td);
     });
     // após loop: renderiza célula ponto (precisa do col2 select já no tr)
@@ -1959,9 +1954,17 @@
       const cells = tr.querySelectorAll('td:not(:last-child)');
       const row = [];
       cells.forEach(td => {
-        // célula ponto estratégico: usa _pontoVal
+        // célula ponto estratégico: salva código ERP se disponível, senão _pontoVal
         if (td.dataset.pontoCell) {
-          row.push(td._pontoVal || '');
+          const info = td._pontoInfo;
+          if (info && info.codigo_erp) {
+            row.push(String(info.codigo_erp));
+          } else {
+            // extrai código se formato "#15292 Nome"
+            const v = td._pontoVal || '';
+            const m = v.match(/^#?(\d+)/);
+            row.push(m ? m[1] : v);
+          }
           return;
         }
         const sel = td.querySelector('select:not(.ponto-dropdown *)');
@@ -2123,10 +2126,24 @@
       const inp = document.createElement('input');
       inp.type = 'text';
       inp.className = 'ponto-input';
-      inp.value = savedVal;
       inp.placeholder = 'Cód ou nome...';
       inp.autocomplete = 'off';
       inp.spellcheck = false;
+
+      // Se savedVal for só número (código ERP), resolve o nome no cache
+      if (savedVal && /^\d+$/.test(String(savedVal).trim())) {
+        inp.value = savedVal; // mostra código temporariamente
+        cliLoadAll().then(all => {
+          const c = all.find(x => String(x.codigo_erp) === String(savedVal).trim());
+          if (c) {
+            inp.value = `#${c.codigo_erp} ${c.nome}`;
+            td._pontoVal  = inp.value;
+            td._pontoInfo = c;
+          }
+        });
+      } else {
+        inp.value = savedVal;
+      }
 
       const dd = document.createElement('div');
       dd.className = 'ponto-dropdown';
