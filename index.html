@@ -3828,38 +3828,23 @@
   }
 
   async function loadManifestosDB(which) {
-    // Busca manifestos do Supabase op26_manifestos com join na rota
-    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
     try {
-      const r = await fetch(`${SB_URL}/op26_manifestos?select=*,op26_rotas(numero)&order=data,id`, {
-        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-      });
-      if (!r.ok) return;
-      const rows = await r.json();
-      // Mapear para estado com rota_num
+      const rows = await sbFetch('op26_manifestos?select=*,op26_rotas(numero)&order=data,id');
+      if (!rows) return;
       const mapped = rows.map(m => ({
         ...m,
         rota_num: m.op26_rotas?.numero || String(m.rota_id)
       }));
-      // Separar por período (nat = dez 23/24, an = dez 30/31)
       _manifestosState.nat = mapped.filter(m => m.data === '2024-12-23' || m.data === '2024-12-24');
       _manifestosState.an  = mapped.filter(m => m.data === '2024-12-30' || m.data === '2024-12-31');
     } catch(e) { console.warn('loadManifestosDB:', e); }
   }
 
   async function openManifestoModal(which, rotaNum) {
-    // Carrega rota_id do banco
-    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
-
     // busca rota_id pelo numero
     let rotaId = null;
     try {
-      const r = await fetch(`${SB_URL}/op26_rotas?numero=eq.${rotaNum}&select=id`, {
-        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-      });
-      const rows = await r.json();
+      const rows = await sbFetch(`op26_rotas?numero=eq.${rotaNum}&select=id`);
       if (rows && rows[0]) rotaId = rows[0].id;
     } catch(e) {}
 
@@ -3967,8 +3952,6 @@
   }
 
   async function saveManifesto(which, rotaNum, rotaId) {
-    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
 
     const data    = document.getElementById('mf-data')?.value;
     const num_oc  = document.getElementById('mf-num-oc')?.value?.trim() || null;
@@ -3999,19 +3982,12 @@
     });
 
     try {
-      const r = await fetch(`${SB_URL}/op26_manifestos`, {
+      const r = await sbFetch('op26_manifestos', {
         method: 'POST',
-        headers: {
-          'apikey': SB_KEY,
-          'Authorization': `Bearer ${SB_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
         body: JSON.stringify(payload)
       });
-      if (!r.ok) {
-        const err = await r.text();
-        alert('Erro ao salvar manifesto: ' + err);
+      if (r === null) {
+        alert('Erro ao salvar manifesto.');
         return;
       }
     } catch(e) {
@@ -4027,26 +4003,15 @@
 
   async function deleteManifesto(id, which, rotaNum) {
     if (!confirm('Remover este manifesto?')) return;
-    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
     try {
-      await fetch(`${SB_URL}/op26_manifestos?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-      });
+      await sbFetch(`op26_manifestos?id=eq.${id}`, { method: 'DELETE' });
     } catch(e) {}
     await loadManifestosDB(which);
     await renderEscala(which);
   }
 
   async function editManifesto(id, which, rotaNum) {
-    // Carrega dados existentes nos campos do modal para edição
-    const SB_URL = 'https://wziprddrflgpzankofad.supabase.co/rest/v1';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6aXByZGRyZmxncHphbmtvZmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2MzI1MzAsImV4cCI6MjA1MDIwODUzMH0.2tJ3SHMaSBqq0M2ERXKyFo1IG-EM3s2Fwkob-MCYIAM';
-    const r = await fetch(`${SB_URL}/op26_manifestos?id=eq.${id}&select=*`, {
-      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-    });
-    const rows = await r.json();
+    const rows = await sbFetch(`op26_manifestos?id=eq.${id}&select=*`);
     if (!rows || !rows[0]) return;
     const m = rows[0];
 
