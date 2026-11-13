@@ -1198,9 +1198,9 @@
       <div class="tbl-wrap">
         <table id="tbl-nat26">
           <thead><tr>
-            <th>Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
+            <th style="position:sticky;left:0;z-index:2;background:var(--surface2);min-width:160px;max-width:200px">Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
             <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
-            <th>Liquidação</th><th>Vlr Total</th><th>Vlr Aluguel</th>
+            <th>Ord. Carga</th><th>Vlr Total</th><th>Vlr Aluguel</th>
             <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
             <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
             <th>Data</th><th>Status</th><th>Obs</th><th></th>
@@ -1274,9 +1274,9 @@
       <div class="tbl-wrap">
         <table id="tbl-an26">
           <thead><tr>
-            <th>Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
+            <th style="position:sticky;left:0;z-index:2;background:var(--surface2);min-width:160px;max-width:200px">Ponto Estratégico</th><th>Tipo Veículo</th><th>Tipo Op.</th><th>Gelo</th>
             <th>Qtd</th><th>Tabela R$/saca</th><th>FAT R$</th><th>Peso (kg)</th>
-            <th>Liquidação</th><th>Vlr Total</th><th>Vlr Aluguel</th>
+            <th>Ord. Carga</th><th>Vlr Total</th><th>Vlr Aluguel</th>
             <th>Tipo de Op</th><th>Retorno</th><th>Troca</th><th>Venda Real</th>
             <th>FAT%</th><th>FAT Real R$</th><th>Total R$</th><th>Liq. Venda</th>
             <th>Data</th><th>Status</th><th>Obs</th><th></th>
@@ -1915,6 +1915,12 @@
       const val = (row[ci] !== undefined ? row[ci] : '');
       if (col.t === 'ponto' && (dbKey === 'natal26' || dbKey === 'anonovo26')) {
         td.style.padding = '4px 8px';
+        td.style.position = 'sticky';
+        td.style.left = '0';
+        td.style.zIndex = '1';
+        td.style.background = 'var(--surface)';
+        td.style.minWidth = '160px';
+        td.style.maxWidth = '200px';
         // col2 = Tipo Op. (index 2) — lida após o loop, depois de tr montado
         td._pontoDbKey = dbKey;
         td._pontoVal   = val;
@@ -1988,8 +1994,42 @@
         renderPontoCell(pontoTd, dbKey, tipoOp, pontoTd._pontoVal || '');
       }
     }
-    // delete button
+    // delete button + add-item button (natal26/anonovo26)
     const tdDel = document.createElement('td');
+    tdDel.style.whiteSpace = 'nowrap';
+    if (dbKey === 'natal26' || dbKey === 'anonovo26') {
+      const btnAdd = document.createElement('button');
+      btnAdd.className = 'btn btn-add';
+      btnAdd.style.cssText = 'font-size:11px;padding:2px 7px;margin-right:4px';
+      btnAdd.textContent = '+';
+      btnAdd.title = 'Adicionar item ao mesmo ponto (produto diferente)';
+      btnAdd.onclick = () => {
+        // Clona a linha atual, reseta apenas gelo e qtd; mantém ponto/veiculo/tipo_op/data/status
+        const tds = tr.querySelectorAll('td');
+        const newRow = [...tds].slice(0, -1).map((td, ci) => {
+          if (ci === 3) return '20 KG';  // Gelo — reset
+          if (ci === 4) return '0';       // Qtd
+          if (ci === 8) return '0';       // Ord. Carga
+          if (ci === 10) return '0';      // Vlr Aluguel
+          if (ci === 13) return '0';      // Troca
+          if (ci === 14) return '0';      // Venda Real
+          if (ci === 16) return '0';      // Fat Real
+          // Pega valor atual da célula
+          const sel = td.querySelector('select');
+          if (sel) return sel.value;
+          const inp = td.querySelector('input');
+          if (inp) return inp.value;
+          return td._pontoVal || td.querySelector('input')?.value || td.textContent.trim();
+        });
+        const tblId2 = dbKey === 'natal26' ? 'tbl-nat26' : 'tbl-an26';
+        const schema2 = SCHEMA[dbKey];
+        const newTr = buildRow(tblId2, dbKey, schema2, newRow, 0);
+        tr.insertAdjacentElement('afterend', newTr);
+        // linha filha — destaque visual sutil
+        newTr.style.borderLeft = '3px solid #6366f1';
+      };
+      tdDel.appendChild(btnAdd);
+    }
     const btn = document.createElement('button');
     btn.className = 'btn btn-del';
     btn.textContent = '✕';
