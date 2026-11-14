@@ -4564,7 +4564,7 @@
   async function ccLoadData() {
     if (_ccLoaded) return;
     // Carrega VDAs com join de cubagem
-    const vdas = await sbFetch('op26_vdas?select=vda,tipo,cap_kg_max&order=vda');
+    const vdas = await sbFetch('op26_vdas?select=vda,tipo&order=vda');
     const cubagem = await sbFetch('op26_vda_cubagem?select=tipo_veiculo,cap_pallets,cap_kg_autorizado,limite_sacos_total,unid_pallet_5kg,unid_pallet_10kg,unid_pallet_20kg,unid_pallet_40kg');
     if (!vdas || !cubagem) return;
 
