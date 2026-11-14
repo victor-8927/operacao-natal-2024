@@ -2062,7 +2062,7 @@
       {t:'select',opts:['5 KG','10 KG','20 KG','40 KG','Misto']},
       // 4:qtd  5:tabela_preco  6:fat_calc  7:peso_calc
       {t:'number'},{t:'number'},{t:'calc'},{t:'calc'},
-      // 8:liquidacao  9:valor_total  10:valor_aluguel
+      // 8:num_oc  9:valor_total  10:valor_aluguel
       {t:'number'},{t:'calc'},{t:'number'},
       // 11:tipo_op_modal  12:retorno  13:troca  14:venda_real
       {t:'select',opts:['Venda','Consignação','Manifesto','Comodato Sem Custo','Acello']},
@@ -2127,7 +2127,7 @@
   //          13:hrs(c) 14:bh(c) 15:extra(c) 16:vl_hora_extra 17:total_extra(c) 18:gratificacao 19:custo(c)
   const funcBlank    = ['','Motorista','','','','Ativo','','próprio','0','','','','','','','','0','','0',''];
   const cliBlank     = ['','','Mini Câmara','20 KG','','','Venda','','','',''];
-  // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), liquidacao, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
+  // 22 cols: ponto, tipo_veiculo, tipo_op, gelo, qtd, preco, fat(c), peso(c), num_oc, total(c), aluguel, modalidade, retorno, troca, venda_real, fat%(c), fat_real, total_rs(c), liq(c), data, status, obs
   const rotaBlank    = ['','Toco','Rota','20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','','','Programado',''];
   const cargaBlank   = ['','','','','0','0','0','0','','','',''];
   const comodatoBlank= ['','','0','20 KG','0','','','',''];
@@ -2145,8 +2145,8 @@
       funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
-      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','liquidacao','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
-      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','liquidacao','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
+      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
+      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','troca','venda_real','','fat_real','','','data_operacao','status','obs'],
       cargaNat26:['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       cargaAn26: ['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca','','cliente_destino','data_entrega','obs'],
@@ -2214,7 +2214,7 @@
      ACCORDION PONTO — natal26 / anonovo26
      Estrutura: tr.ponto-master (linha resumo) +
                 tr.ponto-items-row (sub-tabela de itens)
-     Cada "item" = { gelo, qtd, preco, liquidacao, aluguel,
+     Cada "item" = { gelo, qtd, preco, num_oc, aluguel,
                      modalidade, retorno, troca, venda_real, fat_real }
   ========================================================= */
 
@@ -2252,21 +2252,20 @@
     const gelo   = tds[0]?.querySelector('select')?.value || '20 KG';
     const qtd    = parseF(tds[1]?.textContent);
     const preco  = parseF(tds[2]?.textContent);
-    const liquidac = parseF(tds[5]?.textContent);
-    const aluguel  = parseF(tds[6]?.textContent);
-    const fatReal  = parseF(tds[12]?.textContent);
+    const aluguel  = parseF(tds[6]?.querySelector('input')?.value || tds[6]?.textContent);
+    const fatReal  = parseF(tds[12]?.querySelector('input')?.value || tds[12]?.textContent);
 
     const kgUnit = PESO_MAP[gelo] || 23;
     const fat    = qtd * preco;
     const peso   = qtd * kgUnit;
     const fatPct = fat > 0 ? (fatReal / fat * 100) : 0;
-    const totalRs= fatReal + aluguel;
-    const liq    = totalRs - liquidac;
+    // liq = FAT Real - Aluguel (num_oc é número de ordem, não valor monetário)
+    const liq    = fatReal - aluguel;
 
     if (tds[3]) { tds[3].textContent = fat > 0 ? fmtR(fat) : '—'; tds[3].className='item-calc'; }
     if (tds[4]) { tds[4].textContent = peso > 0 ? peso.toLocaleString('pt-BR')+' kg' : '—'; tds[4].className='item-calc'; }
     if (tds[11]){ tds[11].textContent = fat > 0 ? fatPct.toFixed(1)+'%' : '—'; tds[11].className='item-calc'; }
-    if (tds[13]){ tds[13].textContent = (totalRs>0||liquidac>0) ? fmtR(liq) : '—'; tds[13].className='item-calc'; }
+    if (tds[13]){ tds[13].textContent = fatReal > 0 ? fmtR(liq) : '—'; tds[13].className='item-calc'; }
 
     // Atualiza totais na linha mestre
     if (masterTr) recalcMasterTotals(masterTr);
@@ -2280,16 +2279,15 @@
     itrs.forEach(itr => {
       const tds = itr.querySelectorAll('td');
       const gelo = tds[0]?.querySelector('select')?.value || '20 KG';
-      const qtd  = parseF(tds[1]?.textContent);
-      const preco= parseF(tds[2]?.textContent);
-      const liquidac = parseF(tds[5]?.textContent);
-      const aluguel  = parseF(tds[6]?.textContent);
-      const fatReal  = parseF(tds[12]?.textContent);
+      const qtd  = parseF(tds[1]?.querySelector('input')?.value || tds[1]?.textContent);
+      const preco= parseF(tds[2]?.querySelector('input')?.value || tds[2]?.textContent);
+      const aluguel  = parseF(tds[6]?.querySelector('input')?.value || tds[6]?.textContent);
+      const fatReal  = parseF(tds[12]?.querySelector('input')?.value || tds[12]?.textContent);
       const kgUnit = PESO_MAP[gelo] || 23;
       const fat    = qtd * preco;
       const peso   = qtd * kgUnit;
-      const totalRs= fatReal + aluguel;
-      const liq    = totalRs - liquidac;
+      // liq = FAT Real - Aluguel (num_oc não é monetário)
+      const liq    = fatReal - aluguel;
       fatTotal  += fat;
       pesoTotal += peso;
       liqTotal  += liq;
@@ -2302,7 +2300,7 @@
   }
 
   function buildItemRow(itemData, masterTr) {
-    // itemData = [gelo, qtd, preco, liquidacao, aluguel, modalidade, retorno, troca, venda_real, fat_real]
+    // itemData = [gelo, qtd, preco, num_oc, aluguel, modalidade, retorno, troca, venda_real, fat_real]
     const itr = document.createElement('tr');
     const [gelo='20 KG', qtd='0', preco='0', liquidac='0', aluguel='0',
            modal='Venda', retorno='0', troca='0', vendaReal='0', fatReal='0'] = itemData;
@@ -2381,7 +2379,7 @@
   function buildPontoRow(tblId, dbKey, row) {
     // row = array 22 colunas conforme SCHEMA[natal26]
     // 0:ponto 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco 6:fat(c) 7:peso(c)
-    // 8:liquidacao 9:vlr_total(c) 10:aluguel 11:modalidade 12:retorno
+    // 8:num_oc 9:vlr_total(c) 10:aluguel 11:modalidade 12:retorno
     // 13:troca 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
     // 19:data 20:status 21:obs
     const masterTr = document.createElement('tr');
@@ -2437,12 +2435,13 @@
 
     // 7: Data
     const tdData = document.createElement('td');
-    tdData.contentEditable = 'true';
-    tdData.spellcheck = false;
-    tdData.style.color = 'var(--accent)';
-    tdData.style.minWidth = '90px';
-    tdData.textContent = row[19] || '';
-    tdData.oninput = () => triggerAutoSave(dbKey);
+    const inpData = document.createElement('input');
+    inpData.type = 'date';
+    inpData.value = row[19] || '';
+    inpData.style.color = 'var(--accent)';
+    inpData.style.minWidth = '130px';
+    inpData.onchange = () => triggerAutoSave(dbKey);
+    tdData.appendChild(inpData);
     masterTr.appendChild(tdData);
 
     // 8: Status
@@ -2495,7 +2494,7 @@
       <th>Gelo</th><th>Qtd</th><th>R$/Saca</th><th>FAT R$</th><th>Peso</th>
       <th>Ord.Carga</th><th>Aluguel</th><th>Modalidade</th>
       <th>Retorno</th><th>Troca</th><th>Venda Real</th>
-      <th>FAT%</th><th>FAT Real</th><th>Liq.</th><th></th>
+      <th>FAT%</th><th>FAT Real</th><th>Liq.Vnd</th><th></th>
     </tr>`;
     const tbody = document.createElement('tbody');
     subTable.appendChild(thead);
@@ -2506,7 +2505,7 @@
       String(row[3] || '20 KG'),  // gelo
       String(row[4] || '0'),      // qtd
       String(row[5] || '0'),      // preco
-      String(row[8] || '0'),      // liquidacao/ord_carga
+      String(row[8] || ''),       // num_oc (ordem de carga)
       String(row[10] || '0'),     // aluguel
       String(row[11] || 'Venda'), // modalidade
       String(row[12] || '0'),     // retorno
@@ -2654,7 +2653,7 @@
         const cliente   = getPontoVal(mTds[1]);
         const veiculo   = mTds[2]?.querySelector('select')?.value || 'Toco';
         const tipoOp    = mTds[3]?.querySelector('select')?.value || 'Rota';
-        const data      = mTds[7]?.textContent.trim() || '';
+        const data      = mTds[7]?.querySelector('input[type="date"]')?.value || '';
         const status    = mTds[8]?.querySelector('select')?.value || 'Programado';
         const obs       = mTds[9]?.textContent.trim() || '';
 
@@ -2669,24 +2668,24 @@
         }
         itrs.forEach(itr => {
           const tds = itr.querySelectorAll('td');
-          // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:ord_carga 6:aluguel
+          // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:num_oc 6:aluguel
           // 7:modalidade 8:retorno 9:troca 10:venda_real 11:fat%(c) 12:fat_real 13:liq(c) 14:del
           const gelo      = tds[0]?.querySelector('select')?.value || '20 KG';
-          const qtd       = tds[1]?.textContent.trim() || '0';
-          const preco     = tds[2]?.textContent.trim() || '0';
-          const ordCarga  = tds[5]?.textContent.trim() || '0';
-          const aluguel   = tds[6]?.textContent.trim() || '0';
+          const qtd       = tds[1]?.querySelector('input')?.value || tds[1]?.textContent.trim() || '0';
+          const preco     = tds[2]?.querySelector('input')?.value || tds[2]?.textContent.trim() || '0';
+          const numOc     = tds[5]?.querySelector('input')?.value || tds[5]?.textContent.trim() || '0';
+          const aluguel   = tds[6]?.querySelector('input')?.value || tds[6]?.textContent.trim() || '0';
           const modal     = tds[7]?.querySelector('select')?.value || 'Venda';
-          const retorno   = tds[8]?.textContent.trim() || '0';
-          const troca     = tds[9]?.textContent.trim() || '0';
-          const vendaReal = tds[10]?.textContent.trim() || '0';
-          const fatReal   = tds[12]?.textContent.trim() || '0';
+          const retorno   = tds[8]?.querySelector('input')?.value || tds[8]?.textContent.trim() || '0';
+          const troca     = tds[9]?.querySelector('input')?.value || tds[9]?.textContent.trim() || '0';
+          const vendaReal = tds[10]?.querySelector('input')?.value || tds[10]?.textContent.trim() || '0';
+          const fatReal   = tds[12]?.querySelector('input')?.value || tds[12]?.textContent.trim() || '0';
           // Monta array 22 colunas
           // 0:cliente 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco 6:fat(c) 7:peso(c)
-          // 8:liquidacao 9:vlr_total(c) 10:aluguel 11:modal 12:retorno 13:troca
+          // 8:num_oc 9:vlr_total(c) 10:aluguel 11:modal 12:retorno 13:troca
           // 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
           // 19:data 20:status 21:obs
-          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',ordCarga,'',aluguel,modal,retorno,troca,vendaReal,'',fatReal,'','',data,status,obs]);
+          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',numOc,'',aluguel,modal,retorno,troca,vendaReal,'',fatReal,'','',data,status,obs]);
         });
       });
       return rows;
@@ -2734,11 +2733,11 @@
     clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
     produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
     // 0:ponto 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco_saca 6:fat(calc) 7:peso(calc)
-    // 8:liquidacao 9:valor_total(calc) 10:valor_aluguel 11:modalidade 12:retorno 13:troca
+    // 8:num_oc 9:valor_total(calc) 10:valor_aluguel 11:modalidade 12:retorno 13:troca
     // 14:venda_real 15:fat_pct(calc) 16:fat_real 17:total_rs(calc) 18:liq_venda(calc)
     // 19:data_operacao 20:status 21:obs
-    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'liquidacao',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
-    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'liquidacao',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
+    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
+    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','troca','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
     cargaNat26:['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     cargaAn26: ['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
@@ -2757,7 +2756,7 @@
            'preco_consig','preco_manif','qtd_sacas',
            'valor_diario','vl_hora_extra','gratificacao',
            'custo_diario','custo_combustivel','custo_pedagio','custo_outros',
-           'liquidacao','valor_aluguel','fat_real','troca'].includes(c)) {
+           'valor_aluguel','fat_real','troca'].includes(c)) {
         v = parseF(v) || 0;
       }
       // Datas vazias → null
@@ -3065,18 +3064,18 @@
     let fat = 0, sacas = 0, fatReal = 0, liq = 0, desp = 0;
     data.forEach(row => {
       const isObj = !Array.isArray(row);
-      // nova estrutura: col4=qtd, col5=preco, col16=fat_real, col8=liquidacao
+      // nova estrutura: col4=qtd, col5=preco, col16=fat_real, col8=num_oc (ordem de carga, não monetário)
       const qtd      = parseF(isObj ? (row.qtd_prog   ?? 0) : (row[4]  ?? 0));
       const preco    = parseF(isObj ? (row.preco_saca  ?? 0) : (row[5]  ?? 0));
       const fReal    = parseF(isObj ? (row.fat_real    ?? 0) : (row[16] ?? 0));
-      const liquidac = parseF(isObj ? (row.liquidacao  ?? 0) : (row[8]  ?? 0));
+      const aluguel  = parseF(isObj ? (row.valor_aluguel ?? 0) : (row[10] ?? 0));
       fat     += qtd * preco;
       sacas   += qtd;
       fatReal += fReal;
-      liq     += liquidac;
+      liq     += aluguel;
     });
     const peso = sacas * 23; // estimativa 20kg dominante
-    const liqVenda = fatReal - liq;
+    const liqVenda = fatReal - liq; // liq = FAT Real - total Aluguel
     if (which === 'nat') {
       setEl('kn-fat',   fmtR(fat));
       setEl('kn-sacas', sacas.toLocaleString('pt-BR'));
