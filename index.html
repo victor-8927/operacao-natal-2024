@@ -436,6 +436,16 @@
   .prog-carga-label { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
   .prog-carga-val { font-size:12px; color:var(--text); }
   .prog-carga-obs { font-size:11px; color:var(--muted); font-style:italic; padding:4px 0; }
+  .prog-carga-meta-row { display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0; align-items:center; }
+  .prog-carga-horario { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,.12); padding:3px 10px; border-radius:8px; white-space:nowrap; }
+  .prog-carga-horario svg { width:12px; height:12px; flex-shrink:0; }
+  .prog-carga-carregar { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:800; padding:2px 9px; border-radius:8px; white-space:nowrap; letter-spacing:.02em; text-transform:uppercase; }
+  .prog-carga-carregar.t1 { background:rgba(52,196,124,.18); color:#34c47c; border:1px solid rgba(52,196,124,.3); }
+  .prog-carga-carregar.t2 { background:rgba(251,191,36,.18); color:#fbbf24; border:1px solid rgba(251,191,36,.3); }
+  .prog-carga-carregar.t3 { background:rgba(167,139,250,.18); color:#a78bfa; border:1px solid rgba(167,139,250,.3); }
+  .prog-carga-placa { font-size:10px; color:var(--muted); background:var(--surface); border:1px solid var(--border); padding:2px 8px; border-radius:6px; font-family:monospace; }
+  .prog-carga-romanio { font-size:10px; color:var(--muted); padding:2px 0; }
+  .prog-carga-volume { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#fb923c; background:rgba(251,146,60,.12); padding:2px 8px; border-radius:8px; }
   .prog-entrega-block { border-top:1px dashed var(--border); padding-top:7px; }
   .prog-comod-block { border-top:1px dashed var(--border); padding-top:7px; }
   .prog-entrega-titulo { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
@@ -3687,6 +3697,10 @@
 
     panel.innerHTML = '<div class="prog-vazio">⏳ Carregando...</div>';
 
+    // Invalida cache de cargas para garantir campos novos
+    const cargaCacheKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
+    delete _cache[cargaCacheKey];
+
     // Pega dados (aguarda se necessário)
     const rows = await loadDB(dbKey);
     if (!rows || !rows.length) {
@@ -3714,6 +3728,23 @@
       if (!m) return { dia: 99, turno: 9, raw: h };
       return { dia: parseInt(m[2]), turno: parseInt(m[1]), raw: h };
     }
+    // Dado horário planejado de SAÍDA (ex: "07:00"), retorna o turno que precisa CARREGAR
+    // Lógica: o carregamento ocorre no turno anterior à saída
+    //   Saída 00:00–06:59 → carregar no 3T (22h–06h) — madrugada
+    //   Saída 07:00–13:59 → carregar no 3T (noite anterior)
+    //   Saída 14:00–21:59 → carregar no 1T (06h–14h da manhã)
+    //   Saída 22:00–23:59 → carregar no 2T (14h–22h da tarde)
+    function inferTurnoCarregamento(horaStr) {
+      if (!horaStr) return null;
+      const m = horaStr.match(/^(\d{1,2}):(\d{2})/);
+      if (!m) return null;
+      const h = parseInt(m[1]);
+      if (h < 7)  return { turno:3, label:'3° Turno (madrugada)', cls:'t3', emoji:'🌙' };
+      if (h < 14) return { turno:3, label:'3° Turno (noite anterior)', cls:'t3', emoji:'🌙' };
+      if (h < 22) return { turno:1, label:'1° Turno (manhã)', cls:'t1', emoji:'🌅' };
+      return          { turno:2, label:'2° Turno (tarde)', cls:'t2', emoji:'🌆' };
+    }
+
     function turnoStyle(h) {
       if (!h) return { bg:'rgba(100,100,100,.15)', cor:'#888', label:'—', bgPrint:'#eee', corPrint:'#333' };
       const p = parseTurno(h);
@@ -3838,6 +3869,21 @@
             ${c.zona ? `<span class="prog-carga-zona">Zona ${c.zona}</span>` : ''}
           </div>
           <div class="prog-carga-card-body">
+            ${(() => {
+              const hps = c.hora_prevista_saida;
+              const tc  = inferTurnoCarregamento(hps);
+              if (!hps && !c.placa && !c.num_romanio && !c.tipo_volume) return '';
+              let metaHtml = '<div class="prog-carga-meta-row">';
+              if (hps) {
+                metaHtml += `<span class="prog-carga-horario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Saída ${hps}</span>`;
+                if (tc) metaHtml += `<span class="prog-carga-carregar ${tc.cls}">${tc.emoji} Carregar: ${tc.label}</span>`;
+              }
+              if (c.placa)      metaHtml += `<span class="prog-carga-placa">🚛 ${c.placa}</span>`;
+              if (c.tipo_volume) metaHtml += `<span class="prog-carga-volume">📦 ${c.tipo_volume}</span>`;
+              if (c.num_romanio) metaHtml += `<span class="prog-carga-romanio">Rom. ${c.num_romanio}</span>`;
+              metaHtml += '</div>';
+              return metaHtml;
+            })()}
             <div class="prog-carga-equipe">
               <div class="prog-carga-equipe-row"><span class="prog-carga-label">Motorista:</span><span class="prog-carga-val">${c.motorista || '—'}</span></div>
               <div class="prog-carga-equipe-row"><span class="prog-carga-label">Ajudantes:</span><span class="prog-carga-val">${fmtAjud(c)}</span></div>
@@ -3938,6 +3984,13 @@
     .prog-carga-label { font-size:9px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
     .prog-carga-val { font-size:11px; color:#000; }
     .prog-carga-obs { font-size:10px; color:#555; font-style:italic; }
+    /* meta: hora planejada + turno carregamento */
+    .prog-carga-meta-row { display:flex; flex-wrap:wrap; gap:5px 12px; padding:3px 0; align-items:center; border-bottom:1px dashed #ccc; margin-bottom:3px; }
+    .prog-carga-horario { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:#000; border:1px solid #000; padding:1px 7px; border-radius:5px; }
+    .prog-carga-carregar { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:800; padding:1px 7px; border-radius:5px; border:1px solid #555; color:#000; text-transform:uppercase; letter-spacing:.02em; }
+    .prog-carga-placa { font-size:10px; color:#000; border:1px solid #666; padding:1px 6px; border-radius:5px; font-family:monospace; font-weight:700; }
+    .prog-carga-volume { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#000; border:1px solid #666; padding:1px 6px; border-radius:5px; }
+    .prog-carga-romanio { font-size:10px; color:#333; }
     /* pontos de entrega */
     .prog-entrega-block, .prog-comod-block { border-top:1px dashed #bbb; padding-top:5px; }
     .prog-entrega-titulo { font-size:9px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
@@ -4395,6 +4448,45 @@
               onblur="saveCargaField(${c.id},'num_oc',this.value,'${which}')"
               onkeydown="if(event.key==='Enter')this.blur()">
           </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">📅 Data Prevista</div>
+            <input type="date" value="${c.data_prevista_saida||''}"
+              onblur="saveCargaField(${c.id},'data_prevista_saida',this.value,'${which}')"
+              onkeydown="if(event.key==='Enter')this.blur()"
+              style="width:140px">
+          </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">⏰ Hora Prevista</div>
+            <input type="time" value="${c.hora_prevista_saida||''}" placeholder="07:00"
+              onblur="saveCargaField(${c.id},'hora_prevista_saida',this.value,'${which}')"
+              onkeydown="if(event.key==='Enter')this.blur()"
+              style="width:90px">
+          </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">🚛 Placa</div>
+            <input type="text" value="${c.placa||''}" placeholder="AAA-0000"
+              onblur="saveCargaField(${c.id},'placa',this.value,'${which}')"
+              onkeydown="if(event.key==='Enter')this.blur()"
+              style="text-transform:uppercase;width:90px">
+          </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">📦 Tipo Volume</div>
+            <select onchange="saveCargaField(${c.id},'tipo_volume',this.value,'${which}')">
+              <option value="">—</option>
+              <option value="PRE-VENDA"${c.tipo_volume==='PRE-VENDA'?' selected':''}>Pré-venda</option>
+              <option value="CONSIGNADA"${c.tipo_volume==='CONSIGNADA'?' selected':''}>Consignada</option>
+              <option value="MANIFESTO"${c.tipo_volume==='MANIFESTO'?' selected':''}>Manifesto</option>
+              <option value="TROCA"${c.tipo_volume==='TROCA'?' selected':''}>Troca</option>
+              <option value="PREVENDA"${c.tipo_volume==='PREVENDA'?' selected':''}>Prevenda</option>
+            </select>
+          </div>
+          <div class="mcard-filho-oc">
+            <div class="mcard-filho-oc-lbl">📋 Nº Romaneio</div>
+            <input type="text" value="${c.num_romanio||''}" placeholder="25066"
+              onblur="saveCargaField(${c.id},'num_romanio',this.value,'${which}')"
+              onkeydown="if(event.key==='Enter')this.blur()"
+              style="width:80px">
+          </div>
           ${c.obs ? `<div class="mcard-filho-obs" title="${c.obs}">💬 ${c.obs}</div>` : ''}
         </div>`;
       }).join('');
@@ -4440,13 +4532,17 @@
     if (card) card.classList.toggle('expanded');
   }
 
-  /** Salva campo diretamente em op26_carga_natal (ex: num_oc) */
+  /** Salva campo diretamente em op26_carga_natal ou op26_carga_anonovo */
   async function saveCargaField(cargaId, campo, valor, which) {
+    const tbl = (which === 'an') ? 'op26_carga_anonovo' : 'op26_carga_natal';
+    const cacheKey = (which === 'an') ? 'cargaAn26' : 'cargaNat26';
     try {
-      await sbFetch(`op26_carga_natal?id=eq.${cargaId}`, {
+      await sbFetch(`${tbl}?id=eq.${cargaId}`, {
         method: 'PATCH',
         body: JSON.stringify({ [campo]: valor })
       });
+      // Invalida cache para refletir na próxima renderização
+      delete _cache[cacheKey];
     } catch(e) { console.warn('saveCargaField', e); }
   }
 
