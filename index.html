@@ -3763,23 +3763,37 @@
       html = '<div class="prog-vazio">Nenhum dado encontrado.</div>';
     }
 
-    // ── SEÇÃO: PROGRAMAÇÃO DE CARREGAMENTO ──
+    // ── SEÇÃO: SEQUÊNCIA DE CARREGAMENTO (ordenada cronologicamente) ──
     const cargaDbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
     const cargas = await loadDB(cargaDbKey);
 
     let cargaHtml = '';
     if (cargas && cargas.length) {
-      // Agrupa por rota
-      const porRota = {};
-      cargas.forEach(c => {
-        const r = c.rota || 'apoio';
-        if (!porRota[r]) porRota[r] = [];
-        porRota[r].push(c);
+
+      // Ordem cronológica real: 3T-23 → 2T-23 → 1T-24 → 2T-24 → etc.
+      function parseTurno(h) {
+        if (!h) return { dia: 99, turno: 9, raw: '' };
+        const m = h.match(/^(\d+)T-(\d+)/i);
+        if (!m) return { dia: 99, turno: 9, raw: h };
+        return { dia: parseInt(m[2]), turno: parseInt(m[1]), raw: h };
+      }
+
+      const sorted = [...cargas].sort((a, b) => {
+        const pa = parseTurno(a.hora_saida), pb = parseTurno(b.hora_saida);
+        if (pa.dia !== pb.dia) return pa.dia - pb.dia;
+        if (pa.turno !== pb.turno) return pa.turno - pb.turno;
+        return (parseInt(a.seq_carga) || 0) - (parseInt(b.seq_carga) || 0);
       });
-      const rotasOrdenadas = Object.keys(porRota).sort((a, b) => {
-        const na = parseInt(a) || 9999, nb = parseInt(b) || 9999;
-        return na - nb;
+
+      // Agrupa por hora_saida mantendo ordem cronológica
+      const porTurno = {};
+      const turnoOrder = [];
+      sorted.forEach(c => {
+        const k = c.hora_saida || '—';
+        if (!porTurno[k]) { porTurno[k] = []; turnoOrder.push(k); }
+        porTurno[k].push(c);
       });
+      const turnos = [...new Set(turnoOrder)];
 
       function fmtSacas(c) {
         const partes = [];
@@ -3795,43 +3809,47 @@
       }
       function fmtAjud(c) {
         const a = [c.ajudante1, c.ajudante2, c.ajudante3].filter(x => x && x.trim());
-        return a.length ? a.join(', ') : '—';
+        return a.length ? a.join(' · ') : '—';
       }
-      function turnoLabel(h) {
-        if (!h) return '—';
-        const hL = h.toLowerCase();
-        if (hL.includes('1t')) return `<span style="background:rgba(52,196,124,.18);color:#34c47c;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">1° Turno</span>`;
-        if (hL.includes('2t')) return `<span style="background:rgba(251,191,36,.18);color:#fbbf24;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">2° Turno</span>`;
-        if (hL.includes('3t')) return `<span style="background:rgba(167,139,250,.18);color:#a78bfa;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">3° Turno</span>`;
-        return `<span style="color:var(--muted);font-size:10px">${h}</span>`;
+      function turnoStyle(h) {
+        if (!h) return { bg:'rgba(100,100,100,.15)', cor:'#888', label:'—' };
+        const p = parseTurno(h);
+        const dia = p.dia < 99 ? `${p.dia}/12` : '';
+        const sufixo = dia ? ` — dia ${dia}` : '';
+        if (p.turno === 3) return { bg:'rgba(167,139,250,.15)', cor:'#a78bfa', label:`3° Turno${sufixo}` };
+        if (p.turno === 2) return { bg:'rgba(251,191,36,.15)',  cor:'#fbbf24', label:`2° Turno${sufixo}` };
+        if (p.turno === 1) return { bg:'rgba(52,196,124,.15)',  cor:'#34c47c', label:`1° Turno${sufixo}` };
+        return { bg:'rgba(100,100,100,.15)', cor:'#888', label: h };
       }
+
+      const totalPesoGeral = sorted.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
 
       cargaHtml = `
         <div style="margin-top:28px;padding-top:20px;border-top:2px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
             <span style="font-size:16px">🏭</span>
-            <span style="font-size:14px;font-weight:700;color:var(--text)">Programação de Carregamento</span>
-            <span style="font-size:11px;color:var(--muted);margin-left:4px">${cargas.length} cargas · ${rotasOrdenadas.length} rotas</span>
-          </div>`;
+            <span style="font-size:14px;font-weight:700;color:var(--text)">Sequência de Carregamento</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:16px">${sorted.length} cargas · ${(totalPesoGeral/1000).toFixed(1).replace('.',',')} t · ordenado por data e turno</div>`;
 
-      rotasOrdenadas.forEach(rota => {
-        const lista = porRota[rota].sort((a,b) => (parseInt(a.seq_carga)||0) - (parseInt(b.seq_carga)||0));
-        const totalPeso = lista.reduce((s, c) => s + parseFloat(c.peso_total_kg || 0), 0);
-        const rotaLabel = rota === 'apoio' ? '🔄 Apoio' : rota === 'estrategico' ? '📍 Estratégico' : `Rota ${rota}`;
-        const zonaInfo = lista[0]?.zona ? ` — ${lista[0].zona}` : '';
+      let seqGlobal = 0;
+      turnos.forEach(turnoKey => {
+        const lista = porTurno[turnoKey];
+        const ts = turnoStyle(turnoKey);
+        const pesoTurno = lista.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
 
         cargaHtml += `
-          <div style="margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;overflow:hidden">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:rgba(167,139,250,.07);border-bottom:1px solid var(--border)">
-              <span style="font-size:12px;font-weight:800;color:#a78bfa">${rotaLabel}</span>
-              <span style="font-size:10px;color:var(--muted)">${zonaInfo} · ${(totalPeso/1000).toFixed(1).replace('.',',')} t total</span>
+          <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div style="background:${ts.bg};color:${ts.cor};font-size:11px;font-weight:800;padding:4px 12px;border-radius:6px;border:1px solid ${ts.cor}40">${ts.label}</div>
+              <span style="font-size:10px;color:var(--muted)">${lista.length} carga${lista.length>1?'s':''} · ${(pesoTurno/1000).toFixed(1).replace('.',',')} t</span>
             </div>
-            <div style="overflow-x:auto">
+            <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border)">
               <table style="width:100%;border-collapse:collapse;font-size:11px">
                 <thead>
-                  <tr style="background:rgba(0,0,0,.2)">
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Carga</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Turno</th>
+                  <tr style="background:rgba(0,0,0,.25)">
+                    <th style="padding:6px 10px;text-align:center;color:var(--muted);font-weight:600;width:32px">#</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Rota</th>
                     <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">VDA</th>
                     <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Motorista</th>
                     <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Ajudantes</th>
@@ -3842,16 +3860,18 @@
                 <tbody>`;
 
         lista.forEach((c, idx) => {
+          seqGlobal++;
           const bg = idx % 2 === 0 ? '' : 'background:rgba(255,255,255,.025)';
+          const rotaLabel = c.rota === 'apoio' ? '🔄 Apoio' : c.rota === 'estrategico' ? '📍 Estratégico' : (c.rota ? `Rota ${c.rota}` : '—');
           cargaHtml += `
                   <tr style="${bg}">
-                    <td style="padding:7px 10px;color:var(--muted);font-weight:700">#${c.num_carga || idx+1}</td>
-                    <td style="padding:7px 10px">${turnoLabel(c.hora_saida)}</td>
-                    <td style="padding:7px 10px;font-weight:700;color:var(--text)">${c.vda || '—'}</td>
+                    <td style="padding:7px 10px;text-align:center;color:${ts.cor};font-weight:800;font-size:12px">${seqGlobal}</td>
+                    <td style="padding:7px 10px;font-weight:700;color:var(--text);white-space:nowrap">${rotaLabel}</td>
+                    <td style="padding:7px 10px;font-weight:700;color:#a78bfa">${c.vda || '—'}</td>
                     <td style="padding:7px 10px;color:var(--text)">${c.motorista || '—'}</td>
-                    <td style="padding:7px 10px;color:var(--muted)">${fmtAjud(c)}</td>
-                    <td style="padding:7px 10px;color:#34c47c;font-weight:600">${fmtSacas(c)}</td>
-                    <td style="padding:7px 10px;text-align:right;color:#fbbf24;font-weight:700">${fmtPeso(c)}</td>
+                    <td style="padding:7px 10px;color:var(--muted);font-size:10px">${fmtAjud(c)}</td>
+                    <td style="padding:7px 10px;color:#34c47c;font-weight:600;white-space:nowrap">${fmtSacas(c)}</td>
+                    <td style="padding:7px 10px;text-align:right;color:#fbbf24;font-weight:700;white-space:nowrap">${fmtPeso(c)}</td>
                   </tr>`;
         });
 
