@@ -3763,7 +3763,109 @@
       html = '<div class="prog-vazio">Nenhum dado encontrado.</div>';
     }
 
-    panel.innerHTML = html;
+    // ── SEÇÃO: PROGRAMAÇÃO DE CARREGAMENTO ──
+    const cargaDbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
+    const cargas = await loadDB(cargaDbKey);
+
+    let cargaHtml = '';
+    if (cargas && cargas.length) {
+      // Agrupa por rota
+      const porRota = {};
+      cargas.forEach(c => {
+        const r = c.rota || 'apoio';
+        if (!porRota[r]) porRota[r] = [];
+        porRota[r].push(c);
+      });
+      const rotasOrdenadas = Object.keys(porRota).sort((a, b) => {
+        const na = parseInt(a) || 9999, nb = parseInt(b) || 9999;
+        return na - nb;
+      });
+
+      function fmtSacas(c) {
+        const partes = [];
+        if (parseFloat(c.s5  || 0) > 0) partes.push(`${parseInt(c.s5)}×5kg`);
+        if (parseFloat(c.s10 || 0) > 0) partes.push(`${parseInt(c.s10)}×10kg`);
+        if (parseFloat(c.s20 || 0) > 0) partes.push(`${parseInt(c.s20)}×20kg`);
+        if (parseFloat(c.s40 || 0) > 0) partes.push(`${parseInt(c.s40)}×40kg`);
+        return partes.length ? partes.join(' + ') : '—';
+      }
+      function fmtPeso(c) {
+        const p = parseFloat(c.peso_total_kg || 0);
+        return p > 0 ? (p / 1000).toFixed(1).replace('.',',') + ' t' : '—';
+      }
+      function fmtAjud(c) {
+        const a = [c.ajudante1, c.ajudante2, c.ajudante3].filter(x => x && x.trim());
+        return a.length ? a.join(', ') : '—';
+      }
+      function turnoLabel(h) {
+        if (!h) return '—';
+        const hL = h.toLowerCase();
+        if (hL.includes('1t')) return `<span style="background:rgba(52,196,124,.18);color:#34c47c;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">1° Turno</span>`;
+        if (hL.includes('2t')) return `<span style="background:rgba(251,191,36,.18);color:#fbbf24;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">2° Turno</span>`;
+        if (hL.includes('3t')) return `<span style="background:rgba(167,139,250,.18);color:#a78bfa;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">3° Turno</span>`;
+        return `<span style="color:var(--muted);font-size:10px">${h}</span>`;
+      }
+
+      cargaHtml = `
+        <div style="margin-top:28px;padding-top:20px;border-top:2px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span style="font-size:16px">🏭</span>
+            <span style="font-size:14px;font-weight:700;color:var(--text)">Programação de Carregamento</span>
+            <span style="font-size:11px;color:var(--muted);margin-left:4px">${cargas.length} cargas · ${rotasOrdenadas.length} rotas</span>
+          </div>`;
+
+      rotasOrdenadas.forEach(rota => {
+        const lista = porRota[rota].sort((a,b) => (parseInt(a.seq_carga)||0) - (parseInt(b.seq_carga)||0));
+        const totalPeso = lista.reduce((s, c) => s + parseFloat(c.peso_total_kg || 0), 0);
+        const rotaLabel = rota === 'apoio' ? '🔄 Apoio' : rota === 'estrategico' ? '📍 Estratégico' : `Rota ${rota}`;
+        const zonaInfo = lista[0]?.zona ? ` — ${lista[0].zona}` : '';
+
+        cargaHtml += `
+          <div style="margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:rgba(167,139,250,.07);border-bottom:1px solid var(--border)">
+              <span style="font-size:12px;font-weight:800;color:#a78bfa">${rotaLabel}</span>
+              <span style="font-size:10px;color:var(--muted)">${zonaInfo} · ${(totalPeso/1000).toFixed(1).replace('.',',')} t total</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:11px">
+                <thead>
+                  <tr style="background:rgba(0,0,0,.2)">
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Carga</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Turno</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">VDA</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Motorista</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Ajudantes</th>
+                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Sacas</th>
+                    <th style="padding:6px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Peso</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+
+        lista.forEach((c, idx) => {
+          const bg = idx % 2 === 0 ? '' : 'background:rgba(255,255,255,.025)';
+          cargaHtml += `
+                  <tr style="${bg}">
+                    <td style="padding:7px 10px;color:var(--muted);font-weight:700">#${c.num_carga || idx+1}</td>
+                    <td style="padding:7px 10px">${turnoLabel(c.hora_saida)}</td>
+                    <td style="padding:7px 10px;font-weight:700;color:var(--text)">${c.vda || '—'}</td>
+                    <td style="padding:7px 10px;color:var(--text)">${c.motorista || '—'}</td>
+                    <td style="padding:7px 10px;color:var(--muted)">${fmtAjud(c)}</td>
+                    <td style="padding:7px 10px;color:#34c47c;font-weight:600">${fmtSacas(c)}</td>
+                    <td style="padding:7px 10px;text-align:right;color:#fbbf24;font-weight:700">${fmtPeso(c)}</td>
+                  </tr>`;
+        });
+
+        cargaHtml += `
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      });
+
+      cargaHtml += `</div>`;
+    }
+
+    panel.innerHTML = html + cargaHtml;
   }
 
   // Atualiza data_operacao a partir do painel de programações
