@@ -594,30 +594,7 @@
   .pop-row strong { color:var(--text); }
   .pop-comod { margin-top:6px; padding:4px 8px; background:rgba(245,200,66,.12); border-radius:4px; font-size:11px; color:var(--yellow); }
 
-  /* ── PRINT STYLES ── */
-  @media print {
-    body { background:#fff !important; color:#000 !important; }
-    .sidebar, .tab-bar, .inner-tab-bar, .prog-toolbar,
-    .btn, header, nav, .modal, .leaflet-container,
-    [id^="it-"]:not(.active), .tab-content:not(.active) { display:none !important; }
-    .prog-print-btn { display:none !important; }
-    .prog-carga-cards { display:block !important; }
-    .prog-carga-card {
-      break-inside:avoid;
-      page-break-inside:avoid;
-      border:1.5px solid #000 !important;
-      background:#fff !important;
-      color:#000 !important;
-      box-shadow:none !important;
-      margin-bottom:10px !important;
-    }
-    .prog-carga-card * { color:#000 !important; background:transparent !important; border-color:#999 !important; }
-    .prog-turno-header { border:1.5px solid #000 !important; background:#eee !important; color:#000 !important; }
-    .prog-entrega-cards { display:none !important; }
-    .prog-carga-seq { color:#000 !important; font-weight:900 !important; }
-    a { text-decoration:none !important; }
-    @page { margin:12mm; }
-  }
+  /* ── sem @media print global — impressão via janela dedicada ── */
 </style>
 </head>
 <body>
@@ -1462,7 +1439,7 @@
           </select>
         </div>
         <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
-        <button class="btn prog-print-btn" onclick="window.print()" style="margin-left:auto;">🖨️ Imprimir</button>
+        <button class="btn prog-print-btn" onclick="printProgPanel('nat')" style="margin-left:auto;">🖨️ Imprimir</button>
       </div>
       <div id="prog-panel-nat" class="prog-carga-cards">
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
@@ -1572,7 +1549,7 @@
           </select>
         </div>
         <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
-        <button class="btn prog-print-btn" onclick="window.print()" style="margin-left:auto;">🖨️ Imprimir</button>
+        <button class="btn prog-print-btn" onclick="printProgPanel('an')" style="margin-left:auto;">🖨️ Imprimir</button>
       </div>
       <div id="prog-panel-an" class="prog-carga-cards">
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
@@ -3921,6 +3898,68 @@
   }
 
   // Atualiza data_operacao a partir do painel de programações
+  function printProgPanel(which) {
+    const panelId = 'prog-panel-' + which;
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const titulo = which === 'nat' ? 'Programação Operacional — Natal 2026' : 'Programação Operacional — Ano Novo 2026';
+    const conteudo = panel.innerHTML;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    win.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>${titulo}</title>
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Arial, sans-serif; font-size:12px; color:#000; background:#fff; padding:16px; }
+    h1 { font-size:16px; font-weight:900; margin-bottom:4px; }
+    .sub { font-size:11px; color:#555; margin-bottom:16px; }
+    /* unified header */
+    .prog-unified-header { font-size:11px; font-weight:700; color:#555; padding:0 0 10px; letter-spacing:.04em; text-transform:uppercase; }
+    /* turno block */
+    .prog-turno-block { margin-bottom:16px; }
+    .prog-turno-header { display:flex; align-items:center; justify-content:space-between; padding:6px 12px; border-radius:6px; border:1.5px solid #000; background:#eee; margin-bottom:6px; break-inside:avoid; }
+    .prog-turno-label { font-size:12px; font-weight:900; color:#000; }
+    .prog-turno-meta { font-size:10px; color:#333; }
+    /* carga card */
+    .prog-carga-card { border:1.5px solid #000; border-radius:6px; margin-bottom:6px; overflow:hidden; break-inside:avoid; page-break-inside:avoid; }
+    .prog-carga-card-header { display:flex; align-items:center; gap:8px; padding:7px 12px; flex-wrap:wrap; border-bottom:1px solid #ccc; background:#f5f5f5; }
+    .prog-carga-seq { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-size:11px; font-weight:900; flex-shrink:0; background:#ddd; color:#000; border:1.5px solid #666; }
+    .prog-carga-rota { font-size:13px; font-weight:900; color:#000; flex:1; }
+    .prog-carga-vda { font-size:11px; font-weight:700; color:#000; border:1px solid #666; padding:1px 6px; border-radius:8px; }
+    .prog-carga-sacas { font-size:11px; color:#000; font-weight:700; }
+    .prog-carga-peso { font-size:11px; color:#000; font-weight:700; }
+    .prog-carga-zona { font-size:10px; color:#333; border:1px solid #999; padding:1px 6px; border-radius:8px; }
+    .prog-carga-card-body { padding:6px 12px 8px; display:flex; flex-direction:column; gap:5px; }
+    .prog-carga-equipe { display:flex; flex-wrap:wrap; gap:4px 18px; }
+    .prog-carga-equipe-row { display:flex; gap:4px; align-items:baseline; font-size:11px; }
+    .prog-carga-label { font-size:9px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+    .prog-carga-val { font-size:11px; color:#000; }
+    .prog-carga-obs { font-size:10px; color:#555; font-style:italic; }
+    /* pontos de entrega */
+    .prog-entrega-block, .prog-comod-block { border-top:1px dashed #bbb; padding-top:5px; }
+    .prog-entrega-titulo { font-size:9px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
+    .prog-entrega-lista { display:flex; flex-direction:column; gap:3px; }
+    .prog-entrega-item { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; }
+    .prog-entrega-cli { font-weight:700; color:#000; flex:1; }
+    .prog-entrega-vol, .prog-entrega-fat { color:#000; font-weight:600; }
+    .prog-card-status { display:inline-block; padding:1px 6px; border-radius:8px; font-size:9px; font-weight:700; border:1px solid #999; color:#000; background:#eee; }
+    .prog-carga-zona.small { font-size:10px; }
+    @page { margin:12mm; size:A4; }
+  </style>
+</head>
+<body>
+  <h1>${titulo}</h1>
+  <div class="sub">Gerado em ${new Date().toLocaleString('pt-BR')}</div>
+  ${conteudo}
+  <script>window.onload = function(){ window.print(); };<\/script>
+</body>
+</html>`);
+    win.document.close();
+  }
+
   async function progUpdateData(inp, dbKey, cliente) {
     const novaData = inp.value; // YYYY-MM-DD ou ''
 
