@@ -414,6 +414,37 @@
   .prog-col-semdata-num { font-size:28px; font-weight:800; color:#f5c842; }
   .prog-col-semdata-label { font-size:11px; color:var(--muted); margin-top:4px; }
   .prog-vazio { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+
+  /* ── CARDS UNIFICADOS DE PROGRAMAÇÃO ── */
+  .prog-carga-cards { display:flex; flex-direction:column; gap:0; }
+  .prog-unified-header { font-size:12px; font-weight:700; color:var(--muted); padding:8px 0 12px; letter-spacing:.04em; text-transform:uppercase; }
+  .prog-turno-block { margin-bottom:20px; }
+  .prog-turno-header { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-radius:8px; margin-bottom:8px; }
+  .prog-turno-label { font-size:12px; font-weight:800; }
+  .prog-turno-meta { font-size:11px; color:var(--muted); }
+  .prog-carga-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+  .prog-carga-card-header { display:flex; align-items:center; gap:10px; padding:9px 14px; flex-wrap:wrap; }
+  .prog-carga-seq { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-size:12px; font-weight:900; flex-shrink:0; }
+  .prog-carga-rota { font-size:13px; font-weight:800; color:var(--text); flex:1; min-width:80px; }
+  .prog-carga-vda { font-size:11px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,.12); padding:2px 8px; border-radius:10px; white-space:nowrap; }
+  .prog-carga-sacas { font-size:11px; color:#34c47c; font-weight:600; white-space:nowrap; }
+  .prog-carga-peso { font-size:11px; color:#fbbf24; font-weight:700; white-space:nowrap; }
+  .prog-carga-zona { font-size:10px; color:var(--muted); background:var(--surface); border:1px solid var(--border); padding:2px 7px; border-radius:10px; white-space:nowrap; }
+  .prog-carga-card-body { padding:0 14px 10px; display:flex; flex-direction:column; gap:8px; }
+  .prog-carga-equipe { display:flex; flex-wrap:wrap; gap:6px 20px; align-items:flex-start; }
+  .prog-carga-equipe-row { display:flex; gap:5px; align-items:baseline; font-size:12px; }
+  .prog-carga-label { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+  .prog-carga-val { font-size:12px; color:var(--text); }
+  .prog-carga-obs { font-size:11px; color:var(--muted); font-style:italic; padding:4px 0; }
+  .prog-entrega-block { border-top:1px dashed var(--border); padding-top:7px; }
+  .prog-comod-block { border-top:1px dashed var(--border); padding-top:7px; }
+  .prog-entrega-titulo { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+  .prog-entrega-lista { display:flex; flex-direction:column; gap:4px; }
+  .prog-entrega-item { display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-size:11px; }
+  .prog-entrega-cli { font-weight:700; color:var(--text); flex:1; min-width:120px; }
+  .prog-entrega-vol { color:#a78bfa; font-weight:600; white-space:nowrap; }
+  .prog-entrega-fat { color:#34c47c; font-weight:600; white-space:nowrap; }
+
   /* status colors */
   .prog-st-prog { background:rgba(245,200,66,.15); color:#f5c842; }
   .prog-st-campo { background:rgba(56,189,248,.15); color:#38bdf8; }
@@ -562,6 +593,31 @@
   .pop-row { color:var(--muted); }
   .pop-row strong { color:var(--text); }
   .pop-comod { margin-top:6px; padding:4px 8px; background:rgba(245,200,66,.12); border-radius:4px; font-size:11px; color:var(--yellow); }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background:#fff !important; color:#000 !important; }
+    .sidebar, .tab-bar, .inner-tab-bar, .prog-toolbar,
+    .btn, header, nav, .modal, .leaflet-container,
+    [id^="it-"]:not(.active), .tab-content:not(.active) { display:none !important; }
+    .prog-print-btn { display:none !important; }
+    .prog-carga-cards { display:block !important; }
+    .prog-carga-card {
+      break-inside:avoid;
+      page-break-inside:avoid;
+      border:1.5px solid #000 !important;
+      background:#fff !important;
+      color:#000 !important;
+      box-shadow:none !important;
+      margin-bottom:10px !important;
+    }
+    .prog-carga-card * { color:#000 !important; background:transparent !important; border-color:#999 !important; }
+    .prog-turno-header { border:1.5px solid #000 !important; background:#eee !important; color:#000 !important; }
+    .prog-entrega-cards { display:none !important; }
+    .prog-carga-seq { color:#000 !important; font-weight:900 !important; }
+    a { text-decoration:none !important; }
+    @page { margin:12mm; }
+  }
 </style>
 </head>
 <body>
@@ -1406,8 +1462,9 @@
           </select>
         </div>
         <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
+        <button class="btn prog-print-btn" onclick="window.print()" style="margin-left:auto;">🖨️ Imprimir</button>
       </div>
-      <div id="prog-panel-nat" class="prog-colunas">
+      <div id="prog-panel-nat" class="prog-carga-cards">
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
       </div>
     </div>
@@ -1515,8 +1572,9 @@
           </select>
         </div>
         <span style="font-size:11px;color:var(--muted)">Clique na data para editar · Auto-salva em 4s</span>
+        <button class="btn prog-print-btn" onclick="window.print()" style="margin-left:auto;">🖨️ Imprimir</button>
       </div>
-      <div id="prog-panel-an" class="prog-colunas">
+      <div id="prog-panel-an" class="prog-carga-cards">
         <div class="prog-vazio">Clique em "🔄 Atualizar" para carregar as programações.</div>
       </div>
     </div>
@@ -3672,26 +3730,40 @@
       return;
     }
 
-    // Agrupa por data_operacao, depois por cliente
-    const grupos = {}; // { data: { cliente: { qtd, fat, tipo_veiculo, status, rows[] } } }
-    filtered.forEach(r => {
-      const data = r.data_operacao || '';
-      const cli  = r.cliente || '(sem cliente)';
-      if (!grupos[data]) grupos[data] = {};
-      if (!grupos[data][cli]) grupos[data][cli] = { qtd: 0, fat: 0, tipo_veiculo: r.tipo_veiculo || '', status: r.status || '', rows: [] };
-      grupos[data][cli].qtd += parseFloat(r.qtd_prog || 0);
-      grupos[data][cli].fat += parseFloat(r.fat_real || 0);
-      if (r.tipo_veiculo) grupos[data][cli].tipo_veiculo = r.tipo_veiculo;
-      if (r.status) grupos[data][cli].status = r.status;
-      grupos[data][cli].rows.push(r);
-    });
-
-    // Ordena datas: sem data por último
-    const datas = Object.keys(grupos).sort((a, b) => {
-      if (!a) return 1; if (!b) return -1;
-      return a.localeCompare(b);
-    });
-
+    // ── Funções auxiliares ──
+    function parseTurno(h) {
+      if (!h) return { dia: 99, turno: 9, raw: '' };
+      const m = h.match(/^(\d+)T-(\d+)/i);
+      if (!m) return { dia: 99, turno: 9, raw: h };
+      return { dia: parseInt(m[2]), turno: parseInt(m[1]), raw: h };
+    }
+    function turnoStyle(h) {
+      if (!h) return { bg:'rgba(100,100,100,.15)', cor:'#888', label:'—', bgPrint:'#eee', corPrint:'#333' };
+      const p = parseTurno(h);
+      const mes = p.dia < 24 ? '/12' : '/01';
+      const dia = p.dia < 99 ? `${p.dia}${mes}` : '';
+      const sufixo = dia ? ` — ${dia}` : '';
+      if (p.turno === 3) return { bg:'rgba(167,139,250,.18)', cor:'#a78bfa', label:`3° Turno${sufixo}`, bgPrint:'#e8e4ff', corPrint:'#5b21b6' };
+      if (p.turno === 2) return { bg:'rgba(251,191,36,.18)',  cor:'#fbbf24', label:`2° Turno${sufixo}`, bgPrint:'#fef3c7', corPrint:'#92400e' };
+      if (p.turno === 1) return { bg:'rgba(52,196,124,.18)',  cor:'#34c47c', label:`1° Turno${sufixo}`, bgPrint:'#d1fae5', corPrint:'#065f46' };
+      return { bg:'rgba(100,100,100,.15)', cor:'#888', label: h, bgPrint:'#eee', corPrint:'#333' };
+    }
+    function fmtSacas(c) {
+      const partes = [];
+      if (parseFloat(c.s5  || 0) > 0) partes.push(`${parseInt(c.s5)}×5kg`);
+      if (parseFloat(c.s10 || 0) > 0) partes.push(`${parseInt(c.s10)}×10kg`);
+      if (parseFloat(c.s20 || 0) > 0) partes.push(`${parseInt(c.s20)}×20kg`);
+      if (parseFloat(c.s40 || 0) > 0) partes.push(`${parseInt(c.s40)}×40kg`);
+      return partes.length ? partes.join(' + ') : '—';
+    }
+    function fmtPeso(c) {
+      const p = parseFloat(c.peso_total_kg || 0);
+      return p > 0 ? (p / 1000).toFixed(1).replace('.',',') + ' t' : '—';
+    }
+    function fmtAjud(c) {
+      const a = [c.ajudante1, c.ajudante2, c.ajudante3].filter(x => x && x.trim());
+      return a.length ? a.join(' · ') : '—';
+    }
     function statusClass(st) {
       if (!st) return 'prog-st-outro';
       const s = st.toLowerCase();
@@ -3701,191 +3773,151 @@
       if (s.includes('encerrado'))   return 'prog-st-enc';
       return 'prog-st-outro';
     }
-
-    function fmtData(d) {
-      if (!d) return 'Sem Data';
-      const p = d.split('-');
-      if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
-      return d;
-    }
-
     function fmtFat(v) {
       if (!v || v === 0) return '—';
       return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
-    // Monta HTML das colunas
-    let html = '';
-    datas.forEach(data => {
-      const clientes = grupos[data];
-      const nClientes = Object.keys(clientes).length;
-      html += `<div class="prog-col">
-        <div class="prog-col-header">
-          <span class="prog-col-data">${fmtData(data)}</span>
-          <span class="prog-col-cnt">${nClientes} ponto${nClientes !== 1 ? 's' : ''}</span>
-        </div>
-        <div class="prog-col-cards">`;
+    // ── Cargas (escalonamento) ──
+    const cargaDbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
+    const cargas = await loadDB(cargaDbKey);
 
-      Object.keys(clientes).forEach(cli => {
-        const info = clientes[cli];
-        const stCls = statusClass(info.status);
-        // Monta o valor do input formatado como YYYY-MM-DD para type=date
-        const dataVal = data || '';
-        html += `<div class="prog-card">
-          <div class="prog-card-top">
-            <span class="prog-card-cliente">${cli}</span>
-            <span class="prog-card-status ${stCls}">${info.status || 'N/D'}</span>
-          </div>
-          <div class="prog-card-info">
-            ${info.tipo_veiculo ? `<span class="prog-card-pill vei">🚛 ${info.tipo_veiculo}</span>` : ''}
-            ${info.qtd > 0 ? `<span class="prog-card-pill vol">${info.qtd.toLocaleString('pt-BR')} sc</span>` : ''}
-            ${info.fat > 0 ? `<span class="prog-card-pill fat">${fmtFat(info.fat)}</span>` : ''}
-          </div>
-          <div class="prog-card-data-row">
-            <span class="prog-card-data-label">Entrega:</span>
-            <input type="date" class="prog-card-data-inp"
-              data-dbkey="${dbKey}"
-              data-cliente="${cli.replace(/"/g,'&quot;')}"
-              value="${dataVal}"
-              onchange="progUpdateData(this,'${dbKey}','${cli.replace(/'/g,"\\'")}')">
-          </div>
+    // ── Comodatos / rotas de apoio ──
+    const comodDbKey = which === 'nat' ? 'comodNat26' : 'comodAn26';
+    let comodatos = [];
+    try { comodatos = (await loadDB(comodDbKey)) || []; } catch(e) { comodatos = []; }
+
+    // ── Pontos de entrega indexados por cliente (para cross-referência) ──
+    const pontosPorCliente = {};
+    filtered.forEach(r => {
+      const cli = r.cliente || '(sem cliente)';
+      if (!pontosPorCliente[cli]) pontosPorCliente[cli] = { qtd:0, fat:0, status:r.status||'', tipo_veiculo:r.tipo_veiculo||'', data:r.data_operacao||'' };
+      pontosPorCliente[cli].qtd += parseFloat(r.qtd_prog || 0);
+      pontosPorCliente[cli].fat += parseFloat(r.fat_real || 0);
+      if (r.status) pontosPorCliente[cli].status = r.status;
+    });
+
+    if (!cargas || !cargas.length) {
+      panel.innerHTML = '<div class="prog-vazio">Nenhuma carga encontrada. Verifique a aba Escalonamento.</div>';
+      return;
+    }
+
+    // ── Ordena cargas cronologicamente ──
+    const sortedCargas = [...cargas].sort((a, b) => {
+      const pa = parseTurno(a.hora_saida), pb = parseTurno(b.hora_saida);
+      if (pa.dia !== pb.dia) return pa.dia - pb.dia;
+      if (pa.turno !== pb.turno) return pa.turno - pb.turno;
+      return (parseInt(a.seq_carga) || 0) - (parseInt(b.seq_carga) || 0);
+    });
+
+    // ── Agrupa por turno (hora_saida) mantendo ordem ──
+    const porTurno = {};
+    const turnoOrder = [];
+    sortedCargas.forEach(c => {
+      const k = c.hora_saida || '—';
+      if (!porTurno[k]) { porTurno[k] = []; turnoOrder.push(k); }
+      porTurno[k].push(c);
+    });
+    const turnos = [...new Set(turnoOrder)];
+
+    const totalPesoGeral = sortedCargas.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
+    const totalCargas = sortedCargas.length;
+
+    // ── Monta HTML dos cards unificados ──
+    let html = `
+      <div class="prog-unified-header">
+        <span>📋 Programação Operacional — ${totalCargas} carga${totalCargas!==1?'s':''} · ${(totalPesoGeral/1000).toFixed(1).replace('.',',')} t</span>
+      </div>`;
+
+    let seqGlobal = 0;
+    turnos.forEach(turnoKey => {
+      const lista = porTurno[turnoKey];
+      const ts = turnoStyle(turnoKey);
+      const pesoTurno = lista.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
+
+      html += `<div class="prog-turno-block">
+        <div class="prog-turno-header" style="background:${ts.bg};border-left:4px solid ${ts.cor}">
+          <span class="prog-turno-label" style="color:${ts.cor}">${ts.label}</span>
+          <span class="prog-turno-meta">${lista.length} carga${lista.length>1?'s':''} · ${(pesoTurno/1000).toFixed(1).replace('.',',')} t</span>
         </div>`;
+
+      lista.forEach(c => {
+        seqGlobal++;
+        const rotaLabel = c.rota === 'apoio' ? 'Apoio' : c.rota === 'estrategico' ? 'Estratégico' : (c.rota ? `Rota ${c.rota}` : '—');
+
+        // Comodatos vinculados a este VDA
+        const comodVDA = comodatos.filter(cm => cm.vda_apoio && cm.vda_apoio === c.vda);
+
+        // Pontos de entrega vinculados a este VDA (via campo vda na tabela de pontos — fallback: busca por rota)
+        const pontosVDA = filtered.filter(r => r.vda === c.vda || (c.rota && r.rota === c.rota));
+
+        html += `<div class="prog-carga-card">
+          <div class="prog-carga-card-header" style="border-left:3px solid ${ts.cor}">
+            <span class="prog-carga-seq" style="background:${ts.bg};color:${ts.cor}">${seqGlobal}</span>
+            <span class="prog-carga-rota">${rotaLabel}</span>
+            <span class="prog-carga-vda">${c.vda || ''}</span>
+            <span class="prog-carga-sacas">${fmtSacas(c)}</span>
+            <span class="prog-carga-peso">${fmtPeso(c)}</span>
+            ${c.zona ? `<span class="prog-carga-zona">Zona ${c.zona}</span>` : ''}
+          </div>
+          <div class="prog-carga-card-body">
+            <div class="prog-carga-equipe">
+              <div class="prog-carga-equipe-row"><span class="prog-carga-label">Motorista:</span><span class="prog-carga-val">${c.motorista || '—'}</span></div>
+              <div class="prog-carga-equipe-row"><span class="prog-carga-label">Ajudantes:</span><span class="prog-carga-val">${fmtAjud(c)}</span></div>
+              ${c.obs ? `<div class="prog-carga-obs">📝 ${c.obs}</div>` : ''}
+            </div>`;
+
+        // Pontos de entrega desta rota/VDA
+        if (pontosVDA.length > 0) {
+          html += `<div class="prog-entrega-block">
+            <div class="prog-entrega-titulo">📍 Pontos de Entrega (${pontosVDA.length})</div>
+            <div class="prog-entrega-lista">`;
+          const pontosAgrupados = {};
+          pontosVDA.forEach(p => {
+            const cli = p.cliente || '(sem cliente)';
+            if (!pontosAgrupados[cli]) pontosAgrupados[cli] = { qtd:0, fat:0, status:p.status||'', data:p.data_operacao||'' };
+            pontosAgrupados[cli].qtd += parseFloat(p.qtd_prog || 0);
+            pontosAgrupados[cli].fat += parseFloat(p.fat_real || 0);
+            if (p.status) pontosAgrupados[cli].status = p.status;
+          });
+          Object.entries(pontosAgrupados).forEach(([cli, info]) => {
+            const stCls = statusClass(info.status);
+            html += `<div class="prog-entrega-item">
+              <span class="prog-entrega-cli">${cli}</span>
+              <span class="prog-card-status ${stCls}">${info.status || 'N/D'}</span>
+              ${info.qtd > 0 ? `<span class="prog-entrega-vol">${info.qtd.toLocaleString('pt-BR')} sc</span>` : ''}
+              ${info.fat > 0 ? `<span class="prog-entrega-fat">${fmtFat(info.fat)}</span>` : ''}
+            </div>`;
+          });
+          html += `</div></div>`;
+        }
+
+        // Comodatos / apoio
+        if (comodVDA.length > 0) {
+          html += `<div class="prog-comod-block">
+            <div class="prog-entrega-titulo">🔄 Comodatos / Apoio (${comodVDA.length})</div>
+            <div class="prog-entrega-lista">`;
+          comodVDA.forEach(cm => {
+            html += `<div class="prog-entrega-item">
+              <span class="prog-entrega-cli">${cm.fornecedor || '—'}</span>
+              <span class="prog-entrega-vol">${cm.qtd_sacas || '—'} sc · ${cm.produto || ''}</span>
+              ${cm.cliente_destino ? `<span class="prog-carga-zona">${cm.cliente_destino}</span>` : ''}
+            </div>`;
+          });
+          html += `</div></div>`;
+        }
+
+        html += `</div></div>`;
       });
 
-      if (nClientes === 0) {
-        html += '<div class="prog-semdata">Vazio</div>';
-      }
-
-      html += '</div></div>';
+      html += `</div>`;
     });
 
     if (!html) {
       html = '<div class="prog-vazio">Nenhum dado encontrado.</div>';
     }
 
-    // ── SEÇÃO: SEQUÊNCIA DE CARREGAMENTO (ordenada cronologicamente) ──
-    const cargaDbKey = which === 'nat' ? 'cargaNat26' : 'cargaAn26';
-    const cargas = await loadDB(cargaDbKey);
-
-    let cargaHtml = '';
-    if (cargas && cargas.length) {
-
-      // Ordem cronológica real: 3T-23 → 2T-23 → 1T-24 → 2T-24 → etc.
-      function parseTurno(h) {
-        if (!h) return { dia: 99, turno: 9, raw: '' };
-        const m = h.match(/^(\d+)T-(\d+)/i);
-        if (!m) return { dia: 99, turno: 9, raw: h };
-        return { dia: parseInt(m[2]), turno: parseInt(m[1]), raw: h };
-      }
-
-      const sorted = [...cargas].sort((a, b) => {
-        const pa = parseTurno(a.hora_saida), pb = parseTurno(b.hora_saida);
-        if (pa.dia !== pb.dia) return pa.dia - pb.dia;
-        if (pa.turno !== pb.turno) return pa.turno - pb.turno;
-        return (parseInt(a.seq_carga) || 0) - (parseInt(b.seq_carga) || 0);
-      });
-
-      // Agrupa por hora_saida mantendo ordem cronológica
-      const porTurno = {};
-      const turnoOrder = [];
-      sorted.forEach(c => {
-        const k = c.hora_saida || '—';
-        if (!porTurno[k]) { porTurno[k] = []; turnoOrder.push(k); }
-        porTurno[k].push(c);
-      });
-      const turnos = [...new Set(turnoOrder)];
-
-      function fmtSacas(c) {
-        const partes = [];
-        if (parseFloat(c.s5  || 0) > 0) partes.push(`${parseInt(c.s5)}×5kg`);
-        if (parseFloat(c.s10 || 0) > 0) partes.push(`${parseInt(c.s10)}×10kg`);
-        if (parseFloat(c.s20 || 0) > 0) partes.push(`${parseInt(c.s20)}×20kg`);
-        if (parseFloat(c.s40 || 0) > 0) partes.push(`${parseInt(c.s40)}×40kg`);
-        return partes.length ? partes.join(' + ') : '—';
-      }
-      function fmtPeso(c) {
-        const p = parseFloat(c.peso_total_kg || 0);
-        return p > 0 ? (p / 1000).toFixed(1).replace('.',',') + ' t' : '—';
-      }
-      function fmtAjud(c) {
-        const a = [c.ajudante1, c.ajudante2, c.ajudante3].filter(x => x && x.trim());
-        return a.length ? a.join(' · ') : '—';
-      }
-      function turnoStyle(h) {
-        if (!h) return { bg:'rgba(100,100,100,.15)', cor:'#888', label:'—' };
-        const p = parseTurno(h);
-        const dia = p.dia < 99 ? `${p.dia}/12` : '';
-        const sufixo = dia ? ` — dia ${dia}` : '';
-        if (p.turno === 3) return { bg:'rgba(167,139,250,.15)', cor:'#a78bfa', label:`3° Turno${sufixo}` };
-        if (p.turno === 2) return { bg:'rgba(251,191,36,.15)',  cor:'#fbbf24', label:`2° Turno${sufixo}` };
-        if (p.turno === 1) return { bg:'rgba(52,196,124,.15)',  cor:'#34c47c', label:`1° Turno${sufixo}` };
-        return { bg:'rgba(100,100,100,.15)', cor:'#888', label: h };
-      }
-
-      const totalPesoGeral = sorted.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
-
-      cargaHtml = `
-        <div style="margin-top:28px;padding-top:20px;border-top:2px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-            <span style="font-size:16px">🏭</span>
-            <span style="font-size:14px;font-weight:700;color:var(--text)">Sequência de Carregamento</span>
-          </div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:16px">${sorted.length} cargas · ${(totalPesoGeral/1000).toFixed(1).replace('.',',')} t · ordenado por data e turno</div>`;
-
-      let seqGlobal = 0;
-      turnos.forEach(turnoKey => {
-        const lista = porTurno[turnoKey];
-        const ts = turnoStyle(turnoKey);
-        const pesoTurno = lista.reduce((s,c) => s + parseFloat(c.peso_total_kg || 0), 0);
-
-        cargaHtml += `
-          <div style="margin-bottom:16px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <div style="background:${ts.bg};color:${ts.cor};font-size:11px;font-weight:800;padding:4px 12px;border-radius:6px;border:1px solid ${ts.cor}40">${ts.label}</div>
-              <span style="font-size:10px;color:var(--muted)">${lista.length} carga${lista.length>1?'s':''} · ${(pesoTurno/1000).toFixed(1).replace('.',',')} t</span>
-            </div>
-            <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border)">
-              <table style="width:100%;border-collapse:collapse;font-size:11px">
-                <thead>
-                  <tr style="background:rgba(0,0,0,.25)">
-                    <th style="padding:6px 10px;text-align:center;color:var(--muted);font-weight:600;width:32px">#</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Rota</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">VDA</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Motorista</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Ajudantes</th>
-                    <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Sacas</th>
-                    <th style="padding:6px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Peso</th>
-                  </tr>
-                </thead>
-                <tbody>`;
-
-        lista.forEach((c, idx) => {
-          seqGlobal++;
-          const bg = idx % 2 === 0 ? '' : 'background:rgba(255,255,255,.025)';
-          const rotaLabel = c.rota === 'apoio' ? '🔄 Apoio' : c.rota === 'estrategico' ? '📍 Estratégico' : (c.rota ? `Rota ${c.rota}` : '—');
-          cargaHtml += `
-                  <tr style="${bg}">
-                    <td style="padding:7px 10px;text-align:center;color:${ts.cor};font-weight:800;font-size:12px">${seqGlobal}</td>
-                    <td style="padding:7px 10px;font-weight:700;color:var(--text);white-space:nowrap">${rotaLabel}</td>
-                    <td style="padding:7px 10px;font-weight:700;color:#a78bfa">${c.vda || '—'}</td>
-                    <td style="padding:7px 10px;color:var(--text)">${c.motorista || '—'}</td>
-                    <td style="padding:7px 10px;color:var(--muted);font-size:10px">${fmtAjud(c)}</td>
-                    <td style="padding:7px 10px;color:#34c47c;font-weight:600;white-space:nowrap">${fmtSacas(c)}</td>
-                    <td style="padding:7px 10px;text-align:right;color:#fbbf24;font-weight:700;white-space:nowrap">${fmtPeso(c)}</td>
-                  </tr>`;
-        });
-
-        cargaHtml += `
-                </tbody>
-              </table>
-            </div>
-          </div>`;
-      });
-
-      cargaHtml += `</div>`;
-    }
-
-    panel.innerHTML = html + cargaHtml;
+    panel.innerHTML = html;
   }
 
   // Atualiza data_operacao a partir do painel de programações
