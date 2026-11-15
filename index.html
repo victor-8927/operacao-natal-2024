@@ -2190,8 +2190,8 @@
       funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
-      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento'],
-      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento'],
+      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento','num_oc_venda'],
+      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento','num_oc_venda'],
       cargaNat26:['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       cargaAn26: ['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca','','cliente_destino','data_entrega','obs'],
@@ -2239,6 +2239,7 @@
               String(extraRow[13] || '0'),
               String(extraRow[14] || '0'),
               String(extraRow[16] || '0'),
+              String(extraRow[23] || ''),  // num_oc_venda
             ];
             subTbody.appendChild(buildItemRow(itemData, masterTr));
           });
@@ -2364,10 +2365,10 @@
   }
 
   function buildItemRow(itemData, masterTr) {
-    // itemData = [gelo, qtd, preco, num_oc, aluguel, modalidade, retorno, bonificacao, venda_real, fat_real]
+    // itemData = [gelo, qtd, preco, num_oc, aluguel, modalidade, retorno, bonificacao, venda_real, fat_real, num_oc_venda]
     const itr = document.createElement('tr');
     const [gelo='20 KG', qtd='0', preco='0', liquidac='0', aluguel='0',
-           modal='Consignada (1106)', retorno='0', bonificacao='0', vendaReal='0', fatReal='0'] = itemData;
+           modal='Consignada (1106)', retorno='0', bonificacao='0', vendaReal='0', fatReal='0', ocVenda=''] = itemData;
 
     // 0: Gelo (select)
     const tdGelo = document.createElement('td');
@@ -2432,11 +2433,21 @@
     tdFatReal.className = 'item-calc';
     tdFatReal.title = 'Auto = Venda Real × R$/Saca';
 
-    // 13: Liq. (calc)
+    // 13: OC Venda (num_oc_venda) — número da OC de substituição (venda/bonificação)
+    const tdOcVenda = document.createElement('td');
+    const inpOcVenda = document.createElement('input');
+    inpOcVenda.type = 'text';
+    inpOcVenda.value = ocVenda;
+    inpOcVenda.placeholder = 'Ex: OC-00002';
+    inpOcVenda.style.cssText = 'width:90px;font-size:11px;';
+    inpOcVenda.oninput = () => { if(masterTr._dbKey) triggerAutoSave(masterTr._dbKey); };
+    tdOcVenda.appendChild(inpOcVenda);
+
+    // 14: Liq. (calc)
     const tdLiq = document.createElement('td');
     tdLiq.className = 'item-calc';
 
-    // 14: Excluir
+    // 15: Excluir
     const tdDel = document.createElement('td');
     const btnDel = document.createElement('button');
     btnDel.className = 'btn-del-item';
@@ -2445,7 +2456,7 @@
     tdDel.appendChild(btnDel);
 
     [tdGelo,tdQtd,tdPreco,tdFat,tdPeso,tdLiquidac,tdAluguel,
-     tdModal,tdRetorno,tdBonificacao,tdVendaReal,tdFatPct,tdFatReal,tdLiq,tdDel]
+     tdModal,tdRetorno,tdBonificacao,tdVendaReal,tdFatPct,tdFatReal,tdOcVenda,tdLiq,tdDel]
       .forEach(td => itr.appendChild(td));
 
     // dispara cálculo inicial
@@ -2649,7 +2660,7 @@
       <th>Gelo</th><th>Qtd</th><th>R$/Saca</th><th>FAT R$</th><th>Peso</th>
       <th>OC Saída</th><th>Aluguel</th><th>Tipo Negociação</th>
       <th>Retorno</th><th>Bonificação</th><th>Venda Real</th>
-      <th>FAT%</th><th>FAT Real</th><th>OC Venda</th><th></th>
+      <th>FAT%</th><th>FAT Real</th><th>OC Venda</th><th></th><th></th>
     </tr>`;
     const tbody = document.createElement('tbody');
     subTable.appendChild(thead);
@@ -2667,6 +2678,7 @@
       String(row[13] || '0'),     // bonificacao
       String(row[14] || '0'),     // venda_real
       String(row[16] || '0'),     // fat_real
+      String(row[23] || ''),      // num_oc_venda (OC substituição)
     ];
     tbody.appendChild(buildItemRow(firstItem, masterTr));
 
@@ -2675,7 +2687,7 @@
     btnAddItem.className = 'btn-add-item';
     btnAddItem.textContent = '+ Adicionar produto';
     btnAddItem.onclick = () => {
-      const blankItem = ['20 KG','0','0','0','0','Consignada (1106)','0','0','0','0'];
+      const blankItem = ['20 KG','0','0','0','0','Consignada (1106)','0','0','0','0',''];
       const newItr = buildItemRow(blankItem, masterTr);
       tbody.appendChild(newItr);
       triggerAutoSave(dbKey);
@@ -2840,12 +2852,13 @@
           const bonificacao = tds[9]?.querySelector('input')?.value || tds[9]?.textContent.trim() || '0';
           const vendaReal   = tds[10]?.querySelector('input')?.value || tds[10]?.textContent.trim() || '0';
           const fatReal     = tds[12]?.querySelector('input')?.value || tds[12]?.textContent.trim() || '0';
-          // Monta array 22 colunas
+          const numOcVenda  = tds[13]?.querySelector('input')?.value || tds[13]?.textContent.trim() || '';
+          // Monta array 23 colunas
           // 0:cliente 1:tipo_veiculo 2:tipo_op 3:gelo 4:qtd 5:preco 6:fat(c) 7:peso(c)
           // 8:num_oc 9:vlr_total(c) 10:aluguel 11:modal 12:retorno 13:bonificacao
           // 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
-          // 19:data 20:status 21:obs
-          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',numOc,'',aluguel,modal,retorno,bonificacao,vendaReal,'',fatReal,'','',data,status,obs,implemento]);
+          // 19:data 20:status 21:obs 22:implemento 23:num_oc_venda
+          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',numOc,'',aluguel,modal,retorno,bonificacao,vendaReal,'',fatReal,'','',data,status,obs,implemento,numOcVenda]);
         });
       });
       return rows;
@@ -2896,8 +2909,8 @@
     // 8:num_oc 9:valor_total(calc) 10:valor_aluguel 11:modalidade 12:retorno 13:bonificacao
     // 14:venda_real 15:fat_pct(calc) 16:fat_real 17:total_rs(calc) 18:liq_venda(calc)
     // 19:data_operacao 20:status 21:obs
-    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento'],
-    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento'],
+    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento','num_oc_venda'],
+    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento','num_oc_venda'],
     cargaNat26:['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     cargaAn26: ['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
