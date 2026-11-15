@@ -2263,24 +2263,32 @@
   function recalcItemRow(itr, masterTr) {
     const tds = itr.querySelectorAll('td');
     // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:ord_carga 6:aluguel
-    // 7:modalidade 8:retorno 9:bonificacao 10:venda_real 11:fat%(c) 12:fat_real 13:liq(c) 14:del
-    const gelo   = tds[0]?.querySelector('select')?.value || '20 KG';
-    const qtd    = parseF(tds[1]?.textContent);
-    const preco  = parseF(tds[2]?.textContent);
-    const aluguel  = parseF(tds[6]?.querySelector('input')?.value || tds[6]?.textContent);
-    const fatReal  = parseF(tds[12]?.querySelector('input')?.value || tds[12]?.textContent);
+    // 7:modalidade 8:retorno 9:bonificacao 10:venda_real(c) 11:fat%(c) 12:fat_real(c) 13:liq(c) 14:del
+    const gelo      = tds[0]?.querySelector('select')?.value || '20 KG';
+    const qtd       = parseF(tds[1]?.textContent);
+    const preco     = parseF(tds[2]?.textContent);
+    const aluguel   = parseF(tds[6]?.textContent);
+    const retorno   = parseF(tds[8]?.textContent);
+    const bonif     = parseF(tds[9]?.textContent);
 
-    const kgUnit = PESO_MAP[gelo] || 23;
-    const fat    = qtd * preco;
-    const peso   = qtd * kgUnit;
-    const fatPct = fat > 0 ? (fatReal / fat * 100) : 0;
-    // liq = FAT Real - Aluguel (num_oc é número de ordem, não valor monetário)
-    const liq    = fatReal - aluguel;
+    // Venda Real = Qtd − Retorno − Bonificação (auto-calculado)
+    const vendaReal = Math.max(0, qtd - retorno - bonif);
+    // FAT Programado = Qtd × Preco
+    const fat       = qtd * preco;
+    // FAT Real = Venda Real × Preco (auto-calculado)
+    const fatReal   = vendaReal * preco;
+    const kgUnit    = PESO_MAP[gelo] || 23;
+    const peso      = qtd * kgUnit;
+    const fatPct    = fat > 0 ? (fatReal / fat * 100) : 0;
+    // liq = FAT Real - Aluguel
+    const liq       = fatReal - aluguel;
 
-    if (tds[3]) { tds[3].textContent = fat > 0 ? fmtR(fat) : '—'; tds[3].className='item-calc'; }
-    if (tds[4]) { tds[4].textContent = peso > 0 ? peso.toLocaleString('pt-BR')+' kg' : '—'; tds[4].className='item-calc'; }
-    if (tds[11]){ tds[11].textContent = fat > 0 ? fatPct.toFixed(1)+'%' : '—'; tds[11].className='item-calc'; }
-    if (tds[13]){ tds[13].textContent = fatReal > 0 ? fmtR(liq) : '—'; tds[13].className='item-calc'; }
+    if (tds[3])  { tds[3].textContent  = fat > 0 ? fmtR(fat) : '—'; tds[3].className='item-calc'; }
+    if (tds[4])  { tds[4].textContent  = peso > 0 ? peso.toLocaleString('pt-BR')+' kg' : '—'; tds[4].className='item-calc'; }
+    if (tds[10]) { tds[10].textContent = vendaReal; tds[10].className='item-calc'; }
+    if (tds[11]) { tds[11].textContent = fat > 0 ? fatPct.toFixed(1)+'%' : '—'; tds[11].className='item-calc'; }
+    if (tds[12]) { tds[12].textContent = fatReal > 0 ? fmtR(fatReal) : '—'; tds[12].className='item-calc'; }
+    if (tds[13]) { tds[13].textContent = fatReal > 0 ? fmtR(liq) : '—'; tds[13].className='item-calc'; }
 
     // Atualiza totais na linha mestre
     if (masterTr) recalcMasterTotals(masterTr);
@@ -2293,17 +2301,19 @@
     let fatTotal = 0, pesoTotal = 0, liqTotal = 0;
     itrs.forEach(itr => {
       const tds = itr.querySelectorAll('td');
-      const gelo = tds[0]?.querySelector('select')?.value || '20 KG';
-      const qtd  = parseF(tds[1]?.querySelector('input')?.value || tds[1]?.textContent);
-      const preco= parseF(tds[2]?.querySelector('input')?.value || tds[2]?.textContent);
-      const aluguel  = parseF(tds[6]?.querySelector('input')?.value || tds[6]?.textContent);
-      const fatReal  = parseF(tds[12]?.querySelector('input')?.value || tds[12]?.textContent);
-      const kgUnit = PESO_MAP[gelo] || 23;
-      const fat    = qtd * preco;
-      const peso   = qtd * kgUnit;
-      // liq = FAT Real - Aluguel (num_oc não é monetário)
-      const liq    = fatReal - aluguel;
-      fatTotal  += fat;
+      const gelo    = tds[0]?.querySelector('select')?.value || '20 KG';
+      const qtd     = parseF(tds[1]?.textContent);
+      const preco   = parseF(tds[2]?.textContent);
+      const aluguel = parseF(tds[6]?.textContent);
+      const retorno = parseF(tds[8]?.textContent);
+      const bonif   = parseF(tds[9]?.textContent);
+      const kgUnit  = PESO_MAP[gelo] || 23;
+      const vendaReal = Math.max(0, qtd - retorno - bonif);
+      const fat     = qtd * preco;
+      const fatReal = vendaReal * preco;
+      const peso    = qtd * kgUnit;
+      const liq     = fatReal - aluguel;
+      fatTotal  += fatReal;   // total = soma de FAT Real (vendas efetivas)
       pesoTotal += peso;
       liqTotal  += liq;
     });
@@ -2358,12 +2368,6 @@
     // 8: Retorno
     const tdRetorno = makeItemNum(retorno, 'Sacas retornadas');
     tdRetorno.oninput = () => {
-      const tds = itr.querySelectorAll('td');
-      const q   = parseF(tds[1]?.textContent);
-      const r   = parseF(tdRetorno.textContent);
-      const b   = parseF(tds[9]?.textContent);
-      const vr  = Math.max(0, q - r - b);
-      if (tds[10]) tds[10].textContent = vr;
       recalcItemRow(itr, masterTr);
       if (masterTr._dbKey) triggerAutoSave(masterTr._dbKey);
     };
@@ -2371,26 +2375,23 @@
     // 9: Bonificação
     const tdBonificacao = makeItemNum(bonificacao, 'Sacas bonificadas (doadas)');
     tdBonificacao.oninput = () => {
-      const tds = itr.querySelectorAll('td');
-      const q   = parseF(tds[1]?.textContent);
-      const r   = parseF(tds[8]?.textContent);
-      const b   = parseF(tdBonificacao.textContent);
-      const vr  = Math.max(0, q - r - b);
-      if (tds[10]) tds[10].textContent = vr;
       recalcItemRow(itr, masterTr);
       if (masterTr._dbKey) triggerAutoSave(masterTr._dbKey);
     };
 
-    // 10: Venda Real (calculado automaticamente = Qtd - Retorno - Bonificação)
-    const tdVendaReal = makeItemNum(vendaReal, 'Venda realizada (auto = Qtd − Retorno − Bonif)');
+    // 10: Venda Real (auto = Qtd − Retorno − Bonif) — campo calculado
+    const tdVendaReal = document.createElement('td');
+    tdVendaReal.className = 'item-calc';
+    tdVendaReal.title = 'Auto = Qtd − Retorno − Bonificação';
 
     // 11: FAT% (calc)
     const tdFatPct = document.createElement('td');
     tdFatPct.className = 'item-calc';
 
-    // 12: FAT Real R$
-    const tdFatReal = makeItemNum(fatReal, 'FAT Real R$');
-    tdFatReal.oninput = () => recalcItemRow(itr, masterTr);
+    // 12: FAT Real R$ (auto = Venda Real × Preco) — campo calculado
+    const tdFatReal = document.createElement('td');
+    tdFatReal.className = 'item-calc';
+    tdFatReal.title = 'Auto = Venda Real × R$/Saca';
 
     // 13: Liq. (calc)
     const tdLiq = document.createElement('td');
@@ -2441,12 +2442,33 @@
 
     // 2: Tipo Veículo
     const tdVeiculo = document.createElement('td');
+    tdVeiculo.style.minWidth = '130px';
     const selVeiculo = makeItemSel(
-      ['Toco','Truck','Container','Acello','VUC','Utilitário','Câmara Fria','Outro'],
+      ['Toco','Truck 1','Truck 2','Container','Acello','Muck','Câmara Fria','Outro'],
       row[1] || 'Toco'
     );
-    selVeiculo.onchange = () => triggerAutoSave(dbKey);
+    // Span para mostrar placa do veículo selecionado
+    const spanPlaca = document.createElement('span');
+    spanPlaca.style.cssText = 'display:block;font-size:10px;color:var(--accent);margin-top:2px';
+    spanPlaca.textContent = '';
+    // Função que busca placa do tipo selecionado em op26_vdas
+    const updatePlacaInfo = async () => {
+      const tipo = selVeiculo.value;
+      try {
+        const vdas = await sbFetch(`op26_vdas?tipo=eq.${encodeURIComponent(tipo)}&select=vda,placa,tipo&limit=1`);
+        if (vdas && vdas.length > 0) {
+          const v = vdas[0];
+          spanPlaca.textContent = `VDA ${v.vda} · ${v.placa || '—'}`;
+        } else {
+          spanPlaca.textContent = '';
+        }
+      } catch(e) { spanPlaca.textContent = ''; }
+    };
+    selVeiculo.onchange = () => { updatePlacaInfo(); triggerAutoSave(dbKey); };
+    // Carrega info inicial se já tem tipo definido
+    if (row[1]) setTimeout(updatePlacaInfo, 50);
     tdVeiculo.appendChild(selVeiculo);
+    tdVeiculo.appendChild(spanPlaca);
     masterTr.appendChild(tdVeiculo);
 
     // 3: Tipo Op.
