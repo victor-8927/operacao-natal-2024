@@ -182,6 +182,14 @@
   .diff-new { background: rgba(79,142,247,.15); color: var(--accent); }
   .badge-nao { background: rgba(242,107,107,.18); color: var(--red); border: 1px solid rgba(242,107,107,.35); font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: .4px; text-transform: uppercase; }
 
+  /* ===== HISTÓRICO 2024 ===== */
+  .hist-tabs-bar { display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--border); padding-bottom:8px; flex-wrap:wrap; }
+  .hist-tab-btn { background:transparent; border:1px solid var(--border); border-bottom:none; border-radius:6px 6px 0 0; padding:6px 14px; font-size:12px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:all .15s; }
+  .hist-tab-btn:hover { background:var(--surface2); color:var(--text); }
+  .hist-tab-btn.active { background:var(--surface2); color:#facc15; border-color:var(--border); }
+  .hist-tab-panel { display:none; padding:0; }
+  .hist-tab-panel.active { display:block; }
+
   /* ===== 2026 EDITABLE STYLES ===== */
   .tab-btn.purple { --tab-active: #a78bfa; }
   .year-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(167,139,250,.18); color:#a78bfa; border:1px solid rgba(167,139,250,.35); margin-left:8px; }
@@ -618,16 +626,27 @@
 </div>
 
 <div class="tabs-bar">
-  <button class="tab-btn active" onclick="switchTab(0)">🎄 NATAL simulado</button>
-  <button class="tab-btn green" onclick="switchTab(1)">📋 NATAL pg de terceiros</button>
-  <button class="tab-btn yellow" onclick="switchTab(2)">🚚 VDAS PARA O NATAL</button>
-  <button class="tab-btn orange" onclick="switchTab(3)">🎆 ANO NOVO pg de terceiros</button>
-  <button class="tab-btn" onclick="switchTab(4)">🚛 VDAS PARA O ANO NOVO</button>
-  <button class="tab-btn purple" onclick="switchTab(5)" style="border-left:2px solid rgba(167,139,250,.3);margin-left:8px">🗓️ OPERAÇÃO 2026 ✦</button>
+  <button class="tab-btn purple active" onclick="switchTab(0)">🗓️ OPERAÇÃO 2026 ✦</button>
+  <button class="tab-btn" onclick="switchTab(1)" style="border-left:2px solid rgba(250,204,21,.2);margin-left:8px;color:#facc15">🗂️ Histórico 2024</button>
 </div>
 
+<!-- ==================== HISTÓRICO 2024 (wrapper) ==================== -->
+<div class="tab-content" id="tab-hist2024">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:18px">🗂️</span>
+    <span style="font-size:16px;font-weight:700;color:#facc15">Histórico 2024</span>
+    <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:10px;border:1px solid var(--border)">somente leitura / referência</span>
+  </div>
+  <div class="hist-tabs-bar">
+    <button class="hist-tab-btn active" onclick="switchHist(0,this)">🎄 NATAL simulado</button>
+    <button class="hist-tab-btn" onclick="switchHist(1,this)">📋 NATAL pg de terceiros</button>
+    <button class="hist-tab-btn" onclick="switchHist(2,this)">🚚 VDAs Natal</button>
+    <button class="hist-tab-btn" onclick="switchHist(3,this)">🎆 ANO NOVO pg de terceiros</button>
+    <button class="hist-tab-btn" onclick="switchHist(4,this)">🚛 VDAs Ano Novo</button>
+  </div>
+
 <!-- ==================== ABA 1: NATAL SIMULADO ==================== -->
-<div class="tab-content active" id="tab0">
+<div class="hist-tab-panel active" id="hist0">
 
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Faturamento Total Simulado</div><div class="kpi-value blue">R$142.772 <span title="Inclui 20KG recalculado (R$106.535,52), Ilha Batista (R$1.619) e Campos Sales parcial (R$518)" style="font-size:10px;cursor:help">⚠</span></div><div class="kpi-sub">Valor bruto — 20KG recalculado s/ #REF!</div></div>
@@ -713,8 +732,9 @@
   </div>
 </div>
 
+</div><!-- /hist0 -->
+<div class="hist-tab-panel" id="hist1">
 <!-- ==================== ABA 2: NATAL PG DE TERCEIROS ==================== -->
-<div class="tab-content" id="tab1">
 
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">FAT Total Natal 2024</div><div class="kpi-value green">R$133.691</div></div>
@@ -884,8 +904,9 @@
   </div>
 </div>
 
+</div><!-- /hist1 -->
+<div class="hist-tab-panel" id="hist2">
 <!-- ==================== ABA 3: VDAS PARA O NATAL ==================== -->
-<div class="tab-content" id="tab2">
 
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Total Veículos Escalados</div><div class="kpi-value blue">16</div><div class="kpi-sub">VDAs + containers + alugados</div></div>
@@ -950,8 +971,9 @@
   </div>
 </div>
 
+</div><!-- /hist2 -->
+<div class="hist-tab-panel" id="hist3">
 <!-- ==================== ABA 4: ANO NOVO PG TERCEIROS ==================== -->
-<div class="tab-content" id="tab3">
 
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">FAT Total Ano Novo 2024</div><div class="kpi-value green">R$167.988</div><div class="kpi-sub">+25,6% vs Natal</div></div>
@@ -1089,8 +1111,9 @@
   </div>
 </div>
 
+</div><!-- /hist3 -->
+<div class="hist-tab-panel" id="hist4">
 <!-- ==================== ABA 5: VDAS PARA O ANO NOVO ==================== -->
-<div class="tab-content" id="tab5">
 
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Total Veículos</div><div class="kpi-value blue">16</div></div>
@@ -1151,12 +1174,13 @@
       <div class="camara-card"><div class="camara-num">Média #138</div><div class="camara-tipo">Média</div><div class="camara-cliente">DS Aleixo</div><div class="camara-datas"><span class="camara-data entrega">Ent: 22/12</span><span class="camara-data recolha">Rec: 14/01</span></div></div>
     </div>
   </div>
-</div>
+</div><!-- /hist4 -->
+</div><!-- /tab-hist2024 -->
 
 <!-- ══════════════════════════════════════════════════════════
      TAB 2026 — OPERAÇÃO NATAL & ANO NOVO 2026
 ══════════════════════════════════════════════════════════ -->
-<div class="tab-content" id="tab6">
+<div class="tab-content active" id="tab6">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
     <div style="font-size:22px;font-weight:800;color:#a78bfa">Operação 2026 <span class="year-badge">AO VIVO</span></div>
     <div style="font-size:12px;color:var(--muted);margin-top:2px">Dados editáveis e sincronizados com o banco Supabase ☁️ — compartilhado entre todos os computadores</div>
@@ -1777,11 +1801,26 @@
   /* =========================================================
      TAB SWITCHING (original + new tab6)
   ========================================================= */
+  // Nova estrutura: índice 0 = tab6 (2026 ativo), índice 1 = tab-hist2024
+  const TAB_IDS = ['tab6', 'tab-hist2024'];
   function switchTab(n) {
-    document.querySelectorAll('.tab-content').forEach((el, i) => {
-      el.classList.toggle('active', i === n);
+    TAB_IDS.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', i === n);
     });
     document.querySelectorAll('.tab-btn').forEach((el, i) => {
+      el.classList.toggle('active', i === n);
+    });
+  }
+
+  /* =========================================================
+     SUB-TABS HISTÓRICO 2024
+  ========================================================= */
+  function switchHist(n, btn) {
+    document.querySelectorAll('.hist-tab-panel').forEach((el, i) => {
+      el.classList.toggle('active', i === n);
+    });
+    document.querySelectorAll('.hist-tab-btn').forEach((el, i) => {
       el.classList.toggle('active', i === n);
     });
   }
@@ -2777,7 +2816,7 @@
           return '';
         })();
         const tipoOp    = mTds[3]?.querySelector('select')?.value || 'Rota';
-        const data      = mTds[7]?.querySelector('input[type="date"]')?.value || '';
+        const data      = mTds[7]?.querySelector('input[type="datetime-local"]')?.value || '';
         const status    = mTds[8]?.querySelector('select')?.value || 'Programado';
         const obs       = mTds[9]?.textContent.trim() || '';
 
@@ -2785,11 +2824,7 @@
         const itemsRow = masterTr._itemsRow;
         if (!itemsRow) return;
         const itrs = itemsRow.querySelectorAll('tbody tr');
-        if (itrs.length === 0) {
-          // Nenhum item — salva linha vazia
-          rows.push([cliente,veiculo,tipoOp,'20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','',data,status,obs,implemento]);
-          return;
-        }
+        if (itrs.length === 0) return; // sem item = não salva nada
         itrs.forEach(itr => {
           const tds = itr.querySelectorAll('td');
           // 0:gelo 1:qtd 2:preco 3:fat(c) 4:peso(c) 5:num_oc 6:aluguel
@@ -2797,6 +2832,7 @@
           const gelo        = tds[0]?.querySelector('select')?.value || '20 KG';
           const qtd         = tds[1]?.querySelector('input')?.value || tds[1]?.textContent.trim() || '0';
           const preco       = tds[2]?.querySelector('input')?.value || tds[2]?.textContent.trim() || '0';
+          if (parseFloat(qtd) === 0 && parseFloat(preco) === 0) return; // ignora linha vazia/fantasma
           const numOc       = tds[5]?.querySelector('input')?.value || tds[5]?.textContent.trim() || '0';
           const aluguel     = tds[6]?.querySelector('input')?.value || tds[6]?.textContent.trim() || '0';
           const modal       = tds[7]?.querySelector('select')?.value || 'Consignada (1106)';
