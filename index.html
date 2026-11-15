@@ -2151,8 +2151,8 @@
       funcs26:   ['nome','funcao','vda_fixo','cpf_id','tel','status','obs','tipo_vinculo','valor_diario','','','hora_inicio','hora_fim','','','','vl_hora_extra','','gratificacao',''],
       clientes26:['codigo','nome','tipo_equip','produto','qtd_padrao','preco_saca','modalidade','rota_vda','endereco','tel','obs'],
       produtos26:['produto','peso_liq_kg','peso_bruto_kg','custo_prod','preco_venda','preco_acello','preco_consig','preco_manif','obs'],
-      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs'],
-      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs'],
+      natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento'],
+      anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca','','','num_oc','','valor_aluguel','modalidade','retorno','bonificacao','venda_real','','fat_real','','','data_operacao','status','obs','implemento'],
       cargaNat26:['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       cargaAn26: ['vda','motorista','ajudantes','rota','s5','s10','s20','s40','','cap_bau_kg','','obs'],
       comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca','','cliente_destino','data_entrega','obs'],
@@ -2440,34 +2440,91 @@
     tdPonto.dataset.pontoCell = '1';
     masterTr.appendChild(tdPonto);
 
-    // 2: Tipo Veículo
+    // 2: Tipo Veículo — select dinâmico com VDAs reais + implemento condicional para VDA 59
     const tdVeiculo = document.createElement('td');
-    tdVeiculo.style.minWidth = '130px';
-    const selVeiculo = makeItemSel(
-      ['Toco','Truck 1','Truck 2','Container','Acello','Muck','Câmara Fria','Outro'],
-      row[1] || 'Toco'
-    );
-    // Span para mostrar placa do veículo selecionado
+    tdVeiculo.style.minWidth = '160px';
+
+    // Select principal: lista todos os VDAs da frota
+    const selVeiculo = document.createElement('select');
+    selVeiculo.style.cssText = 'width:100%;font-size:11px;padding:2px 4px;background:var(--input-bg,#1e1e2e);color:var(--text);border:1px solid var(--border);border-radius:4px;';
+
+    // Container do implemento (só visível quando VDA 59 selecionado)
+    const divImplemento = document.createElement('div');
+    divImplemento.style.cssText = 'margin-top:3px;display:none;';
+    const selImplemento = document.createElement('select');
+    selImplemento.style.cssText = 'width:100%;font-size:10px;padding:2px 4px;background:var(--input-bg,#1e1e2e);color:var(--accent);border:1px solid var(--accent);border-radius:4px;';
+    divImplemento.appendChild(selImplemento);
+
+    // Span info placa do VDA selecionado
     const spanPlaca = document.createElement('span');
-    spanPlaca.style.cssText = 'display:block;font-size:10px;color:var(--accent);margin-top:2px';
-    spanPlaca.textContent = '';
-    // Função que busca placa do tipo selecionado em op26_vdas
-    const updatePlacaInfo = async () => {
-      const tipo = selVeiculo.value;
+    spanPlaca.style.cssText = 'display:block;font-size:9px;color:var(--accent);margin-top:2px;opacity:0.8;';
+
+    // Carrega VDAs do Supabase e popula os selects
+    const populateVdaSelect = async () => {
       try {
-        const vdas = await sbFetch(`op26_vdas?tipo=eq.${encodeURIComponent(tipo)}&select=vda,placa,tipo&limit=1`);
-        if (vdas && vdas.length > 0) {
-          const v = vdas[0];
-          spanPlaca.textContent = `VDA ${v.vda} · ${v.placa || '—'}`;
-        } else {
-          spanPlaca.textContent = '';
+        const vdas = await sbFetch('op26_vdas?order=vda.asc&select=vda,placa,tipo');
+        if (!vdas || vdas.length === 0) {
+          // fallback estático
+          ['VDA 01','VDA 02','VDA 03','VDA 20','VDA 46','VDA 47','VDA 59','VDA 70','VDA 80','VDA 81','VDA 90','VDA 94','Acello'].forEach(v => {
+            const o = document.createElement('option'); o.value = v; o.textContent = v; selVeiculo.appendChild(o);
+          });
+          return;
         }
-      } catch(e) { spanPlaca.textContent = ''; }
+        // Separa VDAs normais dos containers (filhos de VDA 59)
+        const containers = vdas.filter(v => v.vda.startsWith('Container'));
+        const normais    = vdas.filter(v => !v.vda.startsWith('Container'));
+
+        normais.forEach(v => {
+          const o = document.createElement('option');
+          o.value = `VDA ${v.vda}`;
+          o.textContent = `VDA ${v.vda} · ${v.placa || '—'}`;
+          selVeiculo.appendChild(o);
+        });
+
+        // Popula implementos (containers)
+        selImplemento.innerHTML = '';
+        containers.forEach(c => {
+          const o = document.createElement('option');
+          o.value = c.placa || c.vda;
+          o.textContent = `${c.vda} · ${c.placa || '—'}`;
+          selImplemento.appendChild(o);
+        });
+
+        // Restaura valor salvo
+        const savedVda = row[1] || '';
+        const savedImp = row[22] || '';
+        if (savedVda) {
+          // Tenta match exato, senão match parcial
+          const opt = Array.from(selVeiculo.options).find(o => o.value === savedVda || o.value.includes(savedVda.replace('VDA ','')));
+          if (opt) selVeiculo.value = opt.value;
+        }
+        updateVeiculoUI();
+        if (savedImp) {
+          const oImp = Array.from(selImplemento.options).find(o => o.value === savedImp);
+          if (oImp) selImplemento.value = oImp.value;
+        }
+      } catch(e) { console.warn('[VDA select]', e); }
     };
-    selVeiculo.onchange = () => { updatePlacaInfo(); triggerAutoSave(dbKey); };
-    // Carrega info inicial se já tem tipo definido
-    if (row[1]) setTimeout(updatePlacaInfo, 50);
+
+    const updateVeiculoUI = () => {
+      const v = selVeiculo.value;
+      const isVda59 = v && v.includes('59');
+      divImplemento.style.display = isVda59 ? 'block' : 'none';
+      // Mostra placa do VDA (extrai do texto da option)
+      const opt = selVeiculo.selectedOptions[0];
+      if (opt && opt.textContent.includes('·')) {
+        const placa = opt.textContent.split('·')[1]?.trim();
+        spanPlaca.textContent = placa && placa !== '—' ? `🔑 ${placa}` : '';
+      } else { spanPlaca.textContent = ''; }
+    };
+
+    selVeiculo.onchange = () => { updateVeiculoUI(); triggerAutoSave(dbKey); };
+    selImplemento.onchange = () => { triggerAutoSave(dbKey); };
+
+    setTimeout(populateVdaSelect, 10);
+
     tdVeiculo.appendChild(selVeiculo);
+    tdVeiculo.appendChild(divImplemento);
     tdVeiculo.appendChild(spanPlaca);
     masterTr.appendChild(tdVeiculo);
 
@@ -2710,7 +2767,15 @@
           return m ? m[1] : v;
         };
         const cliente   = getPontoVal(mTds[1]);
-        const veiculo   = mTds[2]?.querySelector('select')?.value || 'Toco';
+        const vdaTd     = mTds[2];
+        const veiculo   = vdaTd?.querySelector('select')?.value || 'Toco';
+        const implemento = (() => {
+          const divImp = vdaTd?.querySelector('div');
+          if (divImp && divImp.style.display !== 'none') {
+            return vdaTd?.querySelectorAll('select')[1]?.value || '';
+          }
+          return '';
+        })();
         const tipoOp    = mTds[3]?.querySelector('select')?.value || 'Rota';
         const data      = mTds[7]?.querySelector('input[type="date"]')?.value || '';
         const status    = mTds[8]?.querySelector('select')?.value || 'Programado';
@@ -2722,7 +2787,7 @@
         const itrs = itemsRow.querySelectorAll('tbody tr');
         if (itrs.length === 0) {
           // Nenhum item — salva linha vazia
-          rows.push([cliente,veiculo,tipoOp,'20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','',data,status,obs]);
+          rows.push([cliente,veiculo,tipoOp,'20 KG','0','0','','','0','','0','Venda','0','0','0','','0','','',data,status,obs,implemento]);
           return;
         }
         itrs.forEach(itr => {
@@ -2744,7 +2809,7 @@
           // 8:num_oc 9:vlr_total(c) 10:aluguel 11:modal 12:retorno 13:bonificacao
           // 14:venda_real 15:fat%(c) 16:fat_real 17:total(c) 18:liq(c)
           // 19:data 20:status 21:obs
-          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',numOc,'',aluguel,modal,retorno,bonificacao,vendaReal,'',fatReal,'','',data,status,obs]);
+          rows.push([cliente,veiculo,tipoOp,gelo,qtd,preco,'','',numOc,'',aluguel,modal,retorno,bonificacao,vendaReal,'',fatReal,'','',data,status,obs,implemento]);
         });
       });
       return rows;
@@ -2795,8 +2860,8 @@
     // 8:num_oc 9:valor_total(calc) 10:valor_aluguel 11:modalidade 12:retorno 13:bonificacao
     // 14:venda_real 15:fat_pct(calc) 16:fat_real 17:total_rs(calc) 18:liq_venda(calc)
     // 19:data_operacao 20:status 21:obs
-    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
-    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs'],
+    natal26:   ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento'],
+    anonovo26: ['cliente','tipo_veiculo','tipo_op','produto','qtd_prog','preco_saca',null,null,'num_oc',null,'valor_aluguel','modalidade','retorno','bonificacao','venda_real',null,'fat_real',null,null,'data_operacao','status','obs','implemento'],
     cargaNat26:['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     cargaAn26: ['vda','motorista','ajudante1','ajudante2','ajudante3','rota','zona','num_carga','s5','s10','s20','s40','cap_bau_kg','obs'],
     comodNat26:['fornecedor','tipo_equip','qtd_sacas','produto','preco_saca',null,'cliente_destino','data_entrega','obs'],
